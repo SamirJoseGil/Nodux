@@ -16,6 +16,7 @@
     "@remix-run/serve": "^2.16.0",
     "axios": "^1.11.0",
     "isbot": "^4.1.0",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -23,6 +24,7 @@
     "@remix-run/dev": "^2.16.0",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
+    "@types/js-cookie": "^3.0.6",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.19",
