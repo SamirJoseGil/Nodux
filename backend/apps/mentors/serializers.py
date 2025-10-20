@@ -7,6 +7,7 @@ from .models import Mentor, MentorAttendance
 from django.utils import timezone
 
 
+
 class MentorSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     certificate = serializers.FileField(required=False, allow_null=True)
@@ -84,6 +85,22 @@ class MentorSerializer(serializers.ModelSerializer):
                 user.save()
 
         return instance
+    
+    def delete(self, instance):
+        mentor = instance
+        mentorUser = mentor.profile.user
+        
+        certificate = instance.certificate
+        photo = instance.profile.photo
+        print(certificate)
+        print(photo)
+        if certificate:
+            certificate.delete(save=False)
+
+        if photo:
+            photo.delete(save=False)
+
+        mentorUser.delete()
 
     def to_representation(self, instance):
         """
