@@ -8,11 +8,11 @@ from rest_framework_simplejwt.views import (
 
 # Local imports
 from apps.mentors.views import MentorViewSet
-from apps.core.views import UserViewSet
+from apps.projects.views import ProjectViewSet
 
 router = DefaultRouter()
 router.register(r"mentors", MentorViewSet, basename="mentor")
-router.register(r'users', UserViewSet, basename='user')
+router.register(r'projects', ProjectViewSet, basename="project")
 
 app_name = "api"
 
