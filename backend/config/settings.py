@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,9 +41,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Own apps
+    # Local apps
+    'apps.api',
     'apps.core',
     'apps.mentors',
+    'apps.projects',
     # Third party apps
     "rest_framework",
     "rest_framework_simplejwt",
@@ -138,6 +142,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+PROFILE_PHOTOS_DIR = "user_photos"
+MENTORS_CERTIFICATES_DIR = "mentors_certificates"
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -146,6 +154,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ==================================================
 # REST FRAMEWORK CONFIGURATION
 # ==================================================
+
+"""
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -163,6 +173,12 @@ REST_FRAMEWORK = {
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+}
+"""
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (),  
+    'DEFAULT_PERMISSION_CLASSES': (),      
 }
 
 # ==================================================
@@ -242,5 +258,11 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # File upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
+PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024        # 2 MB
+
+#File extension settings
+ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
+ALLOWED_FILE_EXTENSIONS = ['.pdf']
+
+

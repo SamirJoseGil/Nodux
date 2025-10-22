@@ -22,6 +22,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.db import connection
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework import routers
+from apps.mentors.views import MentorViewSet 
 import time
 
 def healthcheck(request):
@@ -74,10 +76,13 @@ def healthcheck(request):
         }
     })
 
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/healthcheck/", healthcheck, name="healthcheck"),
     # API routes will be added here
+    path("api/healthcheck/", healthcheck, name="healthcheck"),
+    path("api/", include("apps.api.urls", namespace="api")),
 ]
 
 if settings.DEBUG:
