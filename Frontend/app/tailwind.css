@@ -1,3 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Colores Nodo */
+    --nodo-black: #000000;
+    --nodo-dark-blue: #000023;
+    --nodo-neon-blue: #006FFF;
+    --nodo-yellow: #f8d300;
+    --nodo-orange: #FF8F1B;
+    --nodo-green: #00D9AC;
+  }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    @apply text-gray-900 bg-gray-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 700;
+    @apply text-nodo-black;
+  }
+}
+
+@layer components {
+  /* Botones principales con colores Nodo */
+  .btn-nodo-primary {
+    @apply bg-nodo-dark-blue hover:bg-nodo-neon-blue text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border-2 border-transparent hover:border-nodo-yellow;
+  }
+
+  .btn-nodo-secondary {
+    @apply bg-nodo-neon-blue hover:bg-nodo-dark-blue text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border-2 border-transparent hover:border-nodo-green;
+  }
+
+  .btn-nodo-accent {
+    @apply bg-nodo-green hover:bg-nodo-orange text-nodo-black hover:text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+  }
+
+  /* Gradientes Nodo */
+  .gradient-nodo-primary {
+    background: linear-gradient(135deg, var(--nodo-dark-blue) 0%, var(--nodo-neon-blue) 50%, var(--nodo-dark-blue) 100%);
+  }
+
+  .gradient-nodo-accent {
+    background: linear-gradient(135deg, var(--nodo-neon-blue) 0%, var(--nodo-green) 100%);
+  }
+
+  /* Cards con estilo Nodo y glassmorphism */
+  .card-nodo {
+    @apply bg-white/80 backdrop-blur-md rounded-xl shadow-lg border-2 border-nodo-neon-blue hover:shadow-2xl transition-all duration-300 hover:scale-102 hover:border-nodo-yellow;
+  }
+
+  .card-nodo-glass {
+    @apply bg-white/60 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 hover:bg-white/70 transition-all duration-300;
+  }
+
+  /* Sidebar con tema Nodo */
+  .sidebar-nodo {
+    @apply bg-nodo-dark-blue text-white border-r-2 border-nodo-neon-blue;
+  }
+
+  /* Input con estilo Nodo */
+  .input-nodo {
+    @apply border-2 border-gray-300 focus:border-nodo-neon-blue focus:ring-2 focus:ring-nodo-neon-blue/20 rounded-lg px-4 py-2 transition-all duration-200 bg-white/90 backdrop-blur-sm;
+  }
+
+  /* Badge con estilo Nodo */
+  .badge-nodo-primary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-nodo-neon-blue/10 text-nodo-neon-blue border border-nodo-neon-blue;
+  }
+
+  .badge-nodo-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-nodo-green/10 text-nodo-black border border-nodo-green;
+  }
+
+  .badge-nodo-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-nodo-yellow/20 text-nodo-black border border-nodo-yellow;
+  }
+
+  /* Header con glassmorphism */
+  .header-glass {
+    @apply bg-white/80 backdrop-blur-lg border-b-2 border-nodo-neon-blue shadow-lg;
+  }
+
+  /* Efectos de hover suaves */
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-xl;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-nodo-neon-blue/50;
+  }
+}
+
+@layer utilities {
+  .text-gradient-nodo {
+    @apply bg-gradient-to-r from-nodo-dark-blue via-nodo-neon-blue to-nodo-green bg-clip-text text-transparent;
+  }
+
+  .shadow-nodo-neon-blue {
+    box-shadow: 0 0 20px rgba(0, 111, 255, 0.3);
+  }
+
+  .shadow-nodo-green {
+    box-shadow: 0 0 20px rgba(0, 217, 172, 0.3);
+  }
+}
