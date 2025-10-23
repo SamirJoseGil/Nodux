@@ -4,6 +4,7 @@ import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
 import { GroupService } from '~/services/academicService';
 import type { Group } from '~/types/academic';
+import GroupIcon from "~/components/Icons/GroupIcon";
 
 export const meta: MetaFunction = () => {
     return [
@@ -27,8 +28,56 @@ export default function GroupsAdmin() {
             setError(null);
 
             try {
-                const data = await GroupService.getGroups();
-                setGroups(data);
+                // Simular datos de grupos
+                const mockGroups: Group[] = [
+                    {
+                        id: '1',
+                        name: 'Grupo Frontend Alpha',
+                        projectId: 'p1',
+                        projectName: 'Plataforma E-learning',
+                        mentorId: 'm1',
+                        mentorName: 'Juan Pérez',
+                        description: 'Desarrollo de componentes React para la plataforma educativa',
+                        students: [
+                            { id: '1', userId: 'u1', name: 'Ana García', email: 'ana@email.com', status: 'active' },
+                            { id: '2', userId: 'u2', name: 'Carlos López', email: 'carlos@email.com', status: 'active' },
+                            { id: '3', userId: 'u3', name: 'María Rodríguez', email: 'maria@email.com', status: 'active' }
+                        ],
+                        createdAt: '2024-01-15'
+                    },
+                    {
+                        id: '2',
+                        name: 'Grupo Backend Beta',
+                        projectId: 'p2',
+                        projectName: 'API de Gestión',
+                        mentorId: 'm2',
+                        mentorName: 'María García',
+                        description: 'Desarrollo de servicios backend con Django',
+                        students: [
+                            { id: '4', userId: 'u4', name: 'Pedro Sánchez', email: 'pedro@email.com', status: 'active' },
+                            { id: '5', userId: 'u5', name: 'Laura Martínez', email: 'laura@email.com', status: 'active' }
+                        ],
+                        createdAt: '2024-01-20'
+                    },
+                    {
+                        id: '3',
+                        name: 'Grupo UX/UI Gamma',
+                        projectId: 'p3',
+                        projectName: 'Rediseño Portal',
+                        mentorId: 'm3',
+                        mentorName: 'Carlos López',
+                        description: 'Diseño de interfaces de usuario modernas',
+                        students: [
+                            { id: '6', userId: 'u6', name: 'Sofia Chen', email: 'sofia@email.com', status: 'active' },
+                            { id: '7', userId: 'u7', name: 'Diego Ruiz', email: 'diego@email.com', status: 'active' },
+                            { id: '8', userId: 'u8', name: 'Valeria Torres', email: 'valeria@email.com', status: 'active' },
+                            { id: '9', userId: 'u9', name: 'Andrés Vargas', email: 'andres@email.com', status: 'active' }
+                        ],
+                        createdAt: '2024-02-01'
+                    }
+                ];
+
+                setGroups(mockGroups);
             } catch (err) {
                 setError('Error al cargar los grupos. Inténtalo de nuevo más tarde.');
                 console.error('Error loading groups:', err);
@@ -50,57 +99,42 @@ export default function GroupsAdmin() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Lista de grupos */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white shadow-lg overflow-hidden sm:rounded-lg border border-gray-200">
-                            <div className="px-4 py-5 sm:px-6 flex justify-between items-center bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
-                                <div>
-                                    <h3 className="text-lg leading-6 font-bold text-gray-900">
-                                        Grupos Académicos
-                                    </h3>
-                                    <p className="mt-1 text-sm text-gray-600">
-                                        {groups.length} {groups.length === 1 ? 'grupo registrado' : 'grupos registrados'}
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                                >
-                                    <span className="mr-2">+</span>
+                        <div className="card">
+                            <div className="card-header flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-slate-900">
+                                    Grupos Académicos ({groups.length})
+                                </h3>
+                                <button type="button" className="btn-primary">
                                     Crear grupo
                                 </button>
                             </div>
 
                             {loading ? (
                                 <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                                 </div>
                             ) : error ? (
-                                <div className="px-4 py-5 sm:px-6 text-red-500">{error}</div>
+                                <div className="card-body">
+                                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                                        {error}
+                                    </div>
+                                </div>
                             ) : groups.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No hay grupos</h3>
-                                    <p className="mt-1 text-sm text-gray-500">Comienza creando un nuevo grupo académico.</p>
+                                <div className="card-body text-center py-12">
+                                    <GroupIcon size={48} className="mx-auto mb-4 text-gray-400" />
+                                    <h3 className="text-lg font-medium text-slate-900 mb-2">No hay grupos</h3>
+                                    <p className="text-slate-600">Comienza creando un nuevo grupo académico.</p>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                    <table className="table">
+                                        <thead className="table-header">
                                             <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Nombre del Grupo
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Proyecto
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Mentor
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Estudiantes
-                                                </th>
-                                                <th scope="col" className="relative px-6 py-3">
+                                                <th className="table-header-cell">Nombre del Grupo</th>
+                                                <th className="table-header-cell">Proyecto</th>
+                                                <th className="table-header-cell">Mentor</th>
+                                                <th className="table-header-cell">Estudiantes</th>
+                                                <th className="table-header-cell">
                                                     <span className="sr-only">Acciones</span>
                                                 </th>
                                             </tr>
@@ -110,34 +144,34 @@ export default function GroupsAdmin() {
                                                 <tr
                                                     key={group.id}
                                                     onClick={() => handleGroupSelect(group)}
-                                                    className={`hover:bg-indigo-50 cursor-pointer transition-colors ${selectedGroup?.id === group.id ? 'bg-indigo-50' : ''}`}
+                                                    className={`table-row cursor-pointer ${selectedGroup?.id === group.id ? 'bg-blue-50' : ''}`}
                                                 >
-                                                    <td className="px-6 py-4">
+                                                    <td className="table-cell">
                                                         <div className="flex items-center">
-                                                            <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
-                                                                <span className="text-white font-bold text-lg">👥</span>
+                                                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                                <GroupIcon size={20} className="text-blue-600" />
                                                             </div>
-                                                            <div className="ml-4">
-                                                                <div className="text-sm font-medium text-gray-900">{group.name}</div>
-                                                                <div className="text-xs text-gray-500">ID: {group.id}</div>
+                                                            <div>
+                                                                <div className="text-sm font-medium text-slate-900">{group.name}</div>
+                                                                <div className="text-xs text-slate-500">ID: {group.id}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{group.projectName}</div>
+                                                    <td className="table-cell">
+                                                        <div className="text-sm text-slate-900">{group.projectName}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{group.mentorName}</div>
+                                                    <td className="table-cell">
+                                                        <div className="text-sm text-slate-900">{group.mentorName}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    <td className="table-cell">
+                                                        <span className="badge badge-info">
                                                             {group.students.length} {group.students.length === 1 ? 'estudiante' : 'estudiantes'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <td className="table-cell text-right">
                                                         <button
                                                             type="button"
-                                                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                                            className="btn-ghost"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleGroupSelect(group);
@@ -158,16 +192,13 @@ export default function GroupsAdmin() {
                     {/* Panel de detalle */}
                     <div className="lg:col-span-1">
                         {selectedGroup ? (
-                            <div className="bg-white shadow-lg overflow-hidden sm:rounded-lg border border-gray-200">
-                                <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
-                                    <h3 className="text-lg leading-6 font-bold text-gray-900">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
                                         Detalles del Grupo
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-600">
-                                        Información completa del grupo
-                                    </p>
                                 </div>
-                                <div className="border-t border-gray-200">
+                                <div className="card-body space-y-4">
                                     <dl>
                                         <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                                             <dt className="text-sm font-medium text-gray-500">Nombre</dt>
@@ -203,30 +234,31 @@ export default function GroupsAdmin() {
                                                 )}
                                             </dd>
                                         </div>
+                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt className="text-sm font-medium text-gray-500">Descripción</dt>
+                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedGroup.description}</dd>
+                                        </div>
+                                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt className="text-sm font-medium text-gray-500">Fecha de creación</dt>
+                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {selectedGroup.createdAt ? new Date(selectedGroup.createdAt).toLocaleDateString() : 'Fecha no disponible'}
+                                            </dd>
+                                        </div>
                                     </dl>
                                 </div>
 
-                                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 space-x-2 border-t border-gray-200">
-                                    <button
-                                        type="button"
-                                        className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                                    >
+                                <div className="card-footer flex gap-2">
+                                    <button type="button" className="btn-secondary">
                                         Editar
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                                    >
+                                    <button type="button" className="btn-primary">
                                         Gestionar estudiantes
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white shadow-lg overflow-hidden sm:rounded-lg p-6 text-center border border-gray-200">
-                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <p className="mt-2 text-gray-500">Selecciona un grupo para ver sus detalles</p>
+                            <div className="card p-6 text-center">
+                                <p className="text-slate-600">Selecciona un grupo para ver sus detalles</p>
                             </div>
                         )}
                     </div>

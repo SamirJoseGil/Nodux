@@ -51,7 +51,7 @@ export default function MentorsAdmin() {
     };
 
     const getStatusColor = (status: string) => {
-        return status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        return status === 'active' ? 'badge-success' : 'badge-error';
     };
 
     const getStatusText = (status: string) => {
@@ -64,43 +64,32 @@ export default function MentorsAdmin() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Lista de mentores */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <div className="card">
+                            <div className="card-header flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-slate-900">
                                     Mentores ({mentors.length})
                                 </h3>
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
+                                <button type="button" className="btn-primary">
                                     Agregar mentor
                                 </button>
                             </div>
 
                             {loading ? (
                                 <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                                 </div>
                             ) : error ? (
-                                <div className="px-4 py-5 sm:px-6 text-red-500">{error}</div>
+                                <div className="card-body text-red-600">{error}</div>
                             ) : (
                                 <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                    <table className="table">
+                                        <thead className="table-header">
                                             <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Mentor
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Especialidad
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Estado
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Estadísticas
-                                                </th>
-                                                <th scope="col" className="relative px-6 py-3">
+                                                <th className="table-header-cell">Mentor</th>
+                                                <th className="table-header-cell">Especialidad</th>
+                                                <th className="table-header-cell">Estado</th>
+                                                <th className="table-header-cell">Estadísticas</th>
+                                                <th className="table-header-cell">
                                                     <span className="sr-only">Acciones</span>
                                                 </th>
                                             </tr>
@@ -110,41 +99,41 @@ export default function MentorsAdmin() {
                                                 <tr
                                                     key={mentor.id}
                                                     onClick={() => handleMentorSelect(mentor)}
-                                                    className={`hover:bg-gray-50 cursor-pointer ${selectedMentor?.id === mentor.id ? 'bg-indigo-50' : ''}`}
+                                                    className={`table-row cursor-pointer ${selectedMentor?.id === mentor.id ? 'bg-blue-50' : ''}`}
                                                 >
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="table-cell">
                                                         <div className="flex items-center">
                                                             <div className="flex-shrink-0 h-10 w-10">
                                                                 {mentor.profileImage ? (
                                                                     <img className="h-10 w-10 rounded-full" src={mentor.profileImage} alt="" />
                                                                 ) : (
-                                                                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                                        <span className="text-indigo-800 font-medium">{mentor.name.charAt(0)}</span>
+                                                                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                                        <span className="text-blue-800 font-medium">{mentor.name.charAt(0)}</span>
                                                                     </div>
                                                                 )}
                                                             </div>
                                                             <div className="ml-4">
-                                                                <div className="text-sm font-medium text-gray-900">{mentor.name}</div>
-                                                                <div className="text-sm text-gray-500">{mentor.email}</div>
+                                                                <div className="text-sm font-medium text-slate-900">{mentor.name}</div>
+                                                                <div className="text-sm text-slate-600">{mentor.email}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-gray-900">{mentor.specialty}</div>
+                                                    <td className="table-cell">
+                                                        <div className="text-sm text-slate-900">{mentor.specialty}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(mentor.status)}`}>
+                                                    <td className="table-cell">
+                                                        <span className={`badge ${getStatusColor(mentor.status)}`}>
                                                             {getStatusText(mentor.status)}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <td className="table-cell">
                                                         <div>{mentor.projectCount || 0} proyectos</div>
                                                         <div>{mentor.totalHours || 0} horas</div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <td className="table-cell text-right">
                                                         <button
                                                             type="button"
-                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                            className="btn-ghost"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleMentorSelect(mentor);
@@ -165,83 +154,66 @@ export default function MentorsAdmin() {
                     {/* Panel de detalle */}
                     <div className="lg:col-span-1">
                         {selectedMentor ? (
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
                                         Detalles del Mentor
                                     </h3>
                                 </div>
-                                <div className="border-t border-gray-200">
-                                    <dl>
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Nombre</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.name}</dd>
+                                <div className="card-body space-y-4">
+                                    <div>
+                                        <dt className="text-sm font-medium text-slate-600">Nombre</dt>
+                                        <dd className="text-sm text-slate-900">{selectedMentor.name}</dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-sm font-medium text-slate-600">Email</dt>
+                                        <dd className="text-sm text-slate-900">{selectedMentor.email}</dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-sm font-medium text-slate-600">Especialidad</dt>
+                                        <dd className="text-sm text-slate-900">{selectedMentor.specialty}</dd>
+                                    </div>
+                                    {selectedMentor.bio && (
+                                        <div>
+                                            <dt className="text-sm font-medium text-slate-600">Biografía</dt>
+                                            <dd className="text-sm text-slate-900">{selectedMentor.bio}</dd>
                                         </div>
-                                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Email</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.email}</dd>
-                                        </div>
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Especialidad</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.specialty}</dd>
-                                        </div>
-                                        {selectedMentor.bio && (
-                                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                <dt className="text-sm font-medium text-gray-500">Biografía</dt>
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.bio}</dd>
-                                            </div>
-                                        )}
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Estado</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedMentor.status)}`}>
-                                                    {getStatusText(selectedMentor.status)}
-                                                </span>
+                                    )}
+                                    <div>
+                                        <dt className="text-sm font-medium text-slate-600">Estado</dt>
+                                        <dd className="text-sm text-slate-900">
+                                            <span className={`badge ${getStatusColor(selectedMentor.status)}`}>
+                                                {getStatusText(selectedMentor.status)}
+                                            </span>
+                                        </dd>
+                                    </div>
+                                    {selectedMentor.expertise && selectedMentor.expertise.length > 0 && (
+                                        <div>
+                                            <dt className="text-sm font-medium text-slate-600">Experiencia</dt>
+                                            <dd className="text-sm text-slate-900">
+                                                <div className="flex flex-wrap gap-2 mt-1">
+                                                    {selectedMentor.expertise.map((skill, index) => (
+                                                        <span key={index} className="badge badge-info">
+                                                            {skill}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </dd>
                                         </div>
-                                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Proyectos</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.projectCount || 0}</dd>
-                                        </div>
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">Total horas</dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedMentor.totalHours || 0}</dd>
-                                        </div>
-                                        {selectedMentor.expertise && selectedMentor.expertise.length > 0 && (
-                                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                                <dt className="text-sm font-medium text-gray-500">Experiencia</dt>
-                                                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {selectedMentor.expertise.map((skill, index) => (
-                                                            <span key={index} className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded">
-                                                                {skill}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </dd>
-                                            </div>
-                                        )}
-                                    </dl>
+                                    )}
                                 </div>
-
-                                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 space-x-2">
-                                    <button
-                                        type="button"
-                                        className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    >
+                                <div className="card-footer flex gap-2">
+                                    <button type="button" className="btn-secondary">
                                         Editar
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    >
+                                    <button type="button" className="btn-primary">
                                         Ver proyectos
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
-                                <p className="text-gray-500">Selecciona un mentor para ver sus detalles</p>
+                            <div className="card p-6 text-center">
+                                <p className="text-slate-600">Selecciona un mentor para ver sus detalles</p>
                             </div>
                         )}
                     </div>

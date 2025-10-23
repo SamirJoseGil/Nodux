@@ -63,58 +63,61 @@ export default function PermissionsAdmin() {
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Administración de Permisos">
-                <div className="py-6">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <h2 className="text-3xl font-extrabold text-gray-900 mb-6">
+                <div className="space-y-6">
+                    <div>
+                        <h2 className="text-2xl font-semibold text-slate-900 mb-2">
                             Gestión de Permisos - {modulo}
                         </h2>
-
-                        {loading ? (
-                            <div className="flex items-center justify-center py-10">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                            </div>
-                        ) : (
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                        Lista de Permisos
-                                    </h3>
-                                </div>
-                                <div className="border-t border-gray-200">
-                                    <dl>
-                                        {permissions.map((permission) => (
-                                            <div
-                                                key={permission.id}
-                                                className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
-                                            >
-                                                <dt className="text-sm font-medium text-gray-500">
-                                                    {permission.name}
-                                                </dt>
-                                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                                    {permission.description}
-                                                </dd>
-                                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-1 sm:mt-0">
-                                                    <div className="flex items-center">
-                                                        <input
-                                                            id={`permission-${permission.id}`}
-                                                            name={`permission-${permission.id}`}
-                                                            type="checkbox"
-                                                            checked={permission.enabled}
-                                                            onChange={(e) => handlePermissionChange(permission.id, e.target.checked)}
-                                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                                        />
-                                                        <label htmlFor={`permission-${permission.id}`} className="ml-2 block text-sm text-gray-900">
-                                                            {permission.enabled ? 'Habilitado' : 'Deshabilitado'}
-                                                        </label>
-                                                    </div>
-                                                </dd>
-                                            </div>
-                                        ))}
-                                    </dl>
-                                </div>
-                            </div>
-                        )}
+                        <p className="text-slate-600">
+                            Configura los permisos y accesos para el módulo {modulo}
+                        </p>
                     </div>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        </div>
+                    ) : (
+                        <div className="card">
+                            <div className="card-header">
+                                <h3 className="text-lg font-semibold text-slate-900">
+                                    Lista de Permisos
+                                </h3>
+                            </div>
+                            <div className="card-body space-y-4">
+                                {permissions.map((permission) => (
+                                    <div
+                                        key={permission.id}
+                                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-medium text-slate-900">
+                                                {permission.name}
+                                            </h4>
+                                            <p className="text-sm text-slate-600">
+                                                {permission.description}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center ml-4">
+                                            <input
+                                                id={`permission-${permission.id}`}
+                                                name={`permission-${permission.id}`}
+                                                type="checkbox"
+                                                checked={permission.enabled}
+                                                onChange={(e) => handlePermissionChange(permission.id, e.target.checked)}
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <label htmlFor={`permission-${permission.id}`} className="ml-2 text-sm font-medium">
+                                                <span className={`badge ${permission.enabled ? 'badge-success' : 'badge-neutral'}`}>
+                                                    {permission.enabled ? 'Habilitado' : 'Deshabilitado'}
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </AdminLayout>
         </ProtectedRoute>

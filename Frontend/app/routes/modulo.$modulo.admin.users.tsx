@@ -109,63 +109,57 @@ export default function UsersAdmin() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Lista de usuarios */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div className="card">
                             {error && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-400 text-red-700 rounded">
+                                <div className="m-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
                                     {error}
                                 </div>
                             )}
 
-                            <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                    Usuarios
+                            <div className="card-header">
+                                <h3 className="text-lg font-semibold text-slate-900">
+                                    Usuarios del Sistema
                                 </h3>
-                                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                                    Aquí puedes gestionar los usuarios de la plataforma.
+                                <p className="text-sm text-slate-600 mt-1">
+                                    Gestiona los usuarios registrados en la plataforma
                                 </p>
                             </div>
 
-                            <div className="border-t border-gray-200">
-                                <dl>
-                                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                        <dt className="text-sm font-medium text-gray-500">
-                                            Nombre
-                                        </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                            {selectedUser?.name}
-                                        </dd>
+                            {loading ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : (
+                                <div className="card-body">
+                                    <div className="grid gap-4">
+                                        {users.map((user) => (
+                                            <div
+                                                key={user.id}
+                                                onClick={() => handleUserSelect(user)}
+                                                className={`p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${selectedUser?.id === user.id ? 'border-blue-500 bg-blue-50' : ''}`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h4 className="text-sm font-medium text-slate-900">{user.name}</h4>
+                                                        <p className="text-sm text-slate-600">{user.email}</p>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="badge badge-info">{user.role}</span>
+                                                        <span className={`badge ${user.active ? 'badge-success' : 'badge-error'}`}>
+                                                            {user.active ? 'Activo' : 'Inactivo'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                        <dt className="text-sm font-medium text-gray-500">
-                                            Correo electrónico
-                                        </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                            {selectedUser?.email}
-                                        </dd>
-                                    </div>
-                                    <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                        <dt className="text-sm font-medium text-gray-500">
-                                            Rol
-                                        </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                            {selectedUser?.role}
-                                        </dd>
-                                    </div>
-                                    <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                        <dt className="text-sm font-medium text-gray-500">
-                                            Estado
-                                        </dt>
-                                        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                            {selectedUser?.active ? 'Activo' : 'Inactivo'}
-                                        </dd>
-                                    </div>
-                                </dl>
-                            </div>
+                                </div>
+                            )}
 
-                            <div className="px-4 py-3 text-right sm:px-6">
+                            <div className="card-footer">
                                 <button
                                     onClick={() => setSelectedUser(null)}
-                                    className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                    className="btn-primary"
                                 >
                                     Nuevo Usuario
                                 </button>
@@ -176,95 +170,79 @@ export default function UsersAdmin() {
                     {/* Panel de detalle/edición */}
                     <div className="lg:col-span-1">
                         {selectedUser ? (
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
                                         Detalles del Usuario
                                     </h3>
                                 </div>
-                                <div className="border-t border-gray-200">
-                                    <dl>
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">
-                                                Nombre
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                                <input
-                                                    type="text"
-                                                    value={selectedUser.name}
-                                                    onChange={(e) =>
-                                                        updateUserField('name', e.target.value)
-                                                    }
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                />
-                                            </dd>
+                                <div className="card-body space-y-4">
+                                    <div>
+                                        <label className="form-label">Nombre</label>
+                                        <input
+                                            type="text"
+                                            value={selectedUser.name}
+                                            onChange={(e) =>
+                                                updateUserField('name', e.target.value)
+                                            }
+                                            className="form-input"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="form-label">Correo electrónico</label>
+                                        <input
+                                            type="email"
+                                            value={selectedUser.email}
+                                            onChange={(e) =>
+                                                updateUserField('email', e.target.value)
+                                            }
+                                            className="form-input"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="form-label">Rol</label>
+                                        <select
+                                            value={selectedUser.role}
+                                            onChange={(e) =>
+                                                handleRoleChange(selectedUser.id, e.target.value)
+                                            }
+                                            className="form-input"
+                                        >
+                                            <option value="Admin">Admin</option>
+                                            <option value="User">User</option>
+                                            <option value="SuperAdmin">SuperAdmin</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="form-label">Estado</label>
+                                        <div className="mt-2">
+                                            <button
+                                                onClick={() =>
+                                                    handleStatusChange(selectedUser.id, !selectedUser.active)
+                                                }
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedUser.active
+                                                    ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                    : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                    } transition-colors`}
+                                            >
+                                                {selectedUser.active ? 'Desactivar' : 'Activar'}
+                                            </button>
                                         </div>
-                                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">
-                                                Correo electrónico
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                                <input
-                                                    type="email"
-                                                    value={selectedUser.email}
-                                                    onChange={(e) =>
-                                                        updateUserField('email', e.target.value)
-                                                    }
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                />
-                                            </dd>
-                                        </div>
-                                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">
-                                                Rol
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                                <select
-                                                    value={selectedUser.role}
-                                                    onChange={(e) =>
-                                                        handleRoleChange(selectedUser.id, e.target.value)
-                                                    }
-                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                >
-                                                    <option value="Admin">Admin</option>
-                                                    <option value="User">User</option>
-                                                    <option value="SuperAdmin">SuperAdmin</option>
-                                                </select>
-                                            </dd>
-                                        </div>
-                                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                            <dt className="text-sm font-medium text-gray-500">
-                                                Estado
-                                            </dt>
-                                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                                                <button
-                                                    onClick={() =>
-                                                        handleStatusChange(selectedUser.id, !selectedUser.active)
-                                                    }
-                                                    className={`px-3 py-1 rounded-md text-sm font-medium ${selectedUser.active
-                                                            ? 'bg-red-600 text-white hover:bg-red-700'
-                                                            : 'bg-green-600 text-white hover:bg-green-700'
-                                                        }`}
-                                                >
-                                                    {selectedUser.active ? 'Desactivar' : 'Activar'}
-                                                </button>
-                                            </dd>
-                                        </div>
-                                    </dl>
+                                    </div>
                                 </div>
 
-                                <div className="px-4 py-3 text-right sm:px-6">
+                                <div className="card-footer">
                                     <button
                                         onClick={() => setSelectedUser(null)}
-                                        className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700"
+                                        className="btn-primary w-full"
                                     >
                                         Guardar Cambios
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
-                                <p className="text-gray-500">Selecciona un usuario para ver sus detalles</p>
+                            <div className="card p-6 text-center">
+                                <p className="text-slate-600">Selecciona un usuario para ver sus detalles</p>
                             </div>
                         )}
                     </div>

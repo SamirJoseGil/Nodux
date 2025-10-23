@@ -69,65 +69,56 @@ export default function MentorDashboard() {
             <MentorLayout title="Dashboard de Mentor">
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                     </div>
                 ) : (
                     <>
                         {/* Estadísticas rápidas */}
-                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
-                                    <div className="flex items-center">
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">
-                                                    Proyectos Activos
-                                                </dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">
-                                                        {projects.length}
-                                                    </div>
-                                                </dd>
-                                            </dl>
-                                        </div>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                            <div className="card p-5">
+                                <div className="flex items-center">
+                                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                        <span className="text-2xl">📝</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <dt className="text-sm font-medium text-slate-600">
+                                            Proyectos Activos
+                                        </dt>
+                                        <dd className="text-2xl font-semibold text-slate-900">
+                                            {projects.length}
+                                        </dd>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
-                                    <div className="flex items-center">
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">
-                                                    Grupos Asignados
-                                                </dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">
-                                                        {groups.length}
-                                                    </div>
-                                                </dd>
-                                            </dl>
-                                        </div>
+                            <div className="card p-5">
+                                <div className="flex items-center">
+                                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                        <span className="text-2xl">👥</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <dt className="text-sm font-medium text-slate-600">
+                                            Grupos Asignados
+                                        </dt>
+                                        <dd className="text-2xl font-semibold text-slate-900">
+                                            {groups.length}
+                                        </dd>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
-                                    <div className="flex items-center">
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">
-                                                    Horas Registradas
-                                                </dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">
-                                                        {hours.length}
-                                                    </div>
-                                                </dd>
-                                            </dl>
-                                        </div>
+                            <div className="card p-5">
+                                <div className="flex items-center">
+                                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                        <span className="text-2xl">⏱️</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <dt className="text-sm font-medium text-slate-600">
+                                            Horas Registradas
+                                        </dt>
+                                        <dd className="text-2xl font-semibold text-slate-900">
+                                            {hours.length}
+                                        </dd>
                                     </div>
                                 </div>
                             </div>
@@ -135,170 +126,169 @@ export default function MentorDashboard() {
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
                             {/* Próximas sesiones */}
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6 bg-indigo-50">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
                                         Próximas sesiones
                                     </h3>
                                 </div>
-                                <ul className="divide-y divide-gray-200">
-                                    {upcomingSessions.map(session => (
-                                        <li key={session.id} className="px-4 py-4">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-900">
-                                                        {session.name}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {session.group}
-                                                    </p>
+                                <div className="card-body">
+                                    <ul className="space-y-4">
+                                        {upcomingSessions.map(session => (
+                                            <li key={session.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-900">
+                                                            {session.name}
+                                                        </p>
+                                                        <p className="text-sm text-slate-600">
+                                                            {session.group}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-sm text-slate-600">
+                                                        {new Date(session.date).toLocaleString()}
+                                                    </div>
                                                 </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {new Date(session.date).toLocaleString()}
+                                                <div className="mt-2 text-sm text-slate-600">
+                                                    📍 {session.location}
                                                 </div>
-                                            </div>
-                                            <div className="mt-2 text-sm text-gray-500">
-                                                Ubicación: {session.location}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="px-4 py-3 bg-gray-50 text-right">
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="card-footer">
                                     <Link
                                         to="/modulo/academico/mentor/calendar"
-                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                                        className="text-sm font-medium text-blue-600 hover:text-blue-500"
                                     >
-                                        Ver calendario completo
+                                        Ver calendario completo →
                                     </Link>
                                 </div>
                             </div>
 
                             {/* Proyectos recientes */}
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="px-4 py-5 sm:px-6 bg-indigo-50">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
                                         Mis proyectos
                                     </h3>
                                 </div>
-                                {projects.length > 0 ? (
-                                    <ul className="divide-y divide-gray-200">
-                                        {projects.slice(0, 3).map(project => (
-                                            <li key={project.id} className="px-4 py-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900">
-                                                            {project.name}
-                                                        </p>
-                                                        <p className="text-sm text-gray-500 truncate max-w-xs">
-                                                            {project.description}
-                                                        </p>
+                                <div className="card-body">
+                                    {projects.length > 0 ? (
+                                        <ul className="space-y-4">
+                                            {projects.slice(0, 3).map(project => (
+                                                <li key={project.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <p className="text-sm font-medium text-slate-900">
+                                                                {project.name}
+                                                            </p>
+                                                            <p className="text-sm text-slate-600 truncate max-w-xs">
+                                                                {project.description}
+                                                            </p>
+                                                        </div>
+                                                        <span className={`badge ${project.status === 'active' ? 'badge-success' :
+                                                            project.status === 'completed' ? 'badge-info' :
+                                                                'badge-neutral'
+                                                            }`}>
+                                                            {project.status === 'active' ? 'Activo' :
+                                                                project.status === 'completed' ? 'Completado' :
+                                                                    project.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}
+                                                        </span>
                                                     </div>
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${project.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                        project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                                                            'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {project.status === 'active' ? 'Activo' :
-                                                            project.status === 'completed' ? 'Completado' :
-                                                                project.status === 'cancelled' ? 'Cancelado' : 'Pendiente'}
-                                                    </span>
-                                                </div>
-                                                {project.startDate && (
-                                                    <div className="mt-1 text-xs text-gray-500">
-                                                        Inicio: {new Date(project.startDate).toLocaleDateString()}
-                                                    </div>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="px-4 py-5 text-center text-sm text-gray-500">
-                                        No tienes proyectos asignados actualmente.
-                                    </div>
-                                )}
-                                <div className="px-4 py-3 bg-gray-50 text-right">
+                                                    {project.startDate && (
+                                                        <div className="mt-1 text-xs text-slate-600">
+                                                            Inicio: {new Date(project.startDate).toLocaleDateString()}
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="text-center text-sm text-slate-600 py-8">
+                                            No tienes proyectos asignados actualmente.
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="card-footer">
                                     <Link
                                         to="/modulo/academico/mentor/projects"
-                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                                        className="text-sm font-medium text-blue-600 hover:text-blue-500"
                                     >
-                                        Ver todos los proyectos
+                                        Ver todos los proyectos →
                                     </Link>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Grupos recientes */}
-                        <div className="mt-8 bg-white shadow rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                    Grupos Recientes
-                                </h3>
-                            </div>
-                            <div className="px-4 py-5 sm:p-6">
-                                <ul className="divide-y divide-gray-200">
-                                    {groups.map((group) => (
-                                        <li key={group.id} className="py-4">
-                                            <div className="flex space-x-3">
-                                                <div className="flex-1 space-y-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="text-sm font-medium text-gray-900">
-                                                            {group.name}
-                                                        </h3>
-                                                        <p className="text-xs text-gray-500">
-                                                            {group.createdAt ? new Date(group.createdAt).toLocaleDateString() : 'Fecha desconocida'}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-sm text-gray-500">
-                                                        {group.description}
+                        {/* Grupos y horas */}
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            {/* Grupos recientes */}
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
+                                        Grupos Recientes
+                                    </h3>
+                                </div>
+                                <div className="card-body">
+                                    <ul className="space-y-4">
+                                        {groups.map((group) => (
+                                            <li key={group.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-medium text-slate-900">
+                                                        {group.name}
+                                                    </h4>
+                                                    <p className="text-xs text-slate-600">
+                                                        {group.createdAt ? new Date(group.createdAt).toLocaleDateString() : 'Fecha desconocida'}
                                                     </p>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="mt-6">
+                                                <p className="text-sm text-slate-600 mt-1">
+                                                    {group.description}
+                                                </p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="card-footer">
                                     <Link
                                         to="/modulo/academico/mentor/grupos"
-                                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                        className="btn-secondary w-full text-center"
                                     >
                                         Ver todos los grupos
                                     </Link>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Registro de horas */}
-                        <div className="mt-8 bg-white shadow rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                    Registro de Horas
-                                </h3>
-                            </div>
-                            <div className="px-4 py-5 sm:p-6">
-                                <ul className="divide-y divide-gray-200">
-                                    {hours.map((hour) => (
-                                        <li key={hour.id} className="py-4">
-                                            <div className="flex space-x-3">
-                                                <div className="flex-1 space-y-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="text-sm font-medium text-gray-900">
-                                                            {hour.projectName}
-                                                        </h3>
-                                                        <p className="text-xs text-gray-500">
-                                                            {new Date(hour.date).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-sm text-gray-500">
-                                                        {hour.duration} horas registradas
+                            {/* Registro de horas */}
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
+                                        Registro de Horas
+                                    </h3>
+                                </div>
+                                <div className="card-body">
+                                    <ul className="space-y-4">
+                                        {hours.map((hour) => (
+                                            <li key={hour.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-medium text-slate-900">
+                                                        {hour.projectName}
+                                                    </h4>
+                                                    <p className="text-xs text-slate-600">
+                                                        {new Date(hour.date).toLocaleDateString()}
                                                     </p>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="mt-6">
+                                                <p className="text-sm text-slate-600 mt-1">
+                                                    {hour.duration} horas registradas
+                                                </p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="card-footer">
                                     <Link
                                         to="/modulo/academico/mentor/registro-horas"
-                                        className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                        className="btn-secondary w-full text-center"
                                     >
                                         Ver registro completo
                                     </Link>

@@ -19,13 +19,52 @@ export function onClientNavigation(callback: () => void) {
   }
 }
 
-// Función para decodificar parámetros de URL correctamente
+/**
+ * Decodifica parámetros de URL que pueden estar codificados
+ */
 export function decodeParam(param: string | undefined): string {
   if (!param) return '';
   try {
     return decodeURIComponent(param);
-  } catch (e) {
-    console.error('Error decodificando parámetro URL:', e);
+  } catch {
     return param;
   }
 }
+
+/**
+ * Codifica parámetros para URLs de manera segura
+ */
+export function encodeParam(param: string): string {
+  return encodeURIComponent(param);
+}
+
+/**
+ * Rutas específicas para el módulo académico
+ */
+export const ACADEMIC_ROUTES = {
+  dashboard: '/modulo/academico/dashboard',
+  projects: '/modulo/academico/admin/projects',
+  mentors: '/modulo/academico/admin/mentors',
+  groups: '/modulo/academico/admin/groups',
+  hours: '/modulo/academico/admin/hours',
+  calendar: '/modulo/academico/admin/calendar',
+  metrics: '/modulo/academico/admin/metrics',
+} as const;
+
+/**
+ * Rutas específicas para el módulo de administración
+ */
+export const ADMIN_ROUTES = {
+  dashboard: '/modulo/administracion/dashboard',
+  users: '/modulo/administracion/users',
+  roles: '/modulo/administracion/roles',
+  logs: '/modulo/administracion/logs',
+  settings: '/modulo/administracion/settings',
+} as const;
+
+/**
+ * Rutas específicas para el módulo de producto
+ */
+export const PRODUCT_ROUTES = {
+  dashboard: '/modulo/producto/dashboard',
+} as const;
