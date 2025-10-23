@@ -1,5 +1,5 @@
-import { json, type LoaderFunction, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, useRevalidator } from '@remix-run/react';
+import type { MetaFunction } from '@remix-run/node';
+import { useRevalidator } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { getBackendHealth } from '~/utils/api';
 
@@ -10,30 +10,27 @@ export const meta: MetaFunction = () => {
     ];
 };
 
-export const loader: LoaderFunction = async () => {
-    const frontendHealth = {
-        status: 'healthy',
-        service: 'nodux-frontend',
-        version: '1.0.0',
-        timestamp: Date.now(),
-        metrics: {
-            node_version: process.version,
-            platform: process.platform,
-            memory: {
-                used_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-                total_mb: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-            }
-        }
-    };
-
-    return json({ frontendHealth });
-};
-
 export default function Healthcheck() {
-    const { frontendHealth } = useLoaderData<typeof loader>();
+    const [frontendHealth, setFrontendHealth] = useState<any>(null);
     const [backendHealth, setBackendHealth] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const revalidator = useRevalidator();
+
+    const fetchFrontendHealth = () => {
+        if (typeof window !== 'undefined') {
+            setFrontendHealth({
+                status: 'healthy',
+                service: 'nodux-frontend',
+                version: '1.0.0',
+                timestamp: Date.now(),
+                metrics: {
+                    platform: navigator.platform,
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                }
+            });
+        }
+    };
 
     const fetchBackendHealth = async () => {
         setLoading(true);
@@ -51,8 +48,12 @@ export default function Healthcheck() {
     };
 
     useEffect(() => {
+        fetchFrontendHealth();
         fetchBackendHealth();
-        const interval = setInterval(fetchBackendHealth, 30000); // Refresh every 30s
+        const interval = setInterval(() => {
+            fetchFrontendHealth();
+            fetchBackendHealth();
+        }, 30000); // Refresh every 30s
         return () => clearInterval(interval);
     }, []);
 
@@ -82,6 +83,14 @@ export default function Healthcheck() {
         }
     };
 
+    if (!frontendHealth) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
@@ -95,6 +104,7 @@ export default function Healthcheck() {
                     </p>
                     <button
                         onClick={() => {
+                            fetchFrontendHealth();
                             fetchBackendHealth();
                             revalidator.revalidate();
                         }}
@@ -125,18 +135,12 @@ export default function Healthcheck() {
                                 <span className="font-semibold">{frontendHealth.version}</span>
                             </div>
                             <div className="flex justify-between py-2 border-b">
-                                <span className="text-gray-600">Node Version:</span>
-                                <span className="font-semibold">{frontendHealth.metrics.node_version}</span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b">
-                                <span className="text-gray-600">Memoria Usada:</span>
-                                <span className="font-semibold">
-                                    {frontendHealth.metrics.memory.used_mb}MB / {frontendHealth.metrics.memory.total_mb}MB
-                                </span>
-                            </div>
-                            <div className="flex justify-between py-2">
                                 <span className="text-gray-600">Plataforma:</span>
                                 <span className="font-semibold">{frontendHealth.metrics.platform}</span>
+                            </div>
+                            <div className="flex justify-between py-2">
+                                <span className="text-gray-600">Idioma:</span>
+                                <span className="font-semibold">{frontendHealth.metrics.language}</span>
                             </div>
                         </div>
                     </div>
@@ -172,20 +176,24 @@ export default function Healthcheck() {
                                 </div>
                                 <div className="flex justify-between py-2 border-b">
                                     <span className="text-gray-600">Tiempo de Respuesta:</span>
-                                    <span className="font-semibold">{backendHealth.metrics.response_time_ms}ms</span>
+                                    <span className="font-semibold">{backendHealth.metrics?.response_time_ms || backendHealth.responseTime}ms</span>
                                 </div>
-                                <div className="flex justify-between py-2 border-b">
-                                    <span className="text-gray-600">Base de Datos:</span>
-                                    <span className={`font-semibold ${backendHealth.metrics.database.status === 'healthy' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {backendHealth.metrics.database.status} ({backendHealth.metrics.database.latency_ms}ms)
-                                    </span>
-                                </div>
-                                <div className="flex justify-between py-2">
-                                    <span className="text-gray-600">Autenticación:</span>
-                                    <span className={`font-semibold ${backendHealth.metrics.authentication.status === 'healthy' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {backendHealth.metrics.authentication.status}
-                                    </span>
-                                </div>
+                                {backendHealth.metrics?.database && (
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-gray-600">Base de Datos:</span>
+                                        <span className={`font-semibold ${backendHealth.metrics.database.status === 'healthy' ? 'text-green-600' : 'text-red-600'}`}>
+                                            {backendHealth.metrics.database.status} ({backendHealth.metrics.database.latency_ms}ms)
+                                        </span>
+                                    </div>
+                                )}
+                                {backendHealth.metrics?.authentication && (
+                                    <div className="flex justify-between py-2">
+                                        <span className="text-gray-600">Autenticación:</span>
+                                        <span className={`font-semibold ${backendHealth.metrics.authentication.status === 'healthy' ? 'text-green-600' : 'text-red-600'}`}>
+                                            {backendHealth.metrics.authentication.status}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-48 text-red-600">
