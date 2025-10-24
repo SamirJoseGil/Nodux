@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from '@remix-run/react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from '@remix-run/react';
 import type { MetaFunction } from '@remix-run/node';
 import { useAuth } from '~/contexts/AuthContext';
 import ProtectedRoute from '~/components/ProtectedRoute';
@@ -18,8 +18,8 @@ export const meta: MetaFunction = () => {
 export default function ModuloDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
     const hasRedirected = useRef(false);
+    const [currentQuote, setCurrentQuote] = useState(0);
 
     // Efecto para redireccionar según el rol - solo una vez
     useEffect(() => {
@@ -34,152 +34,114 @@ export default function ModuloDashboard() {
         }
     }, [user, navigate]);
 
-    // Datos de ejemplo para el dashboard
-    const stats = [
-        { name: 'Proyectos Activos', value: '24', icon: '📝' },
-        { name: 'Total Mentores', value: '12', icon: '👨‍🏫' },
-        { name: 'Total Horas', value: '245', icon: '⏱️' },
-        { name: 'Grupos', value: '8', icon: '👥' },
+    // Frases filosóficas educativas
+    const philosophicalQuotes = [
+        {
+            text: "La educación es el arma más poderosa que puedes usar para cambiar el mundo.",
+            author: "Nelson Mandela"
+        },
+        {
+            text: "El aprendizaje nunca agota la mente.",
+            author: "Leonardo da Vinci"
+        },
+        {
+            text: "La inversión en conocimiento produce siempre los mejores intereses.",
+            author: "Benjamin Franklin"
+        },
+        {
+            text: "Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo.",
+            author: "Benjamin Franklin"
+        },
+        {
+            text: "La educación no es preparación para la vida; la educación es la vida en sí misma.",
+            author: "John Dewey"
+        },
+        {
+            text: "No hay nada imposible, porque los sueños de ayer son las esperanzas de hoy y pueden convertirse en realidad mañana.",
+            author: "Robert H. Goddard"
+        },
+        {
+            text: "El propósito de la educación es reemplazar una mente vacía con una abierta.",
+            author: "Malcolm Forbes"
+        },
+        {
+            text: "La sabiduría no es un producto de la escolarización, sino de la búsqueda de toda la vida de adquirirla.",
+            author: "Albert Einstein"
+        }
     ];
 
-    const recentActivities = [
-        { id: 1, user: 'María García', action: 'registró 5 horas en', target: 'Proyecto Alpha', date: '2023-06-15T14:32:00Z' },
-        { id: 2, user: 'Juan Pérez', action: 'creó un nuevo grupo en', target: 'Proyecto Beta', date: '2023-06-15T12:15:00Z' },
-        { id: 3, user: 'Carlos López', action: 'fue asignado como mentor de', target: 'Grupo A', date: '2023-06-14T10:45:00Z' },
-        { id: 4, user: 'Ana Martínez', action: 'completó el hito 2 de', target: 'Proyecto Gamma', date: '2023-06-14T09:20:00Z' },
-        { id: 5, user: 'Roberto Sánchez', action: 'subió un nuevo documento a', target: 'Proyecto Alpha', date: '2023-06-13T16:10:00Z' },
-    ];
+    // Efecto para cambiar las frases cada 6 segundos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentQuote((prev) => (prev + 1) % philosophicalQuotes.length);
+        }, 6000);
 
-    const upcomingEvents = [
-        { id: 1, title: 'Reunión semanal de mentores', date: '2023-06-16T10:00:00Z', location: 'Sala virtual 1' },
-        { id: 2, title: 'Entrega de avance Proyecto Alpha', date: '2023-06-17T15:00:00Z', location: 'Plataforma' },
-        { id: 3, title: 'Capacitación nuevas herramientas', date: '2023-06-20T09:00:00Z', location: 'Sala de conferencias' },
-    ];
+        return () => clearInterval(interval);
+    }, [philosophicalQuotes.length]);
+
+    const getCurrentTimeGreeting = () => {
+        const now = new Date();
+        const hour = now.getHours();
+
+        if (hour < 12) return "Buenos días";
+        if (hour < 18) return "Buenas tardes";
+        return "Buenas noches";
+    };
 
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Dashboard Académico">
-                {/* Estadísticas */}
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                    {stats.map((stat) => (
-                        <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
-                            <div className="p-5">
-                                <div className="flex items-center">
-                                    <div className="flex-shrink-0 text-3xl">
-                                        {stat.icon}
-                                    </div>
-                                    <div className="ml-5 w-0 flex-1">
-                                        <dl>
-                                            <dt className="text-sm font-medium text-gray-500 truncate">
-                                                {stat.name}
-                                            </dt>
-                                            <dd className="flex items-baseline">
-                                                <div className="text-2xl font-semibold text-gray-900">
-                                                    {stat.value}
-                                                </div>
-                                            </dd>
-                                        </dl>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <div className="max-w-4xl mx-auto">
+                    {/* Header principal */}
+                    <div className="text-center mb-12">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                            {getCurrentTimeGreeting()}, {user?.name?.split(' ')[0] || 'Administrador'}
+                        </h1>
+                        <h2 className="text-2xl text-gray-600 mb-8">
+                            Módulo Académico - Nodo EAFIT
+                        </h2>
+                        <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                            Transformando vidas a través de la educación, la mentoría y el desarrollo de talento excepcional.
+                        </p>
+                    </div>
 
-                {/* Accesos rápidos */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Actividad reciente */}
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-4 py-5 sm:px-6 bg-indigo-50">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Actividad reciente</h3>
-                        </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <ul className="divide-y divide-gray-200">
-                                {recentActivities.map((activity) => (
-                                    <li key={activity.id} className="py-4">
-                                        <div className="flex space-x-3">
-                                            <div className="flex-1 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <h3 className="text-sm font-medium">{activity.user}</h3>
-                                                    <p className="text-xs text-gray-500">
-                                                        {new Date(activity.date).toLocaleDateString()} {new Date(activity.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </p>
-                                                </div>
-                                                <p className="text-sm text-gray-500">
-                                                    {activity.action} <span className="font-medium text-indigo-600">{activity.target}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="mt-6">
-                                <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                    Ver todo
-                                </button>
+                    {/* Sección de frases filosóficas */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8 mb-8 border border-blue-200">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
                             </div>
+
+                            <blockquote className="text-xl sm:text-2xl italic font-medium text-gray-800 mb-4 leading-relaxed">
+                                "{philosophicalQuotes[currentQuote].text}"
+                            </blockquote>
+
+                            <cite className="text-blue-600 font-semibold text-lg">
+                                — {philosophicalQuotes[currentQuote].author}
+                            </cite>
                         </div>
                     </div>
 
-                    {/* Próximos eventos */}
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-4 py-5 sm:px-6 bg-green-50">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Próximos eventos</h3>
+                    {/* Mensaje inspiracional */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
                         </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <ul className="divide-y divide-gray-200">
-                                {upcomingEvents.map((event) => (
-                                    <li key={event.id} className="py-4">
-                                        <div className="flex space-x-3">
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                                                <p className="mt-1 text-sm text-gray-500">
-                                                    {new Date(event.date).toLocaleDateString()} {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </p>
-                                                <p className="mt-1 text-xs text-gray-500">{event.location}</p>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="mt-6">
-                                <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                    Ver calendario
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Acceso rápido */}
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-4 py-5 sm:px-6 bg-blue-50">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Acceso rápido</h3>
-                        </div>
-                        <div className="px-4 py-5 sm:p-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <a href="/modulo/academico/admin/projects" className="px-4 py-6 bg-gray-50 shadow-sm rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                    <span className="text-2xl">📝</span>
-                                    <p className="mt-3 text-sm font-medium text-gray-900">Proyectos</p>
-                                </a>
-                                <a href="/modulo/academico/admin/mentors" className="px-4 py-6 bg-gray-50 shadow-sm rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                    <span className="text-2xl">👨‍🏫</span>
-                                    <p className="mt-3 text-sm font-medium text-gray-900">Mentores</p>
-                                </a>
-                                <a href="/modulo/academico/admin/groups" className="px-4 py-6 bg-gray-50 shadow-sm rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                    <span className="text-2xl">👥</span>
-                                    <p className="mt-3 text-sm font-medium text-gray-900">Grupos</p>
-                                </a>
-                                <a href="/modulo/academico/admin/hours" className="px-4 py-6 bg-gray-50 shadow-sm rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                    <span className="text-2xl">⏱️</span>
-                                    <p className="mt-3 text-sm font-medium text-gray-900">Horas</p>
-                                </a>
-                            </div>
-                            <div className="mt-4 text-center">
-                                <a href="/modulo/administracion/dashboard" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                    Ir a administración del sistema
-                                </a>
-                            </div>
-                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                            Tu Impacto Trasciende
+                        </h3>
+
+                        <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
+                            Cada decisión que tomas, cada proyecto que supervisas y cada mentor que guías
+                            está construyendo el futuro de cientos de personas. Tu dedicación no solo
+                            transforma carreras, sino que crea un legado de conocimiento y oportunidades
+                            que perdurará por generaciones.
+                        </p>
                     </div>
                 </div>
             </AdminLayout>

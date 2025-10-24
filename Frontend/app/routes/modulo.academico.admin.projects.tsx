@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
-import { Link } from 'react-router-dom';
 import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
 import { ProjectService } from '~/services/academicService';
@@ -20,6 +19,7 @@ export default function ProjectsAdmin() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
     const fetchProjects = async () => {
         setLoading(true);
@@ -37,77 +37,154 @@ export default function ProjectsAdmin() {
         fetchProjects();
     }, []);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
-    }
+    const handleProjectSelect = (project: Project) => {
+        setSelectedProject(project);
+    };
 
-    if (error) {
-        return (
-            <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
-                    <div className="flex">
-                        <div className="ml-3">
-                            <p className="text-sm font-medium text-red-800">
-                                {error}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active':
+                return 'badge-success';
+            case 'completed':
+                return 'badge-info';
+            case 'cancelled':
+                return 'badge-error';
+            case 'pending':
+                return 'badge-warning';
+            default:
+                return 'badge-neutral';
+        }
+    };
+
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case 'active':
+                return 'Activo';
+            case 'completed':
+                return 'Completado';
+            case 'cancelled':
+                return 'Cancelado';
+            case 'pending':
+                return 'Pendiente';
+            default:
+                return status;
+        }
+    };
 
     return (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Gestión de Proyectos">
-                <div className="min-h-screen bg-gray-50">
-                    <div className="py-12 bg-gradient-to-r from-indigo-500 to-purple-600">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <h1 className="text-4xl font-extrabold text-white sm:text-5xl">
-                                Gestión de Proyectos
-                            </h1>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Lista de proyectos */}
+                    <div className="lg:col-span-2">
+                        <div className="card">
+                            <div className="card-header flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-slate-900">
+                                    Proyectos ({projects.length})
+                                </h3>
+                                <button type="button" className="btn-primary">
+                                    Crear proyecto
+                                </button>
+                            </div>
+
+                            {loading ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : error ? (
+                                <div className="card-body">
+                                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                                        {error}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="table">
+                                        <thead className="table-header">
+                                            <tr>
+                                                <th className="table-header-cell">Nombre del Proyecto</th>
+                                                <th className="table-header-cell">Estado</th>
+                                                <th className="table-header-cell">Fechas</th>
+                                                <th className="table-header-cell">Estadísticas</th>
+                                                <th className="table-header-cell">
+                                                    <span className="sr-only">Acciones</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {projects.map((project) => (
+                                                <tr
+                                                    key={project.id}
+                                                    onClick={() => handleProjectSelect(project)}
+                                                    className={`table-row cursor-pointer ${selectedProject?.id === project.id ? 'bg-blue-50' : ''}`}
+                                                >
+                                                    <td className="table-cell">
+                                                        <div className="text-sm font-medium text-slate-900">{project.name}</div>
+                                                        <div className="text-sm text-slate-600 truncate max-w-xs">{project.description}</div>
+                                                    </td>
+                                                    <td className="table-cell">
+                                                        <span className={`badge ${getStatusColor(project.status)}`}>
+                                                            {getStatusText(project.status)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="table-cell">
+                                                        <div>Inicio: {new Date(project.startDate).toLocaleDateString()}</div>
+                                                        {project.endDate && (
+                                                            <div>Fin: {new Date(project.endDate).toLocaleDateString()}</div>
+                                                        )}
+                                                    </td>
+                                                    <td className="table-cell">
+                                                        <div>{project.mentorCount || 0} mentores</div>
+                                                        <div>{project.studentCount || 0} estudiantes</div>
+                                                        <div>{project.totalHours || 0} horas</div>
+                                                    </td>
+                                                    <td className="table-cell text-right">
+                                                        <button
+                                                            type="button"
+                                                            className="btn-ghost"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleProjectSelect(project);
+                                                            }}
+                                                        >
+                                                            Ver
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                        <div className="bg-white shadow-md rounded-lg p-6">
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                                Proyectos Académicos
-                            </h2>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                {projects.map((project) => (
-                                    <div
-                                        key={project.id}
-                                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                                    >
-                                        <h3 className="text-lg font-semibold text-gray-800">
-                                            {project.name}
-                                        </h3>
-                                        <p className="mt-2 text-sm text-gray-600">
-                                            {project.description}
-                                        </p>
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <span className="text-xs font-semibold uppercase rounded-full
-                      {project.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-                      px-3 py-1">
-                                                {project.status === 'active' ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                            <Link
-                                                to={`/modulo/academico/proyectos/${project.id}`}
-                                                className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                                            >
-                                                Ver detalles
-                                            </Link>
-                                        </div>
-                                    </div>
-                                ))}
+                    {/* Panel de detalle */}
+                    <div className="lg:col-span-1">
+                        {selectedProject ? (
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="text-lg font-semibold text-slate-900">
+                                        Detalles del Proyecto
+                                    </h3>
+                                </div>
+                                <div className="card-body space-y-4">
+                                    {/* ...existing project details... */}
+                                </div>
+                                <div className="card-footer flex gap-2">
+                                    <button type="button" className="btn-secondary">
+                                        Editar
+                                    </button>
+                                    <button type="button" className="btn-primary">
+                                        Ver detalles completos
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="card p-6 text-center">
+                                <p className="text-slate-600">Selecciona un proyecto para ver sus detalles</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </AdminLayout>

@@ -1,6 +1,8 @@
 import { Link } from '@remix-run/react';
 import type { MetaFunction } from '@remix-run/node';
-import DashboardLayout from '~/components/dashboard/DashboardLayout';
+import Navbar from '~/components/Navigation/Navbar';
+import Footer from '~/components/Navigation/Footer';
+import TaskIcon from "~/components/Icons/TaskIcon";
 
 export const meta: MetaFunction = () => {
     return [{ title: 'Mis Cuestionarios - Universidad EAFIT' }];
@@ -8,22 +10,43 @@ export const meta: MetaFunction = () => {
 
 export default function Cuestionarios() {
     return (
-        <DashboardLayout>
-            <div className="animate-fade-in">
-                <div className="mb-6">
-                    <Link to="/estudiantes/dashboard" className="text-blue-600 hover:text-blue-800 flex items-center space-x-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        <span>Volver al Dashboard</span>
-                    </Link>
-                </div>
+        <div className="min-h-screen bg-slate-50">
+            <Navbar variant="minimal" showLogo={false} />
 
-                <div className="bg-white rounded-lg shadow-lg p-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-4">Mis Cuestionarios</h1>
-                    <p className="text-gray-600">Módulo en construcción...</p>
+            <div className="py-8">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-6">
+                        <Link
+                            to="/estudiantes/dashboard"
+                            className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors font-medium"
+                        >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Volver al Dashboard
+                        </Link>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <div>
+                                <h1 className="text-2xl font-semibold text-slate-900">Mis Cuestionarios</h1>
+                                <p className="text-slate-600 mt-1">Completa tus cuestionarios pendientes</p>
+                            </div>
+                            <span className="badge badge-warning">1 Pendiente</span>
+                        </div>
+                        <div className="card-body">
+                            <div className="text-center py-12">
+                                <TaskIcon size={48} className="mx-auto mb-4 text-gray-400" />
+                                <h3 className="text-lg font-medium text-slate-900 mb-2">Módulo en construcción</h3>
+                                <p className="text-slate-600">Esta funcionalidad estará disponible próximamente.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </DashboardLayout>
+
+            <Footer variant="minimal" />
+        </div>
     );
 }

@@ -49,112 +49,92 @@ export default function SystemAdminDashboard() {
                         {/* Estadísticas del sistema */}
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                             {/* Usuarios totales */}
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
+                            <div className="card">
+                                <div className="card-body p-5">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">
+                                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                                             <svg className="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                             </svg>
                                         </div>
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">Usuarios Totales</dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">{stats.totalUsers}</div>
-                                                    <div className="ml-2 text-sm font-semibold text-green-600">
-                                                        +{stats.newUsersThisWeek}
-                                                    </div>
-                                                </dd>
-                                            </dl>
+                                        <div className="flex-1">
+                                            <dt className="text-sm font-medium text-slate-600">Usuarios Totales</dt>
+                                            <dd className="flex items-baseline">
+                                                <div className="text-2xl font-semibold text-slate-900">{stats.totalUsers}</div>
+                                                <div className="ml-2 text-sm font-semibold text-green-600">
+                                                    +{stats.newUsersThisWeek}
+                                                </div>
+                                            </dd>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 px-5 py-3">
-                                    <div className="text-sm">
-                                        <Link to="/modulo/administracion/users" className="font-medium text-blue-600 hover:text-blue-500">Ver todos los usuarios</Link>
-                                    </div>
+                                <div className="card-footer">
+                                    <Link to="/modulo/administracion/users" className="text-sm font-medium text-blue-600 hover:text-blue-500">Ver todos los usuarios</Link>
                                 </div>
                             </div>
 
                             {/* Usuarios activos */}
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
+                            <div className="card">
+                                <div className="card-body p-5">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+                                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                                             <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">Usuarios Activos</dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">{stats.activeUsers}</div>
-                                                    <div className="ml-2 text-sm font-semibold text-green-600">
-                                                        {Math.round((stats.activeUsers / stats.totalUsers) * 100)}%
-                                                    </div>
-                                                </dd>
-                                            </dl>
+                                        <div className="flex-1">
+                                            <dt className="text-sm font-medium text-slate-600">Usuarios Activos</dt>
+                                            <dd className="flex items-baseline">
+                                                <div className="text-2xl font-semibold text-slate-900">{stats.activeUsers}</div>
+                                                <div className="ml-2 text-sm font-semibold text-green-600">
+                                                    {Math.round((stats.activeUsers / stats.totalUsers) * 100)}%
+                                                </div>
+                                            </dd>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 px-5 py-3">
-                                    <div className="text-sm">
-                                        <Link to="/modulo/administracion/users?filter=active" className="font-medium text-blue-600 hover:text-blue-500">Ver usuarios activos</Link>
-                                    </div>
+                                <div className="card-footer">
+                                    <Link to="/modulo/administracion/users?filter=active" className="text-sm font-medium text-blue-600 hover:text-blue-500">Ver usuarios activos</Link>
                                 </div>
                             </div>
 
                             {/* Roles */}
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
+                            <div className="card">
+                                <div className="card-body p-5">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 bg-purple-100 rounded-md p-3">
+                                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
                                             <svg className="h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                             </svg>
                                         </div>
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">Roles del Sistema</dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">{stats.totalRoles}</div>
-                                                </dd>
-                                            </dl>
+                                        <div className="flex-1">
+                                            <dt className="text-sm font-medium text-slate-600">Roles del Sistema</dt>
+                                            <dd className="text-2xl font-semibold text-slate-900">{stats.totalRoles}</dd>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 px-5 py-3">
-                                    <div className="text-sm">
-                                        <Link to="/modulo/administracion/roles" className="font-medium text-blue-600 hover:text-blue-500">Gestionar roles</Link>
-                                    </div>
+                                <div className="card-footer">
+                                    <Link to="/modulo/administracion/roles" className="text-sm font-medium text-blue-600 hover:text-blue-500">Gestionar roles</Link>
                                 </div>
                             </div>
 
                             {/* Módulos */}
-                            <div className="bg-white overflow-hidden shadow rounded-lg">
-                                <div className="p-5">
+                            <div className="card">
+                                <div className="card-body p-5">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+                                        <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
                                             <svg className="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                                             </svg>
                                         </div>
-                                        <div className="ml-5 w-0 flex-1">
-                                            <dl>
-                                                <dt className="text-sm font-medium text-gray-500 truncate">Módulos del Sistema</dt>
-                                                <dd className="flex items-baseline">
-                                                    <div className="text-2xl font-semibold text-gray-900">{stats.totalModules}</div>
-                                                </dd>
-                                            </dl>
+                                        <div className="flex-1">
+                                            <dt className="text-sm font-medium text-slate-600">Módulos del Sistema</dt>
+                                            <dd className="text-2xl font-semibold text-slate-900">{stats.totalModules}</dd>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 px-5 py-3">
-                                    <div className="text-sm">
-                                        <Link to="/selector-modulo" className="font-medium text-blue-600 hover:text-blue-500">Cambiar de módulo</Link>
-                                    </div>
+                                <div className="card-footer">
+                                    <Link to="/selector-modulo" className="text-sm font-medium text-blue-600 hover:text-blue-500">Cambiar de módulo</Link>
                                 </div>
                             </div>
                         </div>
@@ -260,8 +240,8 @@ export default function SystemAdminDashboard() {
                         </div>
                     </>
                 ) : (
-                    <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center">
-                        <p className="text-gray-500">No se pudieron cargar las estadísticas del sistema.</p>
+                    <div className="card p-6 text-center">
+                        <p className="text-slate-500">No se pudieron cargar las estadísticas del sistema.</p>
                     </div>
                 )}
             </SystemAdminLayout>
