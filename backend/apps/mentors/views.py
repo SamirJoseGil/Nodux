@@ -6,6 +6,7 @@ from .serializers import MentorSerializer, MentorAttendanceSerializer
 from .models import Mentor, MentorAttendance
 
 
+
 class MentorViewSet(viewsets.ModelViewSet):
     queryset = Mentor.objects.all()
     serializer_class = MentorSerializer
@@ -69,3 +70,4 @@ class MentorViewSet(viewsets.ModelViewSet):
             serializer.save(registered_by=user)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        

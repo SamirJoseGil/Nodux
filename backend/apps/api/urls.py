@@ -13,9 +13,9 @@ from apps.projects.views import (
     ProjectViewSet,
     GroupViewSet,
     EventViewSet,
-    EventListViewSet,  # 👈 nuevo viewset
+    EventListViewSet,
 )
-from apps.core.views import ScheduleViewSet
+from apps.core.views import ScheduleViewSet, SummaryViewSet
 
 
 # --- Router principal ---
@@ -23,9 +23,8 @@ router = DefaultRouter()
 router.register(r"mentors", MentorViewSet, basename="mentor")
 router.register(r"projects", ProjectViewSet, basename="project")
 router.register(r"schedule", ScheduleViewSet, basename="schedule")
-
-# 👇 Nuevo endpoint global solo lectura de eventos
 router.register(r"events", EventListViewSet, basename="events")
+router.register(r"stats", SummaryViewSet, basename="stats")
 
 # --- Routers anidados ---
 # /projects/{pk}/groups/

@@ -1,10 +1,19 @@
-# Schedule API Endpoint
+# Core API Endpoints
+
+The **Core API** provides two main endpoints that support other application modules:
+
+1. **Schedule API** — defines time slots used by groups, mentors, and events.
+2. **Statistics API** — returns system-wide summary counts for mentors, projects, and groups.
+
+---
+
+## 📘 Schedule API Endpoint
 
 The Schedule API allows you to view and create schedule entries that define the day and time ranges used by groups and events.
 
 ---
 
-## Base URL
+### Base URL
 
 ```
 /api/schedule/
@@ -12,7 +21,7 @@ The Schedule API allows you to view and create schedule entries that define the 
 
 ---
 
-## Supported Methods
+### Supported Methods
 
 | Method | Description                      |
 | ------ | -------------------------------- |
@@ -21,7 +30,7 @@ The Schedule API allows you to view and create schedule entries that define the 
 
 ---
 
-## Response Example (GET /api/schedule/)
+### Response Example (GET /api/schedule/)
 
 **HTTP 200 OK**
 
@@ -42,6 +51,8 @@ The Schedule API allows you to view and create schedule entries that define the 
 ]
 ```
 
+---
+
 ### Field Description
 
 | Field        | Type              | Description                                                             |
@@ -53,9 +64,9 @@ The Schedule API allows you to view and create schedule entries that define the 
 
 ---
 
-## Create a New Schedule (POST /api/schedule/)
+### Create a New Schedule (POST /api/schedule/)
 
-### Request Example
+#### Request Example
 
 ```json
 {
@@ -65,7 +76,7 @@ The Schedule API allows you to view and create schedule entries that define the 
 }
 ```
 
-### Successful Response
+#### Successful Response
 
 **HTTP 201 Created**
 
@@ -80,30 +91,32 @@ The Schedule API allows you to view and create schedule entries that define the 
 
 ---
 
-## Validation Rules
+### Validation Rules
 
 * `day` must be an integer between **0 and 6**:
 
-  * `0`: Monday
-  * `1`: Tuesday
-  * `2`: Wednesday
-  * `3`: Thursday
-  * `4`: Friday
-  * `5`: Saturday
-  * `6`: Sunday
+  | Value | Day       |
+  | ----- | --------- |
+  | 0     | Monday    |
+  | 1     | Tuesday   |
+  | 2     | Wednesday |
+  | 3     | Thursday  |
+  | 4     | Friday    |
+  | 5     | Saturday  |
+  | 6     | Sunday    |
+
 * `start_time` and `end_time` must follow the `HH:MM:SS` format (24-hour clock).
+
 * `end_time` must be **after** `start_time`.
 
 ---
 
-## Tips
+### Tips
 
 * Use the `id` of a schedule when creating or linking groups through `/api/projects/<project_id>/groups/`.
 * You can list schedules with `GET /api/schedule/` and reuse them instead of creating duplicates.
 
----
-
-### Example Integration
+#### Example Integration
 
 When creating a group, reference a schedule like this:
 
@@ -117,3 +130,78 @@ When creating a group, reference a schedule like this:
     "mentor": 6
 }
 ```
+
+---
+
+## 📊 Statistics API Endpoint
+
+The Statistics API provides a simple read-only summary of key system metrics.
+It allows administrators and dashboards to access the number of mentors, projects, and groups.
+
+---
+
+### Base URL
+
+```
+/api/stats/
+```
+
+---
+
+### Supported Methods
+
+| Method | Description                         |
+| ------ | ----------------------------------- |
+| `GET`  | Retrieve current system statistics. |
+
+---
+
+### Example Request
+
+```
+GET /api/stats/
+```
+
+---
+
+### Example Response
+
+**HTTP 200 OK**
+
+```json
+{
+    "mentors": 1,
+    "projects": 2,
+    "groups": 11
+}
+```
+
+---
+
+### Field Description
+
+| Field      | Type    | Description                                          |
+| ---------- | ------- | ---------------------------------------------------- |
+| `mentors`  | integer | Total number of mentors registered in the system.    |
+| `projects` | integer | Total number of projects currently stored.           |
+| `groups`   | integer | Total number of groups associated with all projects. |
+
+---
+
+### Notes
+
+* This endpoint is **read-only** — only supports `GET`.
+* It requires authentication (`IsAuthenticated`).
+* Ideal for **admin dashboards**, **reports**, or **data summaries**.
+
+---
+
+## 🧾 Summary of Core Endpoints
+
+| Method | Endpoint         | Description                                              |
+| ------ | ---------------- | -------------------------------------------------------- |
+| `GET`  | `/api/schedule/` | Retrieve all schedules.                                  |
+| `POST` | `/api/schedule/` | Create a new schedule.                                   |
+| `GET`  | `/api/stats/`    | Get the current number of mentors, projects, and groups. |
+
+---
