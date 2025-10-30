@@ -28,7 +28,9 @@ export default function GroupsAdmin() {
             setError(null);
 
             try {
-                const data = await GroupService.getGroups();
+                // Debes obtener el projectId de alguna parte (ejemplo: hardcodeado, de la URL, de un selector)
+                const projectId = "1"; // <-- Cambia esto por el projectId real
+                const data = await GroupService.getGroups(projectId);
                 setGroups(data);
             } catch (err) {
                 setError('Error al cargar los grupos. Inténtalo de nuevo más tarde.');

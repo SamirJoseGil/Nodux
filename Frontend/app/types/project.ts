@@ -11,9 +11,9 @@ export interface ProjectGroup {
   id: string;
   project: string;
   mentor: string;
-  schedule: Schedule;
-  location: string;
-  mode: 'presencial' | 'virtual' | 'hibrido';
-  startDate: string;
-  endDate: string;
+  schedule?: Schedule;
+  location: any;
+  mode: any;
+  startDate: any;
+  endDate: any;
 }

@@ -4,6 +4,8 @@ import type { MetaFunction } from '@remix-run/node';
 import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
 import { Link } from '@remix-run/react';
+import { ScheduleService } from '~/services/scheduleService';
+import { Schedule } from "~/types/schedule";
 
 export const meta: MetaFunction = () => {
     return [
@@ -140,23 +142,44 @@ export default function CalendarAdmin() {
     const [currentDate, setCurrentDate] = useState(new Date(2024, 1, 20)); // 20 febrero 2024
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null);
+    const [schedules, setSchedules] = useState<Schedule[]>([]);
 
-    // Horas del día (de 7 AM a 7 PM)
-    const timeSlots = [
-        { hour: 7, label: "07:00" },
-        { hour: 8, label: "08:00" },
-        { hour: 9, label: "09:00" },
-        { hour: 10, label: "10:00" },
-        { hour: 11, label: "11:00" },
-        { hour: 12, label: "12:00" },
-        { hour: 13, label: "13:00" },
-        { hour: 14, label: "14:00" },
-        { hour: 15, label: "15:00" },
-        { hour: 16, label: "16:00" },
-        { hour: 17, label: "17:00" },
-        { hour: 18, label: "18:00" },
-        { hour: 19, label: "19:00" }
-    ];
+    useEffect(() => {
+        // Obtener los horarios reales del backend
+        const fetchSchedules = async () => {
+            try {
+                const data = await ScheduleService.getSchedules();
+                setSchedules(data);
+            } catch (error) {
+                console.error('Error al cargar horarios:', error);
+            }
+        };
+        fetchSchedules();
+    }, []);
+
+    // Horas del día (de los horarios reales)
+    const timeSlots = schedules.length > 0
+        ? schedules.map((s: any) => ({
+            hour: Number(s.startTime.split(':')[0]),
+            label: `${s.startTime} - ${s.endTime}`,
+            scheduleId: s.id,
+            day: s.day
+        }))
+        : [
+            { hour: 7, label: "07:00" },
+            { hour: 8, label: "08:00" },
+            { hour: 9, label: "09:00" },
+            { hour: 10, label: "10:00" },
+            { hour: 11, label: "11:00" },
+            { hour: 12, label: "12:00" },
+            { hour: 13, label: "13:00" },
+            { hour: 14, label: "14:00" },
+            { hour: 15, label: "15:00" },
+            { hour: 16, label: "16:00" },
+            { hour: 17, label: "17:00" },
+            { hour: 18, label: "18:00" },
+            { hour: 19, label: "19:00" }
+        ];
 
     const getWeekDays = (date: Date, fullWeek: boolean = false) => {
         const days = [];

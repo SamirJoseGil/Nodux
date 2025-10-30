@@ -214,20 +214,16 @@ export const ProjectService = {
 
 // GroupService
 export const GroupService = {
-  getGroups: async (projectId?: string): Promise<Group[]> => {
-    let response;
-    if (projectId) {
-      response = await apiClient.get(`/projects/${projectId}/groups/`);
-    } else {
-      response = await apiClient.get('/groups/');
-    }
+  // Solo obtiene los grupos de un proyecto específico
+  getGroups: async (projectId: string): Promise<Group[]> => {
+    const response = await apiClient.get(`/projects/${projectId}/groups/`);
     return Array.isArray(response.data)
       ? response.data.map((g: any) => ({
           id: String(g.id),
-          name: '',
+          name: '', // El nombre no viene en el backend, puedes calcularlo si lo necesitas
           projectId: String(g.project),
           mentorId: String(g.mentor),
-          students: [],
+          students: [], // La relación estudiantes no viene en el endpoint
           schedule: g.schedule
             ? [{
                 id: String(g.schedule.id),
@@ -238,13 +234,15 @@ export const GroupService = {
                 location: g.location ?? undefined,
               }]
             : [],
-          projectName: '',
-          mentorName: '',
-          description: '',
+          projectName: '', // No viene, puedes obtenerlo desde el proyecto padre si lo necesitas
+          mentorName: '', // No viene, puedes obtenerlo desde el mentor si lo necesitas
+          description: '', // No viene
           createdAt: undefined,
         }))
       : [];
   },
+
+  // ...puedes agregar createGroup aquí si lo necesitas...
 };
 
 // ScheduleService
