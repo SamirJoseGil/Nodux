@@ -128,15 +128,15 @@ export default function ProjectsAdmin() {
                                                         </span>
                                                     </td>
                                                     <td className="table-cell">
-                                                        <div>Inicio: {new Date(project.startDate).toLocaleDateString()}</div>
+                                                        <div>Inicio: {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}</div>
                                                         {project.endDate && (
                                                             <div>Fin: {new Date(project.endDate).toLocaleDateString()}</div>
                                                         )}
                                                     </td>
                                                     <td className="table-cell">
-                                                        <div>{project.mentorCount || 0} mentores</div>
-                                                        <div>{project.studentCount || 0} estudiantes</div>
-                                                        <div>{project.totalHours || 0} horas</div>
+                                                        <div>{project.mentorCount ?? 0} mentores</div>
+                                                        <div>{project.studentCount ?? 0} estudiantes</div>
+                                                        <div>{project.totalHours ?? 0} horas</div>
                                                     </td>
                                                     <td className="table-cell text-right">
                                                         <button

@@ -122,8 +122,8 @@ export default function MentorsAdmin() {
                                                         </span>
                                                     </td>
                                                     <td className="table-cell">
-                                                        <div>{mentor.projectCount || 0} proyectos</div>
-                                                        <div>{mentor.totalHours || 0} horas</div>
+                                                        <div>{mentor.projectCount ?? 0} proyectos</div>
+                                                        <div>{mentor.totalHours ?? 0} horas</div>
                                                     </td>
                                                     <td className="table-cell text-right">
                                                         <button

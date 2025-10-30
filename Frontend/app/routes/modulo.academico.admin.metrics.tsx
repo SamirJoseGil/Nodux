@@ -47,82 +47,26 @@ export default function MetricsAdmin() {
         const fetchMetrics = async () => {
             setLoading(true);
             try {
-                // Simular datos de métricas
-                const mockMetrics: MetricData[] = [
-                    {
-                        id: '1',
-                        name: 'Total de Estudiantes',
-                        value: 156,
-                        previousValue: 142,
-                        unit: 'estudiantes',
-                        trend: 'up',
-                        percentage: 9.9
-                    },
-                    {
-                        id: '2',
-                        name: 'Horas de Mentoría',
-                        value: 2847,
-                        previousValue: 2632,
-                        unit: 'horas',
-                        trend: 'up',
-                        percentage: 8.2
-                    },
-                    {
-                        id: '3',
-                        name: 'Proyectos Completados',
-                        value: 23,
-                        previousValue: 28,
-                        unit: 'proyectos',
-                        trend: 'down',
-                        percentage: -17.9
-                    },
-                    {
-                        id: '4',
-                        name: 'Tasa de Aprobación',
-                        value: 87.5,
-                        previousValue: 85.2,
-                        unit: '%',
-                        trend: 'up',
-                        percentage: 2.7
-                    },
-                    {
-                        id: '5',
-                        name: 'Satisfacción Promedio',
-                        value: 4.3,
-                        previousValue: 4.1,
-                        unit: '/5',
-                        trend: 'up',
-                        percentage: 4.9
-                    },
-                    {
-                        id: '6',
-                        name: 'Mentores Activos',
-                        value: 34,
-                        previousValue: 32,
-                        unit: 'mentores',
-                        trend: 'up',
-                        percentage: 6.3
-                    }
+                // const data = await MetricService.getMetrics();
+                // Por el momento datos fallback para este servicio
+                const data = [
+                    { id: '1', name: 'Total de Mentores', value: 45, type: 'count' },
+                    { id: '2', name: 'Total de Estudiantes', value: 320, type: 'count' },
+                    { id: '3', name: 'Proyectos Completados', value: 120, type: 'count' },
+                    { id: '4', name: 'Horas de Mentoría', value: 850, type: 'hours' },
                 ];
 
-                const mockChartData: ChartData = {
-                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                    datasets: [
-                        {
-                            label: 'Estudiantes Activos',
-                            data: [120, 132, 145, 138, 149, 156],
-                            color: '#3B82F6'
-                        },
-                        {
-                            label: 'Proyectos Completados',
-                            data: [8, 12, 15, 18, 21, 23],
-                            color: '#10B981'
-                        }
-                    ]
-                };
-
-                setMetrics(mockMetrics);
-                setChartData(mockChartData);
+                // Adaptar los datos si es necesario
+                setMetrics(data.map((m: any) => ({
+                    id: m.id,
+                    name: m.name,
+                    value: Number(m.value),
+                    previousValue: 0, // Si tienes histórico, ponlo aquí
+                    unit: m.type === 'count' ? '' : m.type,
+                    trend: 'stable', // Si tienes tendencia, ponla aquí
+                    percentage: 0,   // Si tienes porcentaje, ponlo aquí
+                })));
+                // setChartData(...) // Si tienes datos de gráfico desde el backend
             } catch (error) {
                 console.error('Error al cargar métricas:', error);
             } finally {

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
-import { HourService } from '~/services/academicService';
 import type { HourRecord } from '~/types/academic';
 import TimeIcon from "~/components/Icons/TimeIcon";
 
@@ -29,83 +28,44 @@ export default function HoursAdmin() {
             setError(null);
 
             try {
-                // Simular datos de horas
-                const mockHours: HourRecord[] = [
+                // const data = await HourService.getHourRecords();
+                // Datos de ejemplo mientras el servicio no está implementado
+                const data: HourRecord[] = [
                     {
                         id: '1',
                         mentorId: 'm1',
                         mentorName: 'Juan Pérez',
                         projectId: 'p1',
-                        projectName: 'Plataforma E-learning',
-                        date: '2024-02-20',
+                        projectName: 'Proyecto Alpha',
+                        date: '2024-06-10',
                         hours: 4,
-                        description: 'Desarrollo de componentes React para el dashboard principal',
-                        status: 'approved',
-                        duration: "4"
+                        description: 'Sesión de mentoría sobre React',
+                        status: 'pending',
                     },
                     {
                         id: '2',
                         mentorId: 'm2',
-                        mentorName: 'María García',
+                        mentorName: 'María Gómez',
                         projectId: 'p2',
-                        projectName: 'API de Gestión',
-                        date: '2024-02-19',
+                        projectName: 'Proyecto Beta',
+                        date: '2024-06-11',
                         hours: 3,
-                        description: 'Implementación de endpoints para autenticación',
-                        status: 'pending',
-                        duration: "3"
+                        description: 'Revisión de avances y planificación',
+                        status: 'approved',
                     },
                     {
                         id: '3',
                         mentorId: 'm3',
-                        mentorName: 'Carlos López',
+                        mentorName: 'Pedro Martínez',
                         projectId: 'p3',
-                        projectName: 'Rediseño Portal',
-                        date: '2024-02-18',
+                        projectName: 'Proyecto Gamma',
+                        date: '2024-06-12',
                         hours: 5,
-                        description: 'Diseño de wireframes y prototipos para la nueva interfaz',
-                        status: 'approved',
-                        duration: "5"
-                    },
-                    {
-                        id: '4',
-                        mentorId: 'm4',
-                        mentorName: 'Ana Martínez',
-                        projectId: 'p4',
-                        projectName: 'Sistema Mobile',
-                        date: '2024-02-17',
-                        hours: 2,
-                        description: 'Revisión de código y testing',
-                        status: 'rejected',
-                        duration: "2"
-                    },
-                    {
-                        id: '5',
-                        mentorId: 'm1',
-                        mentorName: 'Juan Pérez',
-                        projectId: 'p1',
-                        projectName: 'Plataforma E-learning',
-                        date: '2024-02-16',
-                        hours: 6,
-                        description: 'Sesión de mentoría grupal sobre arquitectura frontend',
+                        description: 'Sesión de mentoría sobre Node.js',
                         status: 'pending',
-                        duration: "6"
                     },
-                    {
-                        id: '6',
-                        mentorId: 'm2',
-                        mentorName: 'María García',
-                        projectId: 'p2',
-                        projectName: 'API de Gestión',
-                        date: '2024-02-15',
-                        hours: 3,
-                        description: 'Optimización de consultas a base de datos',
-                        status: 'approved',
-                        duration: "3"
-                    }
                 ];
-
-                setHours(mockHours);
+                setHours(data);
             } catch (err) {
                 setError('Error al cargar los registros de horas. Inténtalo de nuevo más tarde.');
                 console.error('Error loading hours:', err);
