@@ -1,0 +1,64 @@
+import { ReactNode } from 'react';
+import MentorSidebar from './MentorSidebar';
+import { Link } from '@remix-run/react';
+import { useAuth } from '~/contexts/AuthContext';
+import HealthIcon from "~/components/Icons/HealthIcon";
+
+interface MentorLayoutProps {
+    children: ReactNode;
+    title: string;
+}
+
+export default function MentorLayout({ children, title }: MentorLayoutProps) {
+    const { user } = useAuth();
+
+    return (
+        <div className="min-h-screen bg-slate-50">
+            <div className="flex min-h-screen">
+                <MentorSidebar />
+
+                <div className="flex-1 flex flex-col">
+                    <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+                        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                            <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    to="/healthcheck"
+                                    className="text-sm text-slate-600 hover:text-indigo-600 transition-colors font-medium flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50"
+                                >
+                                    <HealthIcon size={18} />
+                                    Sistema
+                                </Link>
+                                <div className="flex items-center">
+                                    <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold shadow-sm">
+                                        {user?.name.charAt(0) || 'M'}
+                                    </div>
+                                    <div className="ml-3 hidden sm:block">
+                                        <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
+                                        <p className="text-xs text-indigo-600 font-medium">{user?.role}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="flex-1 max-w-7xl w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {children}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-white border-t border-gray-200 py-4 px-4 sm:px-6 lg:px-8">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm text-slate-600">
+                            <p>© 2024 <span className="font-semibold text-indigo-600">Nodo</span>. Todos los derechos reservados.</p>
+                            <div className="flex gap-4">
+                                <Link to="/healthcheck" className="hover:text-indigo-600 transition-colors">Estado del sistema</Link>
+                                <span className="text-gray-400">|</span>
+                                <Link to="/" className="hover:text-indigo-600 transition-colors">Inicio</Link>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    );
+}
