@@ -15,13 +15,14 @@ def create_events_for_group(sender, instance, created, **kwargs):
     It creates one event for each date between start_date and end_date
     that matches the day of the week defined in the related Schedule.
     """
+    print("im here")
     if not created:
         return  # Only run when a new Group is created
 
     schedule = instance.schedule
     if not schedule:
         return  # Skip if the group has no schedule assigned
-
+    print("im here")
     start_date = instance.start_date
     end_date = instance.end_date
     scheduled_day = schedule.day  # 0=Monday, 1=Tuesday, ..., 6=Sunday
@@ -39,3 +40,4 @@ def create_events_for_group(sender, instance, created, **kwargs):
                 schedule=schedule,
             )
         current_date += timedelta(days=1)
+    print("im here")

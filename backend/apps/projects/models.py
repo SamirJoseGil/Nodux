@@ -34,10 +34,9 @@ class Event(models.Model):
     group = models.ForeignKey(to=Group, on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
-    date = models.DateField()
-    start_date = models.DateField()
-    end_date = models.DateField()
-    schedule = models.ForeignKey(to=Schedule, on_delete=models.PROTECT, null=True)
+    attendance_generated = models.BooleanField(default=False)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
 
     class Meta:
         ordering = ["id"]
