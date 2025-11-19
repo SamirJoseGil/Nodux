@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 
 # Local imports
-from apps.mentors.views import MentorViewSet
+from apps.mentors.views import MentorViewSet, MentorAttendanceViewSet
 from apps.projects.views import (
     ProjectViewSet,
     GroupViewSet,
@@ -21,8 +21,10 @@ from apps.core.views import ScheduleViewSet, SummaryViewSet
 # --- Router principal ---
 router = DefaultRouter()
 router.register(r"mentors", MentorViewSet, basename="mentor")
+router.register(r"attendance", MentorAttendanceViewSet, basename="attendance" )
 router.register(r"projects", ProjectViewSet, basename="project")
 router.register(r"schedule", ScheduleViewSet, basename="schedule")
+
 router.register(r"events", EventListViewSet, basename="events")
 router.register(r"stats", SummaryViewSet, basename="stats")
 
