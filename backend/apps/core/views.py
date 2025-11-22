@@ -2,7 +2,8 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, ScheduleSerializer
+from apps.users.serializers import UserSerializer
+from .serializers import ScheduleSerializer
 from .models import Schedule
 from apps.projects.models import Project, Group
 from apps.mentors.models import Mentor
