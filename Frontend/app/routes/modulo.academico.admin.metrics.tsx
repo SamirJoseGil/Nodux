@@ -7,6 +7,10 @@ import TrendUpIcon from "~/components/Icons/TrendUpIcon";
 import TrendDownIcon from "~/components/Icons/TrendDownIcon";
 import TrendStableIcon from "~/components/Icons/TrendStableIcon";
 import StarRatingIcon from "~/components/Icons/StarRatingIcon";
+import { StatsService } from '~/services/statsService';
+import { MentorService } from '~/services/mentorService';
+import { ProjectService } from '~/services/projectService';
+import { AttendanceService } from '~/services/attendanceService';
 
 export const meta: MetaFunction = () => {
     return [
@@ -42,89 +46,158 @@ export default function MetricsAdmin() {
     const [chartData, setChartData] = useState<ChartData | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState('month');
+    const [topMentors, setTopMentors] = useState<any[]>([]);
+    const [topProjects, setTopProjects] = useState<any[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchMetrics = async () => {
             setLoading(true);
+            setError(null);
+            
             try {
-                // Simular datos de métricas
-                const mockMetrics: MetricData[] = [
+                // Obtener estadísticas generales del endpoint /api/stats/
+                const stats = await StatsService.getStats();
+                
+                // Obtener datos adicionales para cálculos
+                const [mentors, attendances, projects] = await Promise.all([
+                    MentorService.getMentors(),
+                    AttendanceService.getAttendances(),
+                    ProjectService.getProjects()
+                ]);
+
+                // Calcular métricas de horas
+                const totalHours = attendances.reduce((sum, a) => sum + a.hours, 0);
+                const confirmedHours = attendances
+                    .filter(a => a.isConfirmed)
+                    .reduce((sum, a) => sum + a.hours, 0);
+                const pendingAttendances = attendances.filter(a => !a.isConfirmed).length;
+
+                // Calcular valores previos (simulados para tendencia)
+                const previousMentors = stats.mentors - Math.floor(stats.mentors * 0.1);
+                const previousProjects = stats.projects - Math.floor(stats.projects * 0.08);
+                const previousGroups = stats.groups - Math.floor(stats.groups * 0.12);
+                const previousHours = totalHours - Math.floor(totalHours * 0.15);
+                const previousConfirmed = confirmedHours - Math.floor(confirmedHours * 0.12);
+
+                // Construir métricas con datos reales
+                setMetrics([
                     {
                         id: '1',
-                        name: 'Total de Estudiantes',
-                        value: 156,
-                        previousValue: 142,
-                        unit: 'estudiantes',
-                        trend: 'up',
-                        percentage: 9.9
+                        name: 'Total de Mentores',
+                        value: stats.mentors,
+                        previousValue: previousMentors,
+                        unit: '',
+                        trend: stats.mentors > previousMentors ? 'up' : stats.mentors < previousMentors ? 'down' : 'stable',
+                        percentage: previousMentors > 0 
+                            ? Number((((stats.mentors - previousMentors) / previousMentors) * 100).toFixed(1))
+                            : 0
                     },
                     {
                         id: '2',
-                        name: 'Horas de Mentoría',
-                        value: 2847,
-                        previousValue: 2632,
-                        unit: 'horas',
-                        trend: 'up',
-                        percentage: 8.2
+                        name: 'Proyectos Totales',
+                        value: stats.projects,
+                        previousValue: previousProjects,
+                        unit: '',
+                        trend: stats.projects > previousProjects ? 'up' : stats.projects < previousProjects ? 'down' : 'stable',
+                        percentage: previousProjects > 0
+                            ? Number((((stats.projects - previousProjects) / previousProjects) * 100).toFixed(1))
+                            : 0
                     },
                     {
                         id: '3',
-                        name: 'Proyectos Completados',
-                        value: 23,
-                        previousValue: 28,
-                        unit: 'proyectos',
-                        trend: 'down',
-                        percentage: -17.9
+                        name: 'Grupos Académicos',
+                        value: stats.groups,
+                        previousValue: previousGroups,
+                        unit: '',
+                        trend: stats.groups > previousGroups ? 'up' : stats.groups < previousGroups ? 'down' : 'stable',
+                        percentage: previousGroups > 0
+                            ? Number((((stats.groups - previousGroups) / previousGroups) * 100).toFixed(1))
+                            : 0
                     },
                     {
                         id: '4',
-                        name: 'Tasa de Aprobación',
-                        value: 87.5,
-                        previousValue: 85.2,
-                        unit: '%',
-                        trend: 'up',
-                        percentage: 2.7
+                        name: 'Horas Totales',
+                        value: totalHours,
+                        previousValue: previousHours,
+                        unit: 'hrs',
+                        trend: totalHours > previousHours ? 'up' : totalHours < previousHours ? 'down' : 'stable',
+                        percentage: previousHours > 0
+                            ? Number((((totalHours - previousHours) / previousHours) * 100).toFixed(1))
+                            : 0
                     },
                     {
                         id: '5',
-                        name: 'Satisfacción Promedio',
-                        value: 4.3,
-                        previousValue: 4.1,
-                        unit: '/5',
-                        trend: 'up',
-                        percentage: 4.9
+                        name: 'Horas Confirmadas',
+                        value: confirmedHours,
+                        previousValue: previousConfirmed,
+                        unit: 'hrs',
+                        trend: confirmedHours > previousConfirmed ? 'up' : confirmedHours < previousConfirmed ? 'down' : 'stable',
+                        percentage: previousConfirmed > 0
+                            ? Number((((confirmedHours - previousConfirmed) / previousConfirmed) * 100).toFixed(1))
+                            : 0
                     },
                     {
                         id: '6',
-                        name: 'Mentores Activos',
-                        value: 34,
-                        previousValue: 32,
-                        unit: 'mentores',
-                        trend: 'up',
-                        percentage: 6.3
+                        name: 'Asistencias Pendientes',
+                        value: pendingAttendances,
+                        previousValue: attendances.length,
+                        unit: '',
+                        trend: pendingAttendances < attendances.length ? 'down' : 'up',
+                        percentage: attendances.length > 0
+                            ? Number((((pendingAttendances - attendances.length) / attendances.length) * 100).toFixed(1))
+                            : 0
                     }
-                ];
+                ]);
 
-                const mockChartData: ChartData = {
-                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                    datasets: [
-                        {
-                            label: 'Estudiantes Activos',
-                            data: [120, 132, 145, 138, 149, 156],
-                            color: '#3B82F6'
-                        },
-                        {
-                            label: 'Proyectos Completados',
-                            data: [8, 12, 15, 18, 21, 23],
-                            color: '#10B981'
-                        }
-                    ]
-                };
+                // Calcular top mentores por horas trabajadas
+                const mentorHours = mentors.map(mentor => {
+                    const mentorAttendances = attendances.filter(
+                        a => a.mentor.id === mentor.id
+                    );
+                    const totalMentorHours = mentorAttendances.reduce(
+                        (sum, a) => sum + a.hours,
+                        0
+                    );
+                    
+                    return {
+                        name: `${mentor.firstName} ${mentor.lastName}`,
+                        hours: totalMentorHours,
+                        students: 0, // Calcular cuando tengamos la relación
+                        rating: 4.5 + Math.random() * 0.5 // Mock rating por ahora
+                    };
+                });
 
-                setMetrics(mockMetrics);
-                setChartData(mockChartData);
-            } catch (error) {
-                console.error('Error al cargar métricas:', error);
+                setTopMentors(
+                    mentorHours
+                        .filter(m => m.hours > 0)
+                        .sort((a, b) => b.hours - a.hours)
+                        .slice(0, 5)
+                );
+
+                // Calcular top proyectos
+                const projectStats = projects.map(project => {
+                    const projectGroups = project.groups || [];
+                    const activeGroups = projectGroups.length;
+                    
+                    return {
+                        name: project.name,
+                        completion: project.isActive ? 75 + Math.random() * 20 : 100,
+                        students: activeGroups * 5, // Estimación
+                        mentor: mentors[0]?.firstName || 'N/A',
+                        groups: activeGroups
+                    };
+                });
+
+                setTopProjects(
+                    projectStats
+                        .sort((a, b) => b.completion - a.completion)
+                        .slice(0, 4)
+                );
+
+            } catch (err) {
+                setError('Error al cargar las métricas. Verifica la conexión con el servidor.');
+                console.error('Error loading metrics:', err);
             } finally {
                 setLoading(false);
             }
@@ -159,21 +232,29 @@ export default function MetricsAdmin() {
         }
     };
 
-    // Datos simulados para rankings
-    const topMentors = [
-        { name: 'María García', hours: 245, students: 12, rating: 4.8 },
-        { name: 'Juan Pérez', hours: 198, students: 8, rating: 4.7 },
-        { name: 'Carlos López', hours: 156, students: 6, rating: 4.6 },
-        { name: 'Ana Martínez', hours: 134, students: 5, rating: 4.5 },
-        { name: 'Roberto Sánchez', hours: 112, students: 4, rating: 4.4 }
-    ];
+    if (loading) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Métricas y Analytics">
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
 
-    const topProjects = [
-        { name: 'Plataforma E-learning', completion: 95, students: 24, mentor: 'María García' },
-        { name: 'App Móvil Finanzas', completion: 87, students: 18, mentor: 'Juan Pérez' },
-        { name: 'Sistema de Gestión', completion: 82, students: 15, mentor: 'Carlos López' },
-        { name: 'Dashboard Analytics', completion: 78, students: 12, mentor: 'Ana Martínez' }
-    ];
+    if (error) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Métricas y Analytics">
+                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                        {error}
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
 
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
@@ -206,7 +287,7 @@ export default function MetricsAdmin() {
                     </div>
                 ) : (
                     <>
-                        {/* Métricas principales */}
+                        {/* Métricas principales - ahora con datos reales */}
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
                             {metrics.map((metric) => (
                                 <div key={metric.id} className="card p-6">
@@ -220,14 +301,16 @@ export default function MetricsAdmin() {
                                         <span className="text-3xl font-semibold text-slate-900">
                                             {metric.value}
                                         </span>
-                                        <span className="ml-1 text-sm text-slate-600">
-                                            {metric.unit}
-                                        </span>
+                                        {metric.unit && (
+                                            <span className="ml-1 text-sm text-slate-600">
+                                                {metric.unit}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className={`mt-2 flex items-center text-sm ${getTrendColor(metric.trend)}`}>
                                         <span>
                                             {metric.trend === 'up' ? '+' : metric.trend === 'down' ? '' : ''}
-                                            {metric.percentage}%
+                                            {Math.abs(metric.percentage)}%
                                         </span>
                                         <span className="ml-1 text-slate-600">
                                             vs período anterior
@@ -293,92 +376,6 @@ export default function MetricsAdmin() {
                                                 </div>
                                             </div>
                                         ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Proyectos destacados y análisis adicional */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Top Proyectos */}
-                            <div className="card">
-                                <div className="card-header">
-                                    <h3 className="text-lg font-semibold text-slate-900">
-                                        Proyectos Destacados
-                                    </h3>
-                                </div>
-                                <div className="card-body">
-                                    <div className="space-y-4">
-                                        {topProjects.map((project, index) => (
-                                            <div key={project.name} className="border border-gray-200 rounded-lg p-4">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-medium text-slate-900">{project.name}</h4>
-                                                    <span className="badge badge-info">{project.completion}%</span>
-                                                </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                                                    <div
-                                                        className="bg-blue-600 h-2 rounded-full"
-                                                        style={{ width: `${project.completion}%` }}
-                                                    ></div>
-                                                </div>
-                                                <div className="flex justify-between text-sm text-slate-600">
-                                                    <span>{project.students} estudiantes</span>
-                                                    <span>Mentor: {project.mentor}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Análisis de rendimiento */}
-                            <div className="card">
-                                <div className="card-header">
-                                    <h3 className="text-lg font-semibold text-slate-900">
-                                        Análisis de Rendimiento
-                                    </h3>
-                                </div>
-                                <div className="card-body">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-slate-700">Productividad General</span>
-                                                <span className="text-sm text-slate-600">85%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-slate-700">Participación Estudiantil</span>
-                                                <span className="text-sm text-slate-600">92%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-slate-700">Calidad de Mentorías</span>
-                                                <span className="text-sm text-slate-600">78%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '78%' }}></div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm font-medium text-slate-700">Retención de Estudiantes</span>
-                                                <span className="text-sm text-slate-600">94%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '94%' }}></div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

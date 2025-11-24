@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { AuthService } from '~/services/authService';
 import Cookies from 'js-cookie';
 
 // Define los tipos para los roles y usuarios
@@ -16,36 +17,30 @@ interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email?: string, password?: string) => Promise<User>; // Corregido el tipo de retorno
-    register: (userData: { email: string; password: string; name: string; role: UserRole }) => Promise<User>; // Corregido el tipo de retorno
-    logout: () => void;
+    login: (email: string, password: string) => Promise<void>;
+    register: (userData: { email: string; password: string; name: string; role: UserRole }) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Verificar si hay un usuario en la sesión al cargar
+    // Verificar autenticación al cargar
     useEffect(() => {
         const checkAuthStatus = async () => {
             const accessToken = Cookies.get('access_token');
 
             if (accessToken) {
                 try {
-                    // Simulamos obtener información del usuario actual
-                    // En un caso real, aquí harías una llamada a la API
-                    setUser({
-                        id: '1',
-                        name: 'Usuario Demo',
-                        email: 'demo@nodux.com',
-                        role: 'Admin',
-                        permissions: ['read:all', 'write:all', 'admin:all']
-                    });
+                    const currentUser = await AuthService.getCurrentUser();
+                    setUser(currentUser);
                 } catch (error) {
-                    console.error('Error al verificar autenticación', error);
+                    console.error('Error al verificar autenticación:', error);
                     Cookies.remove('access_token');
+                    Cookies.remove('refresh_token');
                 }
             }
 
@@ -55,93 +50,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         checkAuthStatus();
     }, []);
 
-    const login = async (email?: string, password?: string): Promise<User> => {
+    const login = async (email: string, password: string): Promise<void> => {
         setIsLoading(true);
         try {
-            // Simulamos una respuesta exitosa de la API
-            // En un entorno real, esto sería una llamada a la API
-
-            // Simulamos una pequeña demora para dar sensación de proceso
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Creamos un token falso
-            const fakeToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-                JSON.stringify({ user_id: '1', email: email || 'demo@nodux.com' })
-            )}.fake-signature`;
-
-            // Guardamos tokens en cookies
-            Cookies.set('access_token', fakeToken, { expires: 1 / 24 }); // 1 hora
-            Cookies.set('refresh_token', `${fakeToken}-refresh`, { expires: 7 }); // 7 días
-
-            // Establecemos el usuario
-            const demoUser = {
-                id: '1',
-                name: 'Usuario Demo',
-                email: email || 'demo@nodux.com',
-                role: 'Admin' as UserRole,
-                permissions: ['read:all', 'write:all', 'admin:all']
-            };
-
-            setUser(demoUser);
-            return demoUser;
-        } catch (error) {
-            console.error('Error durante el login', error);
+            const response = await AuthService.login({ email, password });
+            setUser(response.user);
+        } catch (error: any) {
+            console.error('Error durante el login:', error);
             throw error;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const register = async (userData: { email: string; password: string; name: string; role: UserRole }): Promise<User> => {
+    const register = async (userData: { email: string; password: string; name: string; role: UserRole }): Promise<void> => {
         setIsLoading(true);
         try {
-            // Simulamos una respuesta exitosa de la API
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Creamos un token falso
-            const fakeToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
-                JSON.stringify({ user_id: '1', email: userData.email })
-            )}.fake-signature`;
-
-            // Guardamos tokens en cookies
-            Cookies.set('access_token', fakeToken, { expires: 1 / 24 }); // 1 hora
-            Cookies.set('refresh_token', `${fakeToken}-refresh`, { expires: 7 }); // 7 días
-
-            // Establecemos el usuario
-            const newUser = {
-                id: '1',
-                name: userData.name,
+            const response = await AuthService.register({
                 email: userData.email,
-                role: userData.role,
-                permissions: ['read:basic']
-            };
-
-            setUser(newUser);
-            return newUser;
-        } catch (error) {
-            console.error('Error durante el registro', error);
+                password: userData.password,
+                name: userData.name,
+                role: userData.role
+            });
+            setUser(response.user);
+        } catch (error: any) {
+            console.error('Error durante el registro:', error);
             throw error;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const logout = () => {
-        // Limpiar cookies y localStorage
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
-        localStorage.removeItem('user_role');
-
-        // Limpiar el estado del usuario
-        setUser(null);
-
-        // Limpiar sessionStorage del módulo
-        if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('activeModule');
+    const logout = async (): Promise<void> => {
+        try {
+            await AuthService.logout();
+            setUser(null);
+            
+            // Redirigir al home
+            if (typeof window !== 'undefined') {
+                window.location.href = '/';
+            }
+        } catch (error) {
+            console.error('Error durante el logout:', error);
+            // Limpiar de todos modos
+            setUser(null);
+            if (typeof window !== 'undefined') {
+                window.location.href = '/';
+            }
         }
-
-        // Redirigir a la página de inicio
-        window.location.href = '/';
     };
 
     return (

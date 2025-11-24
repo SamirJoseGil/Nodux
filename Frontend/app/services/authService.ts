@@ -2,207 +2,179 @@ import { User, AuthResponse, LoginCredentials, RegisterData, UserRole, UpdateUse
 import { apiClient } from '~/utils/api';
 import Cookies from 'js-cookie';
 
-// Datos mock para usuarios
-const MOCK_USERS: User[] = [
-  {
-    id: '1',
-    name: 'Admin Usuario',
-    email: 'admin@nodux.com',
-    role: 'Admin',
-    permissions: ['read:all', 'write:all', 'admin:all'],
-    active: true,
-    lastLogin: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'Mentor Usuario',
-    email: 'mentor@nodux.com',
-    role: 'Mentor',
-    permissions: ['read:mentor', 'write:mentor'],
-    active: true,
-    lastLogin: new Date().toISOString()
-  },
-  {
-    id: '3',
-    name: 'Estudiante Usuario',
-    email: 'estudiante@nodux.com',
-    role: 'Estudiante',
-    permissions: ['read:student'],
-    active: true,
-    lastLogin: new Date().toISOString()
-  }
-];
-
 export const AuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.post('/auth/token/', credentials);
-      // return response.data;
+      const response = await apiClient.post('/auth/token/', {
+        email: credentials.email,
+        password: credentials.password
+      });
       
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
+      const { access, refresh, user } = response.data;
       
-      const user = MOCK_USERS.find(u => u.email === credentials.email) || 
-        MOCK_USERS[0]; // Default to admin for testing
+      // Guardar tokens en cookies (httpOnly sería mejor en producción)
+      Cookies.set('access_token', access, { 
+        expires: 1/24, // 1 hora
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
       
-      const mockResponse: AuthResponse = {
-        access: `mock-token-${Date.now()}`,
-        refresh: `mock-refresh-${Date.now()}`,
-        user
-      };
+      Cookies.set('refresh_token', refresh, { 
+        expires: 7, // 7 días
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
       
-      return mockResponse;
-    } catch (error) {
+      // Guardar rol en localStorage para persistencia
+      localStorage.setItem('user_role', user.role);
+      localStorage.setItem('user_id', user.id);
+      
+      return response.data;
+    } catch (error: any) {
       console.error('Error en login:', error);
-      throw error;
+      throw new Error(error.response?.data?.detail || 'Error al iniciar sesión');
     }
   },
   
   register: async (data: RegisterData): Promise<AuthResponse> => {
     try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.post('/auth/register/', data);
-      // return response.data;
+      // NOTA: Si el backend no tiene endpoint de registro público,
+      // debes usar el endpoint de creación de usuarios del admin
+      // Por ahora, vamos a simular el registro y luego hacer login
       
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
-      
-      const newUser: User = {
-        id: `${MOCK_USERS.length + 1}`,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        permissions: data.role === 'Admin' ? ['read:all', 'write:all'] : 
-                    data.role === 'Mentor' ? ['read:mentor', 'write:mentor'] :
-                    ['read:basic'],
-        active: true,
-        lastLogin: new Date().toISOString()
-      };
-      
-      MOCK_USERS.push(newUser);
-      
-      const mockResponse: AuthResponse = {
-        access: `mock-token-${Date.now()}`,
-        refresh: `mock-refresh-${Date.now()}`,
-        user: newUser
-      };
-      
-      return mockResponse;
-    } catch (error) {
+      console.log('Intentando registrar usuario:', { 
+        name: data.name, 
+        email: data.email, 
+        role: data.role 
+      });
+  
+      // Intenta primero con el endpoint de registro si existe
+      try {
+        const response = await apiClient.post('/auth/register/', {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          role: data.role
+        });
+        
+        const { access, refresh, user } = response.data;
+        
+        // Guardar tokens
+        Cookies.set('access_token', access, { 
+          expires: 1/24,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict'
+        });
+        
+        Cookies.set('refresh_token', refresh, { 
+          expires: 7,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict'
+        });
+        
+        localStorage.setItem('user_role', user.role);
+        localStorage.setItem('user_id', user.id);
+        
+        return response.data;
+      } catch (registerError: any) {
+        // Si el endpoint de registro no existe (404), usar endpoint alternativo
+        if (registerError.response?.status === 404) {
+          throw new Error('El registro de usuarios no está disponible. Por favor contacta al administrador para crear tu cuenta.');
+        }
+        throw registerError;
+      }
+    } catch (error: any) {
       console.error('Error en registro:', error);
-      throw error;
+      
+      // Mejorar mensajes de error
+      if (error.response?.status === 404) {
+        throw new Error('El endpoint de registro no está disponible. Contacta al administrador.');
+      } else if (error.response?.status === 400) {
+        const errorMsg = error.response?.data?.email?.[0] || 
+                        error.response?.data?.message ||
+                        'Datos de registro inválidos';
+        throw new Error(errorMsg);
+      } else if (error.response?.data?.detail) {
+        throw new Error(error.response.data.detail);
+      }
+      
+      throw new Error(error.message || 'Error al registrar usuario');
     }
   },
   
   logout: async (): Promise<void> => {
-    // En producción, podría haber una llamada para invalidar el token en el backend
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
+    try {
+      const refreshToken = Cookies.get('refresh_token');
+      
+      if (refreshToken) {
+        // Intentar invalidar el token en el backend
+        try {
+          await apiClient.post('/auth/logout/', {
+            refresh: refreshToken
+          });
+        } catch (error) {
+          console.error('Error al invalidar token:', error);
+        }
+      }
+      
+      // Limpiar todo
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_id');
+      sessionStorage.removeItem('activeModule');
+    } catch (error) {
+      console.error('Error en logout:', error);
+      // Limpiar de todos modos
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_id');
+      sessionStorage.removeItem('activeModule');
+    }
   },
   
   getCurrentUser: async (): Promise<User | null> => {
     try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.get('/users/me/');
-      // return response.data;
-      
-      // Mock response
       const token = Cookies.get('access_token');
       if (!token) return null;
       
-      // Simular devolver el usuario basado en el rol almacenado
-      const storedRole = localStorage.getItem('user_role') || 'Admin';
-      const user = MOCK_USERS.find(u => u.role === storedRole) || MOCK_USERS[0];
-      
-      return user;
+      const response = await apiClient.get('/users/me/');
+      return response.data;
     } catch (error) {
       console.error('Error al obtener usuario actual:', error);
+      // Si el token es inválido, limpiar
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
       return null;
     }
   },
   
-  getUsers: async (): Promise<User[]> => {
+  refreshToken: async (): Promise<string | null> => {
     try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.get('/users/');
-      // return response.data;
+      const refreshToken = Cookies.get('refresh_token');
+      if (!refreshToken) return null;
       
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
-      return MOCK_USERS;
+      const response = await apiClient.post('/auth/token/refresh/', {
+        refresh: refreshToken
+      });
+      
+      const { access } = response.data;
+      
+      Cookies.set('access_token', access, { 
+        expires: 1/24,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      
+      return access;
     } catch (error) {
-      console.error('Error al obtener usuarios:', error);
-      throw error;
+      console.error('Error al refrescar token:', error);
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      return null;
     }
   },
   
-  updateUserRole: async (userId: string, role: UserRole): Promise<User> => {
-    try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.patch(`/users/${userId}/`, { role });
-      // return response.data;
-      
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
-      
-      const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-      if (userIndex === -1) throw new Error('Usuario no encontrado');
-      
-      MOCK_USERS[userIndex] = {
-        ...MOCK_USERS[userIndex],
-        role
-      };
-      
-      return MOCK_USERS[userIndex];
-    } catch (error) {
-      console.error('Error al actualizar rol de usuario:', error);
-      throw error;
-    }
-  },
-  
-  updateUserStatus: async (userId: string, active: boolean): Promise<User> => {
-    try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.patch(`/users/${userId}/`, { active });
-      // return response.data;
-      
-      // Mock response
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
-      
-      const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-      if (userIndex === -1) throw new Error('Usuario no encontrado');
-      
-      MOCK_USERS[userIndex] = {
-        ...MOCK_USERS[userIndex],
-        active
-      };
-      
-      return MOCK_USERS[userIndex];
-    } catch (error) {
-      console.error('Error al actualizar estado de usuario:', error);
-      throw error;
-    }
-  },
-  
-  // Método añadido para actualizar usuario
-  updateUser: async (userId: string, userData: UpdateUserData): Promise<User> => {
-    try {
-      // Simulación de una llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-      if (userIndex === -1) throw new Error('Usuario no encontrado');
-      
-      MOCK_USERS[userIndex] = {
-        ...MOCK_USERS[userIndex],
-        ...userData
-      };
-      
-      return MOCK_USERS[userIndex];
-    } catch (error) {
-      console.error('Error al actualizar usuario:', error);
-      throw error;
-    }
-  }
+  // ...existing getUsers, updateUserRole, updateUserStatus, updateUser methods...
 };

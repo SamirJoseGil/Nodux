@@ -3,10 +3,7 @@ import { ModuleService } from "~/services/moduleService";
 import { 
   MentorService, 
   ProjectService, 
-  GroupService, 
-  StudentService, 
-  HourService, 
-  MetricService 
+  GroupService,
 } from "~/services/academicService";
 
 /**
@@ -39,23 +36,7 @@ export const testAllServices = async () => {
     // Proyectos
     const projects = await ProjectService.getProjects();
     console.log(`✅ Se obtuvieron ${projects.length} proyectos`);
-    
-    // Grupos
-    const groups = await GroupService.getGroups();
-    console.log(`✅ Se obtuvieron ${groups.length} grupos`);
-    
-    // Estudiantes
-    const students = await StudentService.getStudents();
-    console.log(`✅ Se obtuvieron ${students.length} estudiantes`);
-    
-    // Horas
-    const hours = await HourService.getHourRecords();
-    console.log(`✅ Se obtuvieron ${hours.length} registros de horas`);
-    
-    // Métricas
-    const metrics = await MetricService.getMetrics();
-    console.log(`✅ Se obtuvieron ${metrics.length} métricas`);
-    
+
     return {
       status: 'success',
       results: {
@@ -64,10 +45,6 @@ export const testAllServices = async () => {
         academic: {
           mentors: mentors.length,
           projects: projects.length,
-          groups: groups.length,
-          students: students.length,
-          hours: hours.length,
-          metrics: metrics.length
         }
       }
     };
