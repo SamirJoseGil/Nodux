@@ -7,7 +7,6 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { markHydrated } from "./utils/navigation";
 
 startTransition(() => {
   hydrateRoot(
@@ -16,7 +15,4 @@ startTransition(() => {
       <RemixBrowser />
     </StrictMode>
   );
-
-  // Marcar la app como hidratada después de que React se ha hidratado
-  markHydrated();
 });
