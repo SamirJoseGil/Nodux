@@ -103,12 +103,6 @@ class MentorSerializer(serializers.ModelSerializer):
         mentorUser.delete()
 
     def to_representation(self, instance):
-        """
-        Returns a flat representation of the mentor,
-        expanding the data from the related profile and user.
-        Includes absolute URLs for the photo and certificate if they exist.
-        """
-
         request = self.context.get("request")
 
         profile = getattr(instance, "profile", None)
@@ -147,26 +141,36 @@ class MentorSerializer(serializers.ModelSerializer):
 
 
 class MentorAttendanceSerializer(serializers.ModelSerializer):
+    mentor = MentorSerializer()
+
     class Meta:
         model = MentorAttendance
-        fields = ["mentor", "registered_by", "hours"]
-
-    def validate_hours(self, value):
-        """Validates that hours are positive integers."""
-        if value <= 0:
-            raise serializers.ValidationError("Hours must be a positive integer.")
-        return value
+        fields = "__all__"
+        read_only_fields = ["id", "mentor", "confirmed_by", "hours", "is_confirmed"]
 
     def validate(self, attrs):
-        """Avoid duplicated registers"""
-        mentor = attrs.get("mentor")
-        user = attrs.get("registered_by")
-        today = timezone.now()
+        is_confirmed = self.instance.is_confirmed
+        start = attrs.get("start_datetime", self.instance.start_datetime)
+        end = attrs.get("end_datetime", self.instance.end_datetime)
 
-        if MentorAttendance.objects.filter(
-            mentor=mentor, registered_by=user, date=today
-        ).exists():
-            raise serializers.ValidationError(
-                "You have already registered hours for this mentor today."
-            )
+        if is_confirmed:
+            raise serializers.ValidationError({
+                "is_confirmed": "It's not possible to edit a confirmed attendance record."
+            })
+
+        if end <= start:
+            raise serializers.ValidationError({
+                "end_datetime": "end_datetime must be greater than start_datetime."
+            })
+
         return attrs
+
+    def update(self, instance, validated_data):
+        instance.start_datetime = validated_data.get("start_datetime", instance.start_datetime)
+        instance.end_datetime = validated_data.get("end_datetime", instance.end_datetime)
+        instance.is_confirmed = True
+
+        instance.hours = (instance.end_datetime - instance.start_datetime).total_seconds() / 3600
+
+        instance.save()
+        return instance

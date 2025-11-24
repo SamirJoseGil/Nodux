@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "axes",
+    "huey.contrib.djhuey",
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -259,10 +260,15 @@ if not DEBUG:
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
-PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024        # 2 MB
+PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 # 2 MB
 
 #File extension settings
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 ALLOWED_FILE_EXTENSIONS = ['.pdf']
 
-
+HUEY = {
+    'huey_class': 'huey.RedisHuey',
+    'name': 'nodux',
+    'results': True,
+    'immediate': False,
+}

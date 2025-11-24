@@ -246,90 +246,152 @@ Deletes the mentor and all associated data:
 
 ---
 
-## ⚙️ 6. Register or view mentor attendance
-
-### Endpoint
-
-```
-/api/mentors/{id}/hours/
-```
-
-### Methods
-
-| Method | Description                                          |
-| ------ | ---------------------------------------------------- |
-| `GET`  | Retrieves all attendance records for all mentors     |
-| `POST` | Registers new attendance hours for a specific mentor |
+Perfecto, entonces podemos reorganizar la documentación de tus endpoints usando la estructura que quieres: un **endpoint para confirmar** y otro para **editar horas + confirmar**. Quedaría así:
 
 ---
 
-### 🔹 6.1 GET /api/mentors/{id}/hours/
+Perfecto, puedo reestructurarte toda la sección de **attendance** según los endpoints y métodos que me indicaste. Quedaría así:
+
+---
+
+## ⚙️ 6. Mentor Attendance
+
+### Endpoints
+
+| Endpoint                        | Method | Description                                 |
+| ------------------------------- | ------ | ------------------------------------------- |
+| `/api/attendance/`              | GET    | List all attendance records                 |
+| `/api/attendance/{id}/`         | GET    | Retrieve attendance for a specific mentor   |
+| `/api/attendance/{id}/`         | PATCH  | Edit start/end times and confirm attendance |
+| `/api/attendance/{id}/confirm/` | POST   | Confirm attendance without editing times    |
+
+---
+
+### 🔹 6.1 GET /api/attendance/
 
 Returns all attendance entries stored in the system.
 
-### Example Response
+#### Example Response
 
 ```json
 [
     {
-        "mentor": 6,
-        "registered_by": 3,
-        "hours": 2
-    },
-    {
-        "mentor": 7,
-        "registered_by": 4,
-        "hours": 3
+        "id": 5,
+        "mentor": {
+            "id": 1,
+            "first_name": "Juan",
+            "last_name": "Avendano",
+            "email": "jpavendanb@gmail.com",
+            "username": "juan.avendano502",
+            "phone": "3232420471",
+            "photo": null,
+            "charge": "No se",
+            "knowledge_level": "basico",
+            "certificate": null
+        },
+        "hours": 8,
+        "is_confirmed": true,
+        "start_datetime": "2025-11-17T06:27:00-05:00",
+        "end_datetime": "2025-11-17T14:28:00-05:00",
+        "confirmed_by": null
     }
 ]
 ```
 
 ---
 
-### 🔹 6.2 POST /api/mentors/{id}/hours/
+### 🔹 6.2 GET /api/attendance/{id}/
 
-Registers new attendance hours for a specific mentor.
+Returns attendance entries for a specific mentor.
 
-### Rules
-
-* `hours` must be a positive integer.
-* The same user cannot register hours for the same mentor twice on the same day.
-
-### Example Request
-
-```
-POST /api/mentors/6/hours/
-```
+#### Example Response
 
 ```json
 {
-    "hours": 3
-}
-```
-
-### Example Response
-
-```json
-{
-    "mentor": 6,
-    "registered_by": 3,
-    "hours": 3
-}
-```
-
-### Possible Validation Error
-
-If the user already registered hours for that mentor today:
-
-```json
-{
-    "non_field_errors": [
-        "You have already registered hours for this mentor today."
-    ]
+    "id": 5,
+    "mentor": {
+        "id": 1,
+        "first_name": "Juan",
+        "last_name": "Avendano",
+        "email": "jpavendanb@gmail.com",
+        "username": "juan.avendano502",
+        "phone": "3232420471",
+        "photo": null,
+        "charge": "No se",
+        "knowledge_level": "basico",
+        "certificate": null
+    },
+    "hours": 8,
+    "is_confirmed": true,
+    "start_datetime": "2025-11-17T06:27:00-05:00",
+    "end_datetime": "2025-11-17T14:28:00-05:00",
+    "confirmed_by": null
 }
 ```
 
 ---
+
+### 🔹 6.3 PATCH /api/attendance/{id}
+
+Updates attendance hours and confirms the record.
+
+#### Rules
+
+* Users can edit only `start_datetime` and `end_datetime`.
+* `hours` are recalculated automatically.
+* Setting `is_confirmed` to `true` confirms the attendance.
+* Validation ensures `end_datetime > start_datetime`.
+
+#### Example Request
+
+```json
+{
+    "start_datetime": "2025-11-19T06:00:00-05:00",
+    "end_datetime": "2025-11-19T14:00:00-05:00",
+    "is_confirmed": true
+}
+```
+
+#### Example Response
+
+```json
+{
+    "id": 5,
+    "mentor": {
+        "id": 1,
+        "first_name": "Juan",
+        "last_name": "Avendano",
+        "email": "jpavendanb@gmail.com",
+        "username": "juan.avendano502",
+        "phone": "3232420471",
+        "photo": null,
+        "charge": "No se",
+        "knowledge_level": "basico",
+        "certificate": null
+    },
+    "hours": 8,
+    "is_confirmed": true,
+    "start_datetime": "2025-11-19T06:00:00-05:00",
+    "end_datetime": "2025-11-19T14:00:00-05:00",
+    "confirmed_by": 3
+}
+```
+
+---
+
+### 🔹 6.4 POST /api/attendance/{id}/confirm/
+
+Confirms attendance **without editing start/end times**. Automatically sets `confirmed_by` to the user making the request.
+
+#### Example Response
+
+```json
+{
+    "success": "confirmed"
+}
+```
+---
+
 
 ## 🧾 Summary
 
@@ -340,7 +402,9 @@ If the user already registered hours for that mentor today:
 | Create mentor   | POST   | `/api/mentors/`            | Creates a new mentor with user & profile |
 | Update mentor   | PUT    | `/api/mentors/{id}/`       | Updates mentor, profile, and user        |
 | Delete mentor   | DELETE | `/api/mentors/{id}/`       | Deletes mentor and related resources     |
-| View hours      | GET    | `/api/mentors/{id}/hours/` | Lists attendance records                 |
-| Register hours  | POST   | `/api/mentors/{id}/hours/` | Adds attendance for mentor               |
+| List attendance     | GET    | `/api/attendance/`              | Shows all attendance records             |
+| Retrieve attendance | GET    | `/api/attendance/{id}/`         | Shows attendance for a specific mentor   |
+| Update attendance   | PATCH  | `/api/attendance/{id}/`         | Edit times and confirm attendance        |
+| Confirm attendance  | POST   | `/api/attendance/{id}/confirm/` | Confirm attendance without editing times |
 
 ---
