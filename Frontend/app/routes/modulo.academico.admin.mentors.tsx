@@ -20,6 +20,13 @@ export default function MentorsAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        specialty: ''
+    });
 
     useEffect(() => {
         const fetchMentors = async () => {
@@ -49,6 +56,41 @@ export default function MentorsAdmin() {
         return status === 'active' ? 'Activo' : 'Inactivo';
     };
 
+    const handleCreateMentor = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // Validar que los campos requeridos estén completos
+        if (!formData.name || !formData.email || !formData.specialty) {
+            alert('Por favor completa todos los campos requeridos');
+            return;
+        }
+
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            alert('Por favor ingresa un email válido');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            console.log('Creando mentor con datos:', formData);
+            const newMentor = await MentorService.createMentor(formData);
+            setMentors([...mentors, newMentor]);
+            setShowCreateModal(false);
+            setFormData({ name: '', email: '', phone: '', specialty: '' });
+            alert('Mentor creado exitosamente');
+        } catch (error: any) {
+            console.error('Error al crear mentor:', error);
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error ||
+                                'Error al crear mentor. Por favor verifica los datos.';
+            alert(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Gestión de Mentores">
@@ -60,7 +102,11 @@ export default function MentorsAdmin() {
                                 <h3 className="text-lg font-semibold text-slate-900">
                                     Mentores ({mentors.length})
                                 </h3>
-                                <button type="button" className="btn-primary">
+                                <button 
+                                    type="button" 
+                                    className="btn-primary"
+                                    onClick={() => setShowCreateModal(true)}
+                                >
                                     Agregar mentor
                                 </button>
                             </div>
@@ -122,8 +168,8 @@ export default function MentorsAdmin() {
                                                         </span>
                                                     </td>
                                                     <td className="table-cell">
-                                                        <div>{mentor.projectCount || 0} proyectos</div>
-                                                        <div>{mentor.totalHours || 0} horas</div>
+                                                        <div>{mentor.projectCount ?? 0} proyectos</div>
+                                                        <div>{mentor.totalHours ?? 0} horas</div>
                                                     </td>
                                                     <td className="table-cell text-right">
                                                         <button
@@ -174,6 +220,85 @@ export default function MentorsAdmin() {
                         )}
                     </div>
                 </div>
+
+                {/* Modal de creación */}
+                {showCreateModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                            <h2 className="text-xl font-bold mb-4">Crear Mentor</h2>
+                            <form onSubmit={handleCreateMentor}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Nombre completo <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="form-input mt-1 w-full"
+                                            placeholder="Juan Pérez"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Email <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            required
+                                            className="form-input mt-1 w-full"
+                                            placeholder="juan@example.com"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                                        <input
+                                            type="tel"
+                                            className="form-input mt-1 w-full"
+                                            placeholder="+57 300 123 4567"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Especialidad <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="form-input mt-1 w-full"
+                                            placeholder="Frontend Developer"
+                                            value={formData.specialty}
+                                            onChange={(e) => setFormData({...formData, specialty: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-6">
+                                    <button 
+                                        type="button" 
+                                        className="btn-secondary" 
+                                        onClick={() => setShowCreateModal(false)}
+                                        disabled={loading}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="btn-primary"
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Creando...' : 'Crear'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </AdminLayout>
         </ProtectedRoute>
     );

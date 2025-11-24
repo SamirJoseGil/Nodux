@@ -51,7 +51,11 @@ apiClient.interceptors.response.use(
           });
           
           const { access } = response.data;
-          Cookies.set('access_token', access, { expires: 1/24 }); // 1 hour
+          Cookies.set('access_token', access, { 
+            expires: 1/24,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+          });
           
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${access}`;
@@ -59,8 +63,12 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        // Si el refresh falla, limpiar y redirigir
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('user_id');
+        
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }

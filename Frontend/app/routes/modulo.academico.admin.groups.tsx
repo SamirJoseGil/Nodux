@@ -28,56 +28,10 @@ export default function GroupsAdmin() {
             setError(null);
 
             try {
-                // Simular datos de grupos
-                const mockGroups: Group[] = [
-                    {
-                        id: '1',
-                        name: 'Grupo Frontend Alpha',
-                        projectId: 'p1',
-                        projectName: 'Plataforma E-learning',
-                        mentorId: 'm1',
-                        mentorName: 'Juan Pérez',
-                        description: 'Desarrollo de componentes React para la plataforma educativa',
-                        students: [
-                            { id: '1', userId: 'u1', name: 'Ana García', email: 'ana@email.com', status: 'active' },
-                            { id: '2', userId: 'u2', name: 'Carlos López', email: 'carlos@email.com', status: 'active' },
-                            { id: '3', userId: 'u3', name: 'María Rodríguez', email: 'maria@email.com', status: 'active' }
-                        ],
-                        createdAt: '2024-01-15'
-                    },
-                    {
-                        id: '2',
-                        name: 'Grupo Backend Beta',
-                        projectId: 'p2',
-                        projectName: 'API de Gestión',
-                        mentorId: 'm2',
-                        mentorName: 'María García',
-                        description: 'Desarrollo de servicios backend con Django',
-                        students: [
-                            { id: '4', userId: 'u4', name: 'Pedro Sánchez', email: 'pedro@email.com', status: 'active' },
-                            { id: '5', userId: 'u5', name: 'Laura Martínez', email: 'laura@email.com', status: 'active' }
-                        ],
-                        createdAt: '2024-01-20'
-                    },
-                    {
-                        id: '3',
-                        name: 'Grupo UX/UI Gamma',
-                        projectId: 'p3',
-                        projectName: 'Rediseño Portal',
-                        mentorId: 'm3',
-                        mentorName: 'Carlos López',
-                        description: 'Diseño de interfaces de usuario modernas',
-                        students: [
-                            { id: '6', userId: 'u6', name: 'Sofia Chen', email: 'sofia@email.com', status: 'active' },
-                            { id: '7', userId: 'u7', name: 'Diego Ruiz', email: 'diego@email.com', status: 'active' },
-                            { id: '8', userId: 'u8', name: 'Valeria Torres', email: 'valeria@email.com', status: 'active' },
-                            { id: '9', userId: 'u9', name: 'Andrés Vargas', email: 'andres@email.com', status: 'active' }
-                        ],
-                        createdAt: '2024-02-01'
-                    }
-                ];
-
-                setGroups(mockGroups);
+                // Debes obtener el projectId de alguna parte (ejemplo: hardcodeado, de la URL, de un selector)
+                const projectId = "1"; // <-- Cambia esto por el projectId real
+                const data = await GroupService.getGroups(projectId);
+                setGroups(data);
             } catch (err) {
                 setError('Error al cargar los grupos. Inténtalo de nuevo más tarde.');
                 console.error('Error loading groups:', err);
