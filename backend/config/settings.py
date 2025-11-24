@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.mentors',
     'apps.projects',
+    "apps.users",
     # Third party apps
     "rest_framework",
     "rest_framework_simplejwt",
@@ -156,7 +157,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # REST FRAMEWORK CONFIGURATION
 # ==================================================
 
-"""
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -175,12 +175,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
-"""
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (),  
-    'DEFAULT_PERMISSION_CLASSES': (),      
-}
+if DEBUG:
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
+    REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
+        "rest_framework.permissions.AllowAny",
+    )
 
 # ==================================================
 # JWT CONFIGURATION
