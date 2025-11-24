@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from apps.core.models import Profile
-from apps.core.serializers import ProfileSerializer
+from apps.users.models import Profile
+from apps.users.serializers import ProfileSerializer
 from apps.core.services.credentials import CredentialService
 from .models import Mentor, MentorAttendance
 from django.utils import timezone
