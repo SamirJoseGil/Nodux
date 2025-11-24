@@ -18,9 +18,9 @@ class Group(models.Model):
         ("hibrido", "Híbrido"),
     ]
 
-    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='groups')
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     mentor = models.ForeignKey(to=Mentor, on_delete=models.PROTECT, null=True)
-    schedule = models.ForeignKey(to=Schedule, on_delete=models.PROTECT)
+    schedule = models.ForeignKey(to=Schedule, on_delete=models.PROTECT, null=True)
     location = models.CharField(max_length=255)
     mode = models.CharField(max_length=10, choices=CHOICES_MODE)
     start_date = models.DateField()
@@ -32,11 +32,10 @@ class Group(models.Model):
 
 class Event(models.Model):
     group = models.ForeignKey(to=Group, on_delete=models.CASCADE)
-    project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
-    attendance_generated = models.BooleanField(default=False)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    date = models.DateField()
+    start_date = models.DateField()
+    end_date = models.DateField()
 
     class Meta:
         ordering = ["id"]

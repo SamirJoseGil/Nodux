@@ -6,7 +6,6 @@ from .serializers import MentorSerializer, MentorAttendanceSerializer
 from .models import Mentor, MentorAttendance
 
 
-
 class MentorViewSet(viewsets.ModelViewSet):
     queryset = Mentor.objects.all()
     serializer_class = MentorSerializer
@@ -35,14 +34,38 @@ class MentorViewSet(viewsets.ModelViewSet):
 
         return Response({"deleted": True, "id": mentor.id}, status=status.HTTP_200_OK)
 
-class MentorAttendanceViewSet(viewsets.ModelViewSet):
-    queryset = MentorAttendance.objects.all()
-    serializer_class = MentorAttendanceSerializer
+    @action(detail=True, methods=["get", "post"])
+    def hours(self, request, pk=None):
+        """
+        Allows registering hours for a mentor.
+        Validations:
 
-    @action(detail=True, methods=['post'])
-    def confirm(self, request, pk=None):
-        attendance = self.get_object()
-        attendance.is_confirmed = True
-        #attendance.confirmed_by = request.user 
-        attendance.save()
-        return Response({"status": "confirmed"}, status=status.HTTP_200_OK)
+        The 'hours' field is required.
+
+        Must be a positive integer.
+
+        Prevents daily duplicates per mentor.
+        """
+
+        if request.method == "GET":
+            # Get all registered attendances
+            registeredAttendance = MentorAttendance.objects.all()
+            serializer = MentorAttendanceSerializer(registeredAttendance, many=True)
+            return Response(serializer.data)
+        elif request.method == "POST":
+            # Register new hours for the mentor
+            mentor = self.get_object()
+            user = request.user
+            hours = request.data.get("hours")
+
+            data = {
+                "mentor": mentor.id,
+                "registered_by": user.id,
+                "hours": hours,
+            }
+
+            serializer = MentorAttendanceSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(registered_by=user)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -38,11 +38,9 @@ class Mentor(models.Model):
 
 class MentorAttendance(models.Model):
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
-    confirmed_by = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
+    registered_by = models.ForeignKey(to=User, on_delete=models.CASCADE)
     hours = models.IntegerField()
-    is_confirmed = models.BooleanField(default=False)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    date = models.DateField(auto_now_add=True)
 
 
 class MentorAvailability(models.Model):
