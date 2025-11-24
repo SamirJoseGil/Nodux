@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from apps.core.models import Schedule
 from apps.core.services.files import FileService
 from django.conf import settings
-from apps.core.models import Profile
+from apps.users.models import Profile
 from datetime import date
 
 # Create your models here.
