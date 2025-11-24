@@ -5,7 +5,13 @@ import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
 import { Link } from '@remix-run/react';
 import { ScheduleService } from '~/services/scheduleService';
+import { EventService } from '~/services/eventService';
+import { MentorService } from '~/services/mentorService';
+import { ProjectService } from '~/services/projectService';
 import { Schedule } from "~/types/schedule";
+import { Event } from "~/types/event";
+import { Mentor } from "~/types/mentor";
+import { Project } from "~/types/project";
 
 export const meta: MetaFunction = () => {
     return [
@@ -20,117 +26,94 @@ export const meta: MetaFunction = () => {
 type ViewMode = 'week' | 'fullWeek' | 'month';
 
 interface CalendarEvent {
-    id: number;
+    id: string;
     title: string;
-    mentor: {
-        id: number;
-        name: string;
-        avatar: string;
-        expertise: string;
-    };
-    proyecto: {
-        id: number;
-        name: string;
-        estado: string;
-    };
-    startTime: string;
-    endTime: string;
+    group: string;
+    location: string;
     date: string;
-    color: string;
-    modalidad: 'Presencial' | 'Virtual' | 'Híbrida';
-    lugar: string;
-    startHour: number;
-    endHour: number;
-    duration: number;
+    startDate: string;
+    endDate: string;
+    schedule: string;
+    startHour?: number;
+    endHour?: number;
+    duration?: number;
 }
 
 const mockEvents: CalendarEvent[] = [
     {
-        id: 1,
+        id: "1",
         title: "Sesión Frontend",
-        mentor: { id: 1, name: "Juan Pérez", avatar: "JP", expertise: "Frontend Developer" },
-        proyecto: { id: 1, name: "App Mobile de Gestión", estado: "En curso" },
-        startTime: "09:00",
-        endTime: "11:00",
+        group: "App Mobile de Gestión",
+        location: "Aula 201",
         date: "2024-02-20",
-        color: "bg-blue-500",
-        modalidad: "Presencial",
-        lugar: "Aula 201",
+        startDate: "2024-02-20T09:00:00",
+        endDate: "2024-02-20T11:00:00",
+        schedule: "1",
         startHour: 9,
         endHour: 11,
         duration: 2
     },
     {
-        id: 2,
+        id: "2",
         title: "Análisis de Datos",
-        mentor: { id: 2, name: "María García", avatar: "MG", expertise: "Data Scientist" },
-        proyecto: { id: 2, name: "Sistema de Análisis", estado: "En curso" },
-        startTime: "14:00",
-        endTime: "16:00",
+        group: "Sistema de Análisis",
+        location: "Zoom Meeting",
         date: "2024-02-20",
-        color: "bg-green-500",
-        modalidad: "Virtual",
-        lugar: "Zoom Meeting",
+        startDate: "2024-02-20T14:00:00",
+        endDate: "2024-02-20T16:00:00",
+        schedule: "2",
         startHour: 14,
         endHour: 16,
         duration: 2
     },
     {
-        id: 3,
+        id: "3",
         title: "Arquitectura Backend",
-        mentor: { id: 3, name: "Carlos López", avatar: "CL", expertise: "Backend Architect" },
-        proyecto: { id: 1, name: "App Mobile de Gestión", estado: "En curso" },
-        startTime: "10:00",
-        endTime: "12:00",
+        group: "App Mobile de Gestión",
+        location: "Lab + Teams",
         date: "2024-02-21",
-        color: "bg-purple-500",
-        modalidad: "Híbrida",
-        lugar: "Lab + Teams",
+        startDate: "2024-02-21T10:00:00",
+        endDate: "2024-02-21T12:00:00",
+        schedule: "1",
         startHour: 10,
         endHour: 12,
         duration: 2
     },
     {
-        id: 4,
+        id: "4",
         title: "Review de Proyecto",
-        mentor: { id: 1, name: "Juan Pérez", avatar: "JP", expertise: "Frontend Developer" },
-        proyecto: { id: 3, name: "Portal Web Institucional", estado: "Sin iniciar" },
-        startTime: "15:00",
-        endTime: "17:00",
+        group: "Portal Web Institucional",
+        location: "Google Meet",
         date: "2024-02-22",
-        color: "bg-orange-500",
-        modalidad: "Virtual",
-        lugar: "Google Meet",
+        startDate: "2024-02-22T15:00:00",
+        endDate: "2024-02-22T17:00:00",
+        schedule: "3",
         startHour: 15,
         endHour: 17,
         duration: 2
     },
     {
-        id: 5,
+        id: "5",
         title: "Mentoría Individual",
-        mentor: { id: 2, name: "María García", avatar: "MG", expertise: "Data Scientist" },
-        proyecto: { id: 2, name: "Sistema de Análisis", estado: "En curso" },
-        startTime: "11:00",
-        endTime: "12:00",
+        group: "Sistema de Análisis",
+        location: "Oficina 305",
         date: "2024-02-23",
-        color: "bg-pink-500",
-        modalidad: "Presencial",
-        lugar: "Oficina 305",
+        startDate: "2024-02-23T11:00:00",
+        endDate: "2024-02-23T12:00:00",
+        schedule: "2",
         startHour: 11,
         endHour: 12,
         duration: 1
     },
     {
-        id: 6,
+        id: "6",
         title: "Taller de React",
-        mentor: { id: 1, name: "Juan Pérez", avatar: "JP", expertise: "Frontend Developer" },
-        proyecto: { id: 1, name: "App Mobile de Gestión", estado: "En curso" },
-        startTime: "08:00",
-        endTime: "10:00",
+        group: "App Mobile de Gestión",
+        location: "Aula 302",
         date: "2024-02-24",
-        color: "bg-indigo-500",
-        modalidad: "Presencial",
-        lugar: "Aula 302",
+        startDate: "2024-02-24T08:00:00",
+        endDate: "2024-02-24T10:00:00",
+        schedule: "1",
         startHour: 8,
         endHour: 10,
         duration: 2
@@ -139,47 +122,55 @@ const mockEvents: CalendarEvent[] = [
 
 export default function CalendarAdmin() {
     const [viewMode, setViewMode] = useState<ViewMode>('week');
-    const [currentDate, setCurrentDate] = useState(new Date(2024, 1, 20)); // 20 febrero 2024
+    const [currentDate, setCurrentDate] = useState(new Date(2024, 1, 20));
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null);
     const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [mentors, setMentors] = useState<Mentor[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Obtener los horarios reales del backend
-        const fetchSchedules = async () => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const data = await ScheduleService.getSchedules();
-                setSchedules(data);
-            } catch (error) {
-                console.error('Error al cargar horarios:', error);
+                const [schedulesData, eventsData, mentorsData, projectsData] = await Promise.all([
+                    ScheduleService.getSchedules(),
+                    EventService.getEvents(),
+                    MentorService.getMentors(),
+                    ProjectService.getProjects()
+                ]);
+                
+                setSchedules(schedulesData);
+                setEvents(eventsData);
+                setMentors(mentorsData);
+                setProjects(projectsData);
+            } catch (err) {
+                setError('Error al cargar los datos del calendario');
+                console.error('Error loading calendar data:', err);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchSchedules();
+        
+        fetchData();
     }, []);
 
-    // Horas del día (de los horarios reales)
+    // Generar slots de tiempo desde los horarios
     const timeSlots = schedules.length > 0
-        ? schedules.map((s: any) => ({
-            hour: Number(s.startTime.split(':')[0]),
-            label: `${s.startTime} - ${s.endTime}`,
+        ? schedules.map((s) => ({
+            hour: s.startTime ? parseInt(s.startTime.split(':')[0]) : 8,
+            label: s.startTime && s.endTime ? `${s.startTime} - ${s.endTime}` : '08:00',
             scheduleId: s.id,
             day: s.day
         }))
-        : [
-            { hour: 7, label: "07:00" },
-            { hour: 8, label: "08:00" },
-            { hour: 9, label: "09:00" },
-            { hour: 10, label: "10:00" },
-            { hour: 11, label: "11:00" },
-            { hour: 12, label: "12:00" },
-            { hour: 13, label: "13:00" },
-            { hour: 14, label: "14:00" },
-            { hour: 15, label: "15:00" },
-            { hour: 16, label: "16:00" },
-            { hour: 17, label: "17:00" },
-            { hour: 18, label: "18:00" },
-            { hour: 19, label: "19:00" }
-        ];
+        : Array.from({ length: 13 }, (_, i) => ({
+            hour: i + 7,
+            label: `${String(i + 7).padStart(2, '0')}:00`
+        }));
 
     const getWeekDays = (date: Date, fullWeek: boolean = false) => {
         const days = [];
@@ -199,7 +190,20 @@ export default function CalendarAdmin() {
 
     const getEventsForDate = (date: Date) => {
         const dateStr = date.toISOString().split('T')[0];
-        return mockEvents.filter(event => event.date === dateStr);
+        return events
+            .filter(event => {
+                const eventDate = event.date || event.startDate;
+                return eventDate === dateStr;
+            })
+            .map(event => ({
+                ...event,
+                id: event.id,
+                title: `Evento ${event.id}`,
+                // Calcular horas si tienes el schedule
+                startHour: 9, // Mock - calcular desde event.schedule
+                endHour: 11, // Mock - calcular desde event.schedule  
+                duration: 2, // Mock - calcular diferencia
+            }));
     };
 
     const daysOfWeek = viewMode === 'week'
@@ -372,6 +376,30 @@ export default function CalendarAdmin() {
             </div>
         );
     };
+
+    if (loading) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Calendario Académico">
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
+
+    if (error) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Calendario Académico">
+                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                        {error}
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
 
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>

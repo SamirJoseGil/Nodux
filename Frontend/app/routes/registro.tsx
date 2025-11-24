@@ -24,7 +24,7 @@ export default function Registro() {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "" as UserRole
+        role: "" as UserRole | ""
     });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +59,31 @@ export default function Registro() {
         setError("");
 
         // Validaciones básicas
+        if (!formData.name) {
+            setError("El nombre es requerido");
+            return;
+        }
+
+        if (!formData.email) {
+            setError("El email es requerido");
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            setError("Email inválido");
+            return;
+        }
+
+        if (!formData.password) {
+            setError("La contraseña es requerida");
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setError("La contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             setError("Las contraseñas no coinciden");
             return;
@@ -80,17 +105,38 @@ export default function Registro() {
             });
             // La redirección se maneja en el useEffect
         } catch (err: any) {
-            setError(err.response?.data?.message || "Error al registrar usuario");
+            console.error('Error en registro:', err);
+            setError(err.message || "Error al registrar usuario. Verifica tus datos e intenta nuevamente.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const availableRoles: { value: UserRole; label: string; icon: string }[] = [
-        { value: 'Mentor', label: 'Mentor', icon: '👨‍🏫' },
-        { value: 'Estudiante', label: 'Estudiante', icon: '🎓' },
-        { value: 'Trabajador', label: 'Trabajador', icon: '👷' },
-        { value: 'Usuario base', label: 'Usuario base', icon: '👤' },
+    const availableRoles: { value: UserRole; label: string; icon: string; description: string }[] = [
+        { 
+            value: 'Estudiante', 
+            label: 'Estudiante', 
+            icon: '🎓',
+            description: 'Acceso a cursos y proyectos académicos'
+        },
+        { 
+            value: 'Mentor', 
+            label: 'Mentor', 
+            icon: '👨‍🏫',
+            description: 'Mentoría y guía de proyectos'
+        },
+        { 
+            value: 'Trabajador', 
+            label: 'Trabajador', 
+            icon: '👷',
+            description: 'Acceso al módulo de productos'
+        },
+        { 
+            value: 'Usuario base', 
+            label: 'Usuario Base', 
+            icon: '👤',
+            description: 'Acceso básico a la plataforma'
+        },
     ];
 
     return (
@@ -99,10 +145,6 @@ export default function Registro() {
 
             <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                    <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <span className="text-4xl">✨</span>
-                    </div>
-
                     <h2 className="mt-6 text-center text-3xl font-bold text-slate-900">
                         Crear nueva cuenta
                     </h2>
@@ -128,7 +170,7 @@ export default function Registro() {
                         <form className="space-y-6" onSubmit={handleSubmit}>
                             <div>
                                 <label htmlFor="name" className="form-label">
-                                    Nombre completo
+                                    Nombre completo <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="name"
@@ -139,12 +181,13 @@ export default function Registro() {
                                     onChange={handleChange}
                                     className="form-input"
                                     placeholder="Juan Pérez"
+                                    disabled={isLoading}
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="email" className="form-label">
-                                    Correo electrónico
+                                    Correo electrónico <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="email"
@@ -156,12 +199,13 @@ export default function Registro() {
                                     onChange={handleChange}
                                     className="form-input"
                                     placeholder="juan@example.com"
+                                    disabled={isLoading}
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="password" className="form-label">
-                                    Contraseña
+                                    Contraseña <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="password"
@@ -172,13 +216,14 @@ export default function Registro() {
                                     value={formData.password}
                                     onChange={handleChange}
                                     className="form-input"
-                                    placeholder="••••••••"
+                                    placeholder="Mínimo 6 caracteres"
+                                    disabled={isLoading}
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="confirmPassword" className="form-label">
-                                    Confirmar contraseña
+                                    Confirmar contraseña <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="confirmPassword"
@@ -189,13 +234,14 @@ export default function Registro() {
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
                                     className="form-input"
-                                    placeholder="••••••••"
+                                    placeholder="Repite tu contraseña"
+                                    disabled={isLoading}
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="role" className="form-label">
-                                    Selecciona tu rol
+                                    Selecciona tu rol <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     id="role"
@@ -204,21 +250,25 @@ export default function Registro() {
                                     value={formData.role}
                                     onChange={handleChange}
                                     className="form-input"
+                                    disabled={isLoading}
                                 >
-                                    <option value="">Elige un rol</option>
+                                    <option value="">-- Selecciona un rol --</option>
                                     {availableRoles.map(role => (
                                         <option key={role.value} value={role.value}>
-                                            {role.icon} {role.label}
+                                            {role.icon} {role.label} - {role.description}
                                         </option>
                                     ))}
                                 </select>
+                                <p className="mt-2 text-xs text-slate-500">
+                                    Selecciona el rol que mejor describa tu participación en la plataforma
+                                </p>
                             </div>
 
                             <div>
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="btn-primary w-full flex justify-center py-3 text-base font-medium"
+                                    className="btn-primary w-full flex justify-center py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? (
                                         <span className="flex items-center">

@@ -5,9 +5,9 @@ export const StatsService = {
   getStats: async (): Promise<Stats> => {
     const response = await apiClient.get('/stats/');
     return {
-      mentors: response.data.mentors,
-      projects: response.data.projects,
-      groups: response.data.groups,
+      mentors: response.data.mentors || 0,
+      projects: response.data.projects || 0,
+      groups: response.data.groups || 0,
     };
   },
 };

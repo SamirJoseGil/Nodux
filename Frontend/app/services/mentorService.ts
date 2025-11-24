@@ -17,6 +17,7 @@ export const MentorService = {
       certificate: m.certificate ?? undefined,
     }));
   },
+  
   getMentorById: async (id: string): Promise<Mentor> => {
     const response = await apiClient.get(`/mentors/${id}/`);
     const m = response.data;
@@ -33,6 +34,7 @@ export const MentorService = {
       certificate: m.certificate ?? undefined,
     };
   },
+  
   createMentor: async (data: Partial<Mentor>): Promise<Mentor> => {
     const payload = {
       profile: {
@@ -61,6 +63,7 @@ export const MentorService = {
       certificate: m.certificate ?? undefined,
     };
   },
+  
   updateMentor: async (id: string, data: Partial<Mentor>): Promise<Mentor> => {
     const payload = {
       profile: {
@@ -89,24 +92,8 @@ export const MentorService = {
       certificate: m.certificate ?? undefined,
     };
   },
+  
   deleteMentor: async (id: string): Promise<void> => {
     await apiClient.delete(`/mentors/${id}/`);
-  },
-  getMentorHours: async (id: string): Promise<MentorHour[]> => {
-    const response = await apiClient.get(`/mentors/${id}/hours/`);
-    return response.data.map((h: any) => ({
-      mentor: String(h.mentor),
-      registeredBy: String(h.registered_by),
-      hours: h.hours,
-    }));
-  },
-  registerMentorHours: async (id: string, hours: number): Promise<MentorHour> => {
-    const response = await apiClient.post(`/mentors/${id}/hours/`, { hours });
-    const h = response.data;
-    return {
-      mentor: String(h.mentor),
-      registeredBy: String(h.registered_by),
-      hours: h.hours,
-    };
   },
 };

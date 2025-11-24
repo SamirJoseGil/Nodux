@@ -20,6 +20,12 @@ export default function ProjectsAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        isActive: true
+    });
 
     const fetchProjects = async () => {
         setLoading(true);
@@ -71,6 +77,36 @@ export default function ProjectsAdmin() {
         }
     };
 
+    const handleCreateProject = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!formData.name) {
+            alert('Por favor ingresa el nombre del proyecto');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            console.log('Creando proyecto con datos:', formData);
+            const newProject = await ProjectService.createProject({
+                name: formData.name,
+                isActive: formData.isActive
+            });
+            setProjects([...projects, newProject]);
+            setShowCreateModal(false);
+            setFormData({ name: '', description: '', isActive: true });
+            alert('Proyecto creado exitosamente');
+        } catch (error: any) {
+            console.error('Error al crear proyecto:', error);
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error ||
+                                'Error al crear proyecto. Por favor verifica los datos.';
+            alert(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Gestión de Proyectos">
@@ -82,7 +118,11 @@ export default function ProjectsAdmin() {
                                 <h3 className="text-lg font-semibold text-slate-900">
                                     Proyectos ({projects.length})
                                 </h3>
-                                <button type="button" className="btn-primary">
+                                <button 
+                                    type="button" 
+                                    className="btn-primary"
+                                    onClick={() => setShowCreateModal(true)}
+                                >
                                     Crear proyecto
                                 </button>
                             </div>
@@ -187,6 +227,70 @@ export default function ProjectsAdmin() {
                         )}
                     </div>
                 </div>
+
+                {/* Modal de creación */}
+                {showCreateModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                            <h2 className="text-xl font-bold mb-4">Crear Proyecto</h2>
+                            <form onSubmit={handleCreateProject}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Nombre del proyecto <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="form-input mt-1 w-full"
+                                            placeholder="Sistema de Gestión"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                                        <textarea
+                                            className="form-input mt-1 w-full"
+                                            rows={3}
+                                            placeholder="Descripción del proyecto..."
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                className="form-checkbox h-4 w-4 text-blue-600"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                                            />
+                                            <span className="ml-2 text-sm text-gray-700">Proyecto activo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-6">
+                                    <button 
+                                        type="button" 
+                                        className="btn-secondary" 
+                                        onClick={() => setShowCreateModal(false)}
+                                        disabled={loading}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="btn-primary"
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Creando...' : 'Crear'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </AdminLayout>
         </ProtectedRoute>
     );

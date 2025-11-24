@@ -45,9 +45,12 @@ export const ProjectService = {
   },
   createProject: async (data: Partial<Project>): Promise<Project> => {
     const payload = {
-      name: data.name,
-      is_active: data.isActive,
+      name: data.name || '',
+      is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
     };
+
+    console.log('Payload enviado:', JSON.stringify(payload, null, 2));
+
     const response = await apiClient.post('/projects/', payload);
     const p = response.data;
     return {

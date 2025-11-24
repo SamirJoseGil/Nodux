@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import AdminLayout from '~/components/Layout/AdminLayout';
 import ProtectedRoute from '~/components/ProtectedRoute';
-import type { HourRecord } from '~/types/academic';
+import { AttendanceService } from '~/services/attendanceService';
+import type { Attendance } from '~/types/attendance';
 import TimeIcon from "~/components/Icons/TimeIcon";
 
 export const meta: MetaFunction = () => {
@@ -16,10 +17,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function HoursAdmin() {
-    const [hours, setHours] = useState<HourRecord[]>([]);
+    const [hours, setHours] = useState<Attendance[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedHour, setSelectedHour] = useState<HourRecord | null>(null);
+    const [selectedHour, setSelectedHour] = useState<Attendance | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('all');
 
     useEffect(() => {
@@ -28,43 +29,7 @@ export default function HoursAdmin() {
             setError(null);
 
             try {
-                // const data = await HourService.getHourRecords();
-                // Datos de ejemplo mientras el servicio no está implementado
-                const data: HourRecord[] = [
-                    {
-                        id: '1',
-                        mentorId: 'm1',
-                        mentorName: 'Juan Pérez',
-                        projectId: 'p1',
-                        projectName: 'Proyecto Alpha',
-                        date: '2024-06-10',
-                        hours: 4,
-                        description: 'Sesión de mentoría sobre React',
-                        status: 'pending',
-                    },
-                    {
-                        id: '2',
-                        mentorId: 'm2',
-                        mentorName: 'María Gómez',
-                        projectId: 'p2',
-                        projectName: 'Proyecto Beta',
-                        date: '2024-06-11',
-                        hours: 3,
-                        description: 'Revisión de avances y planificación',
-                        status: 'approved',
-                    },
-                    {
-                        id: '3',
-                        mentorId: 'm3',
-                        mentorName: 'Pedro Martínez',
-                        projectId: 'p3',
-                        projectName: 'Proyecto Gamma',
-                        date: '2024-06-12',
-                        hours: 5,
-                        description: 'Sesión de mentoría sobre Node.js',
-                        status: 'pending',
-                    },
-                ];
+                const data = await AttendanceService.getAttendances();
                 setHours(data);
             } catch (err) {
                 setError('Error al cargar los registros de horas. Inténtalo de nuevo más tarde.');
@@ -77,19 +42,20 @@ export default function HoursAdmin() {
         fetchHours();
     }, []);
 
-    const handleHourSelect = (hour: HourRecord) => {
+    const handleHourSelect = (hour: Attendance) => {
         setSelectedHour(hour);
     };
 
     const handleApproveHour = async (hourId: string) => {
         try {
-            // Simular aprobación
+            await AttendanceService.confirmAttendance(hourId);
+            
             setHours(hours.map(h =>
-                h.id === hourId ? { ...h, status: 'approved' } : h
+                h.id === hourId ? { ...h, isConfirmed: true } : h
             ));
 
             if (selectedHour?.id === hourId) {
-                setSelectedHour({ ...selectedHour, status: 'approved' });
+                setSelectedHour({ ...selectedHour, isConfirmed: true });
             }
         } catch (error) {
             console.error('Error al aprobar horas:', error);
@@ -98,52 +64,37 @@ export default function HoursAdmin() {
 
     const handleRejectHour = async (hourId: string) => {
         try {
-            // Simular rechazo
+            // Implementar endpoint de rechazo si existe en el backend
+            // Por ahora solo actualización local
             setHours(hours.map(h =>
-                h.id === hourId ? { ...h, status: 'rejected' } : h
+                h.id === hourId ? { ...h, isConfirmed: false } : h
             ));
 
             if (selectedHour?.id === hourId) {
-                setSelectedHour({ ...selectedHour, status: 'rejected' });
+                setSelectedHour({ ...selectedHour, isConfirmed: false });
             }
         } catch (error) {
             console.error('Error al rechazar horas:', error);
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'approved':
-                return 'badge-success';
-            case 'pending':
-                return 'badge-warning';
-            case 'rejected':
-                return 'badge-error';
-            default:
-                return 'badge-neutral';
-        }
+    const getStatusColor = (isConfirmed: boolean) => {
+        return isConfirmed ? 'badge-success' : 'badge-warning';
     };
 
-    const getStatusText = (status: string) => {
-        switch (status) {
-            case 'approved':
-                return 'Aprobado';
-            case 'pending':
-                return 'Pendiente';
-            case 'rejected':
-                return 'Rechazado';
-            default:
-                return status;
-        }
+    const getStatusText = (isConfirmed: boolean) => {
+        return isConfirmed ? 'Confirmado' : 'Pendiente';
     };
 
     const filteredHours = filterStatus === 'all'
         ? hours
-        : hours.filter(h => h.status === filterStatus);
+        : filterStatus === 'confirmed'
+        ? hours.filter(h => h.isConfirmed)
+        : hours.filter(h => !h.isConfirmed);
 
     const totalHours = hours.reduce((sum, h) => sum + h.hours, 0);
-    const pendingHours = hours.filter(h => h.status === 'pending').length;
-    const approvedHours = hours.filter(h => h.status === 'approved').reduce((sum, h) => sum + h.hours, 0);
+    const pendingHours = hours.filter(h => !h.isConfirmed).length;
+    const confirmedHours = hours.filter(h => h.isConfirmed).reduce((sum, h) => sum + h.hours, 0);
 
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
@@ -185,7 +136,7 @@ export default function HoursAdmin() {
                             </div>
                             <div className="flex-1">
                                 <dt className="text-sm font-medium text-slate-600">Horas Aprobadas</dt>
-                                <dd className="text-2xl font-semibold text-slate-900">{approvedHours}</dd>
+                                <dd className="text-2xl font-semibold text-slate-900">{confirmedHours}</dd>
                             </div>
                         </div>
                     </div>
@@ -206,8 +157,7 @@ export default function HoursAdmin() {
                                 >
                                     <option value="all">Todos</option>
                                     <option value="pending">Pendientes</option>
-                                    <option value="approved">Aprobados</option>
-                                    <option value="rejected">Rechazados</option>
+                                    <option value="confirmed">Confirmados</option>
                                 </select>
                             </div>
 
@@ -223,7 +173,6 @@ export default function HoursAdmin() {
                                 </div>
                             ) : filteredHours.length === 0 ? (
                                 <div className="card-body text-center py-12">
-                                    <span className="text-6xl mb-4 block">⏱️</span>
                                     <h3 className="text-lg font-medium text-slate-900 mb-2">No hay registros</h3>
                                     <p className="text-slate-600">No se encontraron registros con los filtros aplicados.</p>
                                 </div>
@@ -233,8 +182,7 @@ export default function HoursAdmin() {
                                         <thead className="table-header">
                                             <tr>
                                                 <th className="table-header-cell">Mentor</th>
-                                                <th className="table-header-cell">Proyecto</th>
-                                                <th className="table-header-cell">Fecha</th>
+                                                <th className="table-header-cell">Fecha/Hora</th>
                                                 <th className="table-header-cell">Horas</th>
                                                 <th className="table-header-cell">Estado</th>
                                                 <th className="table-header-cell">
@@ -250,13 +198,18 @@ export default function HoursAdmin() {
                                                     className={`table-row cursor-pointer ${selectedHour?.id === hour.id ? 'bg-blue-50' : ''}`}
                                                 >
                                                     <td className="table-cell">
-                                                        <div className="text-sm font-medium text-slate-900">{hour.mentorName}</div>
+                                                        <div className="text-sm font-medium text-slate-900">
+                                                            {hour.mentor.firstName} {hour.mentor.lastName}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500">{hour.mentor.charge}</div>
                                                     </td>
                                                     <td className="table-cell">
-                                                        <div className="text-sm text-slate-900">{hour.projectName}</div>
-                                                    </td>
-                                                    <td className="table-cell">
-                                                        <div className="text-sm text-slate-600">{new Date(hour.date).toLocaleDateString()}</div>
+                                                        <div className="text-sm text-slate-900">
+                                                            {new Date(hour.startDatetime).toLocaleDateString()}
+                                                        </div>
+                                                        <div className="text-xs text-slate-600">
+                                                            {new Date(hour.startDatetime).toLocaleTimeString()} - {new Date(hour.endDatetime).toLocaleTimeString()}
+                                                        </div>
                                                     </td>
                                                     <td className="table-cell">
                                                         <span className="badge badge-info">
@@ -264,8 +217,8 @@ export default function HoursAdmin() {
                                                         </span>
                                                     </td>
                                                     <td className="table-cell">
-                                                        <span className={`badge ${getStatusColor(hour.status)}`}>
-                                                            {getStatusText(hour.status)}
+                                                        <span className={`badge ${getStatusColor(hour.isConfirmed)}`}>
+                                                            {getStatusText(hour.isConfirmed)}
                                                         </span>
                                                     </td>
                                                     <td className="table-cell text-right">
@@ -299,53 +252,66 @@ export default function HoursAdmin() {
                                     </h3>
                                 </div>
                                 <div className="card-body space-y-4">
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div className="sm:col-span-1">
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div>
                                             <dt className="text-sm font-medium text-slate-600">Mentor</dt>
-                                            <dd className="mt-1 text-sm text-slate-900 sm:mt-0 font-semibold">{selectedHour.mentorName}</dd>
+                                            <dd className="mt-1 text-sm text-slate-900 font-semibold">
+                                                {selectedHour.mentor.firstName} {selectedHour.mentor.lastName}
+                                            </dd>
+                                            <dd className="text-xs text-slate-500">{selectedHour.mentor.email}</dd>
                                         </div>
-                                        <div className="sm:col-span-1">
-                                            <dt className="text-sm font-medium text-slate-600">Proyecto</dt>
-                                            <dd className="mt-1 text-sm text-slate-900 sm:mt-0">{selectedHour.projectName}</dd>
-                                        </div>
-                                        <div className="sm:col-span-1">
-                                            <dt className="text-sm font-medium text-slate-600">Fecha</dt>
-                                            <dd className="mt-1 text-sm text-slate-900 sm:mt-0">
-                                                {new Date(selectedHour.date).toLocaleDateString('es-ES', {
+                                        <div>
+                                            <dt className="text-sm font-medium text-slate-600">Inicio</dt>
+                                            <dd className="mt-1 text-sm text-slate-900">
+                                                {new Date(selectedHour.startDatetime).toLocaleString('es-ES', {
                                                     weekday: 'long',
                                                     year: 'numeric',
                                                     month: 'long',
-                                                    day: 'numeric'
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
                                                 })}
                                             </dd>
                                         </div>
-                                        <div className="sm:col-span-1">
-                                            <dt className="text-sm font-medium text-slate-600">Horas</dt>
-                                            <dd className="mt-1 text-sm text-slate-900 sm:mt-0">
+                                        <div>
+                                            <dt className="text-sm font-medium text-slate-600">Fin</dt>
+                                            <dd className="mt-1 text-sm text-slate-900">
+                                                {new Date(selectedHour.endDatetime).toLocaleString('es-ES', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-sm font-medium text-slate-600">Total de Horas</dt>
+                                            <dd className="mt-1">
                                                 <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                                     {selectedHour.hours} {selectedHour.hours === 1 ? 'hora' : 'horas'}
                                                 </span>
                                             </dd>
                                         </div>
-                                        <div className="sm:col-span-1">
+                                        <div>
                                             <dt className="text-sm font-medium text-slate-600">Estado</dt>
-                                            <dd className="mt-1 text-sm text-slate-900 sm:mt-0">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedHour.status)}`}>
-                                                    {getStatusText(selectedHour.status)}
+                                            <dd className="mt-1">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedHour.isConfirmed)}`}>
+                                                    {getStatusText(selectedHour.isConfirmed)}
                                                 </span>
                                             </dd>
                                         </div>
-                                    </div>
-
-                                    <div>
-                                        <dt className="text-sm font-medium text-slate-600 mb-2">Descripción</dt>
-                                        <dd className="mt-1 text-sm text-slate-900 bg-gray-50 p-3 rounded-lg">
-                                            {selectedHour.description}
-                                        </dd>
+                                        {selectedHour.confirmedBy && (
+                                            <div>
+                                                <dt className="text-sm font-medium text-slate-600">Confirmado por</dt>
+                                                <dd className="mt-1 text-sm text-slate-900">Usuario ID: {selectedHour.confirmedBy}</dd>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {selectedHour.status === 'pending' && (
+                                {!selectedHour.isConfirmed && (
                                     <div className="card-footer flex gap-2">
                                         <button
                                             type="button"
@@ -359,7 +325,7 @@ export default function HoursAdmin() {
                                             onClick={() => handleApproveHour(selectedHour.id)}
                                             className="btn-primary"
                                         >
-                                            Aprobar
+                                            Confirmar
                                         </button>
                                     </div>
                                 )}

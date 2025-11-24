@@ -39,18 +39,26 @@ export const MentorService = {
   },
 
   createMentor: async (mentorData: Partial<Mentor>): Promise<Mentor> => {
+    // Separar el nombre en first_name y last_name
+    const nameParts = mentorData.name?.split(' ') || [''];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     const payload = {
       profile: {
         user: {
-          first_name: mentorData.name?.split(' ')[0] || '',
-          last_name: mentorData.name?.split(' ').slice(1).join(' ') || '',
+          first_name: firstName,
+          last_name: lastName,
           email: mentorData.email,
         },
-        phone: mentorData.phone,
+        phone: mentorData.phone || '',
       },
-      charge: mentorData.specialty,
+      charge: mentorData.specialty || '',
       knowledge_level: 'basico',
     };
+
+    console.log('Payload enviado:', JSON.stringify(payload, null, 2));
+
     const response = await apiClient.post('/mentors/', payload);
     const m = response.data;
     return {
