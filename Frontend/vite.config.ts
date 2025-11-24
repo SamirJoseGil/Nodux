@@ -10,15 +10,10 @@ export default defineConfig({
         v3_relativeSplatPath: true,
         v3_throwAbortReason: true,
       },
-      appDirectory: 'app',
-      serverModuleFormat: 'esm',
     }),
     tsconfigPaths(),
   ],
   server: {
     port: 3000,
-  },
-  define: {
-    'process.env.API_BASE_URL': JSON.stringify(process.env.API_BASE_URL || 'http://localhost:8000/api'),
   },
 });
