@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import AdminLayout from '~/components/Layout/AdminLayout';
-import ProtectedRoute from '~/components/ProtectedRoute';
+import { ProtectedRoute } from '~/components/ProtectedRoute';  // ← Cambiar import
 import { Link } from '@remix-run/react';
 import { ScheduleService } from '~/services/scheduleService';
 import { EventService } from '~/services/eventService';

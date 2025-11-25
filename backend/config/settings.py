@@ -175,11 +175,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-if DEBUG:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
-    REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
-        "rest_framework.permissions.AllowAny",
-    )
+# ❌ COMENTAR O ELIMINAR ESTE BLOQUE EN DESARROLLO
+# if DEBUG:
+#     REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
+#     REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
+#         "rest_framework.permissions.AllowAny",
+#     )
 
 # ==================================================
 # JWT CONFIGURATION
@@ -242,6 +243,55 @@ AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = timedelta(minutes=30)
 AXES_LOCKOUT_TEMPLATE = None
 AXES_RESET_ON_SUCCESS = True
+
+# ==================================================
+# LOGGING CONFIGURATION
+# ==================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+        'apps.users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'rest_framework_simplejwt': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+    },
+}
 
 # ==================================================
 # SECURITY SETTINGS

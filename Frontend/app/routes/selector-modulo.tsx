@@ -1,82 +1,186 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from '@remix-run/react';
-import type { MetaFunction } from '@remix-run/node';
-import { useAuth } from '~/contexts/AuthContext';
-import { useModule } from '~/contexts/ModuleContext';
-import { ModuleService } from '~/services/moduleService';
-import type { Module } from '~/types/module';
-import SecurityIcon from '~/components/Icons/SecurityIcon';
-
-export const meta: MetaFunction = () => {
-    return [
-        { title: "Selector de Módulos - Nodux" },
-        {
-            name: "description",
-            content: "Selecciona el módulo con el que deseas trabajar",
-        },
-    ];
-};
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "@remix-run/react";
+import { motion } from "framer-motion";
+import { useAuth } from "~/contexts/AuthContext";
+import { ModuleService } from "~/services/moduleService";
+import type { Module } from "~/types/module";
+import type { UserRole } from "~/types/auth";
 
 export default function SelectorModulo() {
-    const { user } = useAuth();
-    const { setActiveModule } = useModule();
+    const { user, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [modules, setModules] = useState<Module[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchModules = async () => {
+        const loadModules = async () => {
+            if (authLoading) {
+                console.log('⏳ Esperando autenticación...');
+                return;
+            }
+
+            if (!user) {
+                console.log('⚠️ No hay usuario, redirigiendo a login');
+                navigate('/login');
+                return;
+            }
+
+            console.log('🔍 Cargando módulos para usuario:', {
+                id: user.id,
+                name: user.name,
+                role: user.role,
+                email: user.email
+            });
+
+            // Verificar localStorage como respaldo
+            const localRole = localStorage.getItem('user_role');
+            console.log('📦 Rol en localStorage:', localRole);
+
+            if (!user.role && !localRole) {
+                console.error('❌ Usuario sin rol asignado');
+                setError('Tu cuenta no tiene un rol asignado. Contacta al administrador.');
+                setIsLoading(false);
+                return;
+            }
+
+            const effectiveRole = user.role || localRole as UserRole;
+            console.log('✅ Usando rol efectivo:', effectiveRole);
+
             try {
-                setLoading(true);
-                if (user && user.role) {
-                    const availableModules = await ModuleService.getModules(user.role);
-                    setModules(availableModules || []);
-                } else {
-                    setModules([]);
+                const loadedModules = await ModuleService.getModules(effectiveRole);
+                
+                console.log('📋 Módulos cargados:', {
+                    count: loadedModules.length,
+                    modules: loadedModules.map(m => ({ id: m.id, name: m.name }))
+                });
+
+                setModules(loadedModules);
+
+                if (loadedModules.length === 0) {
+                    console.warn('⚠️ No hay módulos disponibles para el rol:', effectiveRole);
+                    setError(`No tienes acceso a ningún módulo con el rol "${effectiveRole}". Contacta al administrador.`);
                 }
-            } catch (error) {
-                console.error("Error cargando módulos:", error);
-                setModules([]);
+            } catch (err) {
+                console.error('❌ Error al cargar módulos:', err);
+                setError('Error al cargar módulos. Intenta nuevamente.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
-        fetchModules();
-    }, [user]);
+        loadModules();
+    }, [user, authLoading, navigate]);
 
-    const handleModuleSelect = (module: Module) => {
-        setActiveModule(module.name);
-        let targetPath = '';
+    const handleModuleClick = (module: Module) => {
+        console.log('🎯 Click en módulo:', {
+            moduleId: module.id,
+            moduleName: module.name,
+            userRole: user?.role,
+            timestamp: new Date().toISOString()
+        });
 
-        switch (module.name) {
+        sessionStorage.setItem('activeModule', module.name);
+
+        const userRole = user?.role;
+        
+        switch(module.name) {
             case 'Académico':
-                targetPath = '/modulo/academico/dashboard';
+                if (userRole === 'Mentor') {
+                    console.log('→ Redirigiendo a: /modulo/academico/mentor/dashboard');
+                    navigate('/modulo/academico/mentor/dashboard');
+                } else if (userRole === 'Estudiante') {
+                    console.log('→ Redirigiendo a: /modulo/academico/estudiante/dashboard');
+                    navigate('/modulo/academico/estudiante/dashboard');
+                } else {
+                    console.log('→ Redirigiendo a: /modulo/academico/admin/dashboard');
+                    navigate('/modulo/academico/admin/dashboard');
+                }
                 break;
+            
             case 'Producto':
-                targetPath = '/modulo/producto/dashboard';
+                if (userRole === 'Trabajador') {
+                    console.log('→ Redirigiendo a: /modulo/producto/trabajador/dashboard');
+                    navigate('/modulo/producto/trabajador/dashboard');
+                } else {
+                    console.log('→ Redirigiendo a: /modulo/producto/admin/dashboard');
+                    navigate('/modulo/producto/admin/dashboard');
+                }
                 break;
+            
             case 'Administración':
-                targetPath = '/modulo/administracion/dashboard';
+                console.log('→ Redirigiendo a: /modulo/administracion/dashboard');
+                navigate('/modulo/administracion/dashboard');
                 break;
+            
             default:
-                targetPath = `/modulo/${(module.name ?? 'modulo').toLowerCase()}/dashboard`;
+                console.warn('⚠️ Módulo desconocido:', module.name);
+                setError(`Módulo "${module.name}" no configurado.`);
         }
-
-        navigate(targetPath);
     };
 
-    if (loading) {
+    // Loading state
+    if (isLoading || authLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
-                <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-600 border-t-transparent"></div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 font-medium">Cargando módulos...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                {/* Header */}
+                <header className="bg-white border-b border-gray-200 py-4 px-6">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <Link to="/" className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                                <span className="text-white font-bold text-xl">N</span>
+                            </div>
+                            <span className="text-xl font-bold text-gray-900">Nodux</span>
+                        </Link>
+                    </div>
+                </header>
+
+                {/* Error Content */}
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="max-w-md mx-auto bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center"
+                    >
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Sin acceso</h3>
+                        <p className="text-gray-600 mb-1">{error}</p>
+                        {user && (
+                            <p className="text-sm text-gray-500 mb-4">
+                                Tu rol actual: <strong>{user.role}</strong>
+                            </p>
+                        )}
+                        <button
+                            onClick={() => navigate('/')}
+                            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Volver al Inicio
+                        </button>
+                    </motion.div>
+                </main>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="inline-block mb-4">
@@ -94,65 +198,96 @@ export default function SelectorModulo() {
                     </p>
                 </div>
 
-                {modules && modules.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                        {modules.map((module) => (
-                            <div
+                {/* User Info Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                            {user?.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                            <div className="flex items-center gap-4 mt-1">
+                                <p className="text-gray-600">{user?.email}</p>
+                                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                    {user?.role}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                        Selecciona un Módulo
+                    </h1>
+                    <p className="text-lg text-gray-600">
+                        Elige el módulo con el que deseas trabajar
+                    </p>
+                </div>
+
+                {modules.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="max-w-md mx-auto bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center"
+                    >
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Sin acceso</h3>
+                        <p className="text-gray-600 mb-1">
+                            No tienes acceso a ningún módulo.
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Tu rol actual: <strong>{user?.role}</strong>
+                        </p>
+                        <p className="text-gray-600">
+                            Contacta al administrador para obtener los permisos necesarios.
+                        </p>
+                    </motion.div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {modules.map((module, index) => (
+                            <motion.button
                                 key={module.id}
-                                onClick={() => handleModuleSelect(module)}
-                                className="card cursor-pointer group relative overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ scale: 1.02, y: -4 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleModuleClick(module)}
+                                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-500 text-left group"
                             >
-                                <div className="card-body relative">
-                                    <div className="text-center mb-6">
-                                        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
-                                            <span className="text-2xl">{module.icon}</span>
-                                        </div>
-                                    </div>
-
-                                    <h3 className="text-2xl font-semibold text-slate-900 text-center mb-4 group-hover:text-blue-600 transition-colors">
-                                        {module.name}
-                                    </h3>
-
-                                    <p className="text-slate-600 text-center mb-6 min-h-[60px]">
-                                        {module.description}
-                                    </p>
-
-                                    <div className="text-center">
-                                        <button className="btn-primary w-full">
-                                            Acceder
-                                        </button>
-                                    </div>
+                                {/* Icon */}
+                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                    <span className="text-4xl">{module.icon}</span>
                                 </div>
 
-                                {/* Indicador de módulo admin */}
-                                {module.adminOnly && (
-                                    <div className="absolute top-4 right-4">
-                                        <span className="badge badge-warning">
-                                            Admin
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
+                                {/* Content */}
+                                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                                    {module.name}
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    {module.description}
+                                </p>
+
+                                {/* Arrow */}
+                                <div className="flex items-center text-blue-600 font-medium group-hover:translate-x-2 transition-transform">
+                                    <span>Acceder</span>
+                                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </motion.button>
                         ))}
                     </div>
-                ) : (
-                    <div className="card p-12 text-center">
-                        <SecurityIcon size={48} className="mx-auto mb-4 text-gray-400" />
-                        <h3 className="text-2xl font-semibold text-slate-900 mb-2">Sin acceso</h3>
-                        <p className="text-slate-600">No tienes acceso a ningún módulo. Contacta al administrador.</p>
-                    </div>
                 )}
-
-                {/* Footer con botón de regreso */}
-                <div className="mt-12 text-center">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors font-medium"
-                    >
-                        <span>←</span>
-                        Volver a la página principal
-                    </Link>
-                </div>
             </div>
         </div>
     );

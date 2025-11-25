@@ -27,6 +27,15 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log requests en desarrollo
+    if (import.meta.env.DEV) {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+      if (config.data && config.method?.toLowerCase() !== 'get') {
+        console.log('[API Request Body]', config.data);
+      }
+    }
+    
     return config;
   },
   (error) => {
@@ -36,8 +45,23 @@ apiClient.interceptors.request.use(
 
 // Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log responses en desarrollo
+    if (import.meta.env.DEV) {
+      console.log(`[API Response] ${response.status} ${response.config.url}`);
+      console.log('[API Response Data]', response.data);
+    }
+    return response;
+  },
   async (error: AxiosError) => {
+    // Log errors en desarrollo
+    if (import.meta.env.DEV) {
+      console.error(`[API Error] ${error.response?.status} ${error.config?.url}`);
+      if (error.response?.data) {
+        console.error('[API Error Data]', error.response.data);
+      }
+    }
+    
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
@@ -46,7 +70,8 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = Cookies.get('refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          console.log('[API] Refrescando token...');
+          const response = await axios.post(`${API_BASE_URL}/users/refresh/`, {
             refresh: refreshToken,
           });
           
@@ -60,16 +85,18 @@ apiClient.interceptors.response.use(
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${access}`;
           }
+          console.log('[API] Token refrescado exitosamente');
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Si el refresh falla, limpiar y redirigir
+        console.error('[API] Error al refrescar token:', refreshError);
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
         
         if (typeof window !== 'undefined') {
+          console.log('[API] Redirigiendo a login...');
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);

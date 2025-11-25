@@ -5,16 +5,18 @@ import { apiClient } from '~/utils/api';
 export const MentorService = {
   getMentors: async (): Promise<Mentor[]> => {
     const response = await apiClient.get('/mentors/');
-    return response.data.map((m: any) => ({
+    // Backend retorna paginado, acceder a results
+    const data = response.data.results || response.data;
+    return (Array.isArray(data) ? data : []).map((m: any) => ({
       id: String(m.id),
       userId: String(m.id),
       name: `${m.first_name} ${m.last_name}`,
       email: m.email,
-      phone: m.phone,
+      phone: m.phone || '',
       specialty: m.charge,
       profileImage: m.photo ?? undefined,
       bio: '',
-      status: 'active',
+      status: 'active' as const,
       expertise: [],
       createdAt: undefined,
     }));
@@ -28,79 +30,90 @@ export const MentorService = {
       userId: String(m.id),
       name: `${m.first_name} ${m.last_name}`,
       email: m.email,
-      phone: m.phone,
+      phone: m.phone || '',
       specialty: m.charge,
       profileImage: m.photo ?? undefined,
       bio: '',
-      status: 'active',
+      status: 'active' as const,
       expertise: [],
       createdAt: undefined,
     };
   },
 
   createMentor: async (mentorData: Partial<Mentor>): Promise<Mentor> => {
-    // Separar el nombre en first_name y last_name
     const nameParts = mentorData.name?.split(' ') || [''];
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    const payload = {
-      profile: {
-        user: {
-          first_name: firstName,
-          last_name: lastName,
-          email: mentorData.email,
-        },
-        phone: mentorData.phone || '',
+    // Estructura correcta según backend
+    const formData = new FormData();
+    formData.append('profile.user.first_name', firstName);
+    formData.append('profile.user.last_name', lastName);
+    formData.append('profile.user.email', mentorData.email || '');
+    formData.append('profile.phone', mentorData.phone || '');
+    formData.append('charge', mentorData.specialty || '');
+    formData.append('knowledge_level', 'basico'); // Default value
+
+    console.log('Creating mentor with data:', {
+      firstName,
+      lastName,
+      email: mentorData.email,
+      phone: mentorData.phone,
+      charge: mentorData.specialty
+    });
+
+    const response = await apiClient.post('/mentors/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       },
-      charge: mentorData.specialty || '',
-      knowledge_level: 'basico',
-    };
-
-    console.log('Payload enviado:', JSON.stringify(payload, null, 2));
-
-    const response = await apiClient.post('/mentors/', payload);
+    });
+    
     const m = response.data;
     return {
       id: String(m.id),
       userId: String(m.id),
       name: `${m.first_name} ${m.last_name}`,
       email: m.email,
-      phone: m.phone,
+      phone: m.phone || '',
       specialty: m.charge,
       profileImage: m.photo ?? undefined,
       bio: '',
-      status: 'active',
+      status: 'active' as const,
       expertise: [],
       createdAt: undefined,
     };
   },
 
   updateMentor: async (mentorId: string, mentorData: Partial<Mentor>): Promise<Mentor> => {
-    const payload = {
-      profile: {
-        user: {
-          first_name: mentorData.name?.split(' ')[0] || '',
-          last_name: mentorData.name?.split(' ').slice(1).join(' ') || '',
-          email: mentorData.email,
-        },
-        phone: mentorData.phone,
+    const nameParts = mentorData.name?.split(' ') || [''];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const formData = new FormData();
+    formData.append('profile.user.first_name', firstName);
+    formData.append('profile.user.last_name', lastName);
+    formData.append('profile.user.email', mentorData.email || '');
+    formData.append('profile.phone', mentorData.phone || '');
+    formData.append('charge', mentorData.specialty || '');
+    formData.append('knowledge_level', 'basico');
+
+    const response = await apiClient.put(`/mentors/${mentorId}/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       },
-      charge: mentorData.specialty,
-      knowledge_level: 'basico',
-    };
-    const response = await apiClient.put(`/mentors/${mentorId}/`, payload);
+    });
+    
     const m = response.data;
     return {
       id: String(m.id),
       userId: String(m.id),
       name: `${m.first_name} ${m.last_name}`,
       email: m.email,
-      phone: m.phone,
+      phone: m.phone || '',
       specialty: m.charge,
       profileImage: m.photo ?? undefined,
       bio: '',
-      status: 'active',
+      status: 'active' as const,
       expertise: [],
       createdAt: undefined,
     };
@@ -115,44 +128,43 @@ export const MentorService = {
 export const ProjectService = {
   getProjects: async (): Promise<Project[]> => {
     const response = await apiClient.get('/projects/');
-    return Array.isArray(response.data)
-      ? response.data.map((p: any) => ({
-          id: String(p.id),
-          name: p.name,
-          description: '',
-          startDate: '',
-          endDate: '',
-          status: p.is_active ? 'active' : 'pending',
-          totalHours: undefined,
-          mentorCount: undefined,
-          studentCount: undefined,
-          groups: Array.isArray(p.groups)
-            ? p.groups.map((g: any) => ({
-                id: String(g.id),
-                name: '',
-                projectId: String(g.project),
-                mentorId: String(g.mentor),
-                students: [],
-                schedule: g.schedule
-                  ? [{
-                      id: String(g.schedule.id),
-                      groupId: String(g.id),
-                      day: String(g.schedule.day),
-                      startTime: g.schedule.start_time,
-                      endTime: g.schedule.end_time,
-                      location: g.location ?? undefined,
-                    }]
-                  : [],
-                projectName: p.name,
-                mentorName: '',
-                description: '',
-                createdAt: undefined,
-              }))
-            : [],
-          mentors: [],
-          createdAt: undefined,
-        }))
-      : [];
+    const data = response.data.results || response.data;
+    return (Array.isArray(data) ? data : []).map((p: any) => ({
+      id: String(p.id),
+      name: p.name,
+      description: '',
+      startDate: '',
+      endDate: '',
+      status: p.is_active ? 'active' : 'pending',
+      totalHours: undefined,
+      mentorCount: undefined,
+      studentCount: undefined,
+      groups: Array.isArray(p.groups)
+        ? p.groups.map((g: any) => ({
+            id: String(g.id),
+            name: '',
+            projectId: String(g.project),
+            mentorId: String(g.mentor),
+            students: [],
+            schedule: g.schedule
+              ? [{
+                  id: String(g.schedule.id),
+                  groupId: String(g.id),
+                  day: String(g.schedule.day),
+                  startTime: g.schedule.start_time,
+                  endTime: g.schedule.end_time,
+                  location: g.location ?? undefined,
+                }]
+              : [],
+            projectName: p.name,
+            mentorName: '',
+            description: '',
+            createdAt: undefined,
+          }))
+        : [],
+      mentors: [],
+      createdAt: undefined,
+    }));
   },
 
   getProjectById: async (projectId: string): Promise<Project | null> => {
@@ -222,52 +234,83 @@ export const ProjectService = {
 
 // GroupService
 export const GroupService = {
-  // Solo obtiene los grupos de un proyecto específico
   getGroups: async (projectId: string): Promise<Group[]> => {
     const response = await apiClient.get(`/projects/${projectId}/groups/`);
-    return Array.isArray(response.data)
-      ? response.data.map((g: any) => ({
-          id: String(g.id),
-          name: '', // El nombre no viene en el backend, puedes calcularlo si lo necesitas
-          projectId: String(g.project),
-          mentorId: String(g.mentor),
-          students: [], // La relación estudiantes no viene en el endpoint
-          schedule: g.schedule
-            ? [{
-                id: String(g.schedule.id),
-                groupId: String(g.id),
-                day: String(g.schedule.day),
-                startTime: g.schedule.start_time,
-                endTime: g.schedule.end_time,
-                location: g.location ?? undefined,
-              }]
-            : [],
-          projectName: '', // No viene, puedes obtenerlo desde el proyecto padre si lo necesitas
-          mentorName: '', // No viene, puedes obtenerlo desde el mentor si lo necesitas
-          description: '', // No viene
-          createdAt: undefined,
-        }))
-      : [];
+    const data = response.data.results || response.data;
+    return (Array.isArray(data) ? data : []).map((g: any) => ({
+      id: String(g.id),
+      name: '',
+      projectId: String(g.project),
+      mentorId: String(g.mentor),
+      students: [],
+      schedule: g.schedule
+        ? [{
+            id: String(g.schedule.id),
+            groupId: String(g.id),
+            day: String(g.schedule.day),
+            startTime: g.schedule.start_time,
+            endTime: g.schedule.end_time,
+            location: g.location ?? undefined,
+          }]
+        : [],
+      projectName: '',
+      mentorName: '',
+      description: '',
+      createdAt: undefined,
+    }));
   },
 
-  // ...puedes agregar createGroup aquí si lo necesitas...
+  createGroup: async (projectId: string, groupData: Partial<Group>): Promise<Group> => {
+    const payload = {
+      mentor: groupData.mentorId,
+      schedule: groupData.schedule?.[0]?.id,
+      location: groupData.schedule?.[0]?.location || '',
+      mode: 'presencial', // default
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +6 months
+    };
+    
+    const response = await apiClient.post(`/projects/${projectId}/groups/`, payload);
+    const g = response.data;
+    return {
+      id: String(g.id),
+      name: '',
+      projectId: String(g.project),
+      mentorId: String(g.mentor),
+      students: [],
+      schedule: g.schedule
+        ? [{
+            id: String(g.schedule.id),
+            groupId: String(g.id),
+            day: String(g.schedule.day),
+            startTime: g.schedule.start_time,
+            endTime: g.schedule.end_time,
+            location: g.location ?? undefined,
+          }]
+        : [],
+      projectName: '',
+      mentorName: '',
+      description: '',
+      createdAt: undefined,
+    };
+  },
 };
 
 // ScheduleService
 export const ScheduleService = {
   getSchedules: async (): Promise<Schedule[]> => {
     const response = await apiClient.get('/schedule/');
-    return Array.isArray(response.data)
-      ? response.data.map((s: any) => ({
-          id: String(s.id),
-          groupId: '',
-          day: String(s.day),
-          startTime: s.start_time,
-          endTime: s.end_time,
-          location: undefined,
-        }))
-      : [];
+    const data = response.data.results || response.data;
+    return (Array.isArray(data) ? data : []).map((s: any) => ({
+      id: String(s.id),
+      groupId: '',
+      day: String(s.day),
+      startTime: s.start_time,
+      endTime: s.end_time,
+      location: undefined,
+    }));
   },
+  
   createSchedule: async (scheduleData: Partial<Schedule>): Promise<Schedule> => {
     const payload = {
       day: Number(scheduleData.day),

@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 
 # Local imports
-from apps.mentors.views import MentorViewSet
+from apps.mentors.views import MentorViewSet, MentorAttendanceViewSet
 from apps.projects.views import (
     ProjectViewSet,
     GroupViewSet,

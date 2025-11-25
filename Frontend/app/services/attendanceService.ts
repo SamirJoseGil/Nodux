@@ -1,10 +1,11 @@
-import { Attendance, AttendanceUpdateData } from '~/types/attendance';
+import { Attendance, AttendanceUpdateData, AttendanceCreateData } from '~/types/attendance';
 import { apiClient } from '~/utils/api';
 
 export const AttendanceService = {
   getAttendances: async (): Promise<Attendance[]> => {
     const response = await apiClient.get('/attendance/');
-    return response.data.map((a: any) => ({
+    const data = response.data.results || response.data;
+    return (Array.isArray(data) ? data : []).map((a: any) => ({
       id: String(a.id),
       mentor: {
         id: String(a.mentor.id),
@@ -12,7 +13,7 @@ export const AttendanceService = {
         lastName: a.mentor.last_name,
         email: a.mentor.email,
         username: a.mentor.username,
-        phone: a.mentor.phone,
+        phone: a.mentor.phone || '',
         photo: a.mentor.photo ?? undefined,
         charge: a.mentor.charge,
         knowledgeLevel: a.mentor.knowledge_level,
@@ -115,7 +116,7 @@ export const AttendanceService = {
         lastName: a.mentor.last_name,
         email: a.mentor.email,
         username: a.mentor.username,
-        phone: a.mentor.phone,
+        phone: a.mentor.phone || '',
         photo: a.mentor.photo ?? undefined,
         charge: a.mentor.charge,
         knowledgeLevel: a.mentor.knowledge_level,

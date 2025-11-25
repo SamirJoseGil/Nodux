@@ -27,13 +27,6 @@ function AdminLayoutContent({ children, title }: AdminLayoutProps) {
                             {title}
                         </h1>
                         <div className="flex items-center space-x-4">
-                            <Link
-                                to="/healthcheck"
-                                className="text-sm text-slate-600 hover:text-blue-600 transition-colors font-medium flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50"
-                            >
-                                <HealthIcon size={18} />
-                                Sistema
-                            </Link>
                             <div className="flex items-center">
                                 <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
                                     {user?.name.charAt(0) || 'A'}

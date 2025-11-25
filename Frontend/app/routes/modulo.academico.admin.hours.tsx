@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import AdminLayout from '~/components/Layout/AdminLayout';
-import ProtectedRoute from '~/components/ProtectedRoute';
+import { ProtectedRoute } from '~/components/ProtectedRoute';
 import { AttendanceService } from '~/services/attendanceService';
 import type { Attendance } from '~/types/attendance';
 import TimeIcon from "~/components/Icons/TimeIcon";

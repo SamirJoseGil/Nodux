@@ -99,22 +99,6 @@ export default function AdminSidebar() {
 
                 {!isCollapsed && (
                     <>
-                        {/* User info */}
-                        <div className="p-4 border-b border-gray-200 flex-shrink-0">
-                            <div className="flex items-center space-x-3">
-                                <div className="relative flex-shrink-0">
-                                    <div className="bg-blue-600 rounded-full h-12 w-12 flex items-center justify-center shadow-sm">
-                                        <span className="text-lg font-semibold text-white">{user?.name.charAt(0) || 'A'}</span>
-                                    </div>
-                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-slate-900 truncate">{user?.name || 'Usuario Admin'}</p>
-                                    <p className="text-xs text-blue-600 font-medium">{user?.role || 'Admin'}</p>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Navigation menu */}
                         <nav className="flex-1 p-4 overflow-y-auto min-h-0">
                             <ul className="space-y-1">

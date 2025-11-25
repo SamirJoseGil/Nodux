@@ -1,8 +1,8 @@
-import { Mentor } from './mentor';
+import { Mentor as MentorType } from './mentor';
 
 export interface Attendance {
   id: string;
-  mentor: Mentor;
+  mentor: MentorType;
   hours: number;
   isConfirmed: boolean;
   startDatetime: string;
@@ -11,7 +11,6 @@ export interface Attendance {
 }
 
 export interface AttendanceUpdateData {
-  mentorId?: string;
   startDatetime?: string;
   endDatetime?: string;
   isConfirmed?: boolean;

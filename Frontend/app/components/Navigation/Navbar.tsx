@@ -63,12 +63,6 @@ export default function Navbar({
                         <Link to="/#caracteristicas" className={`text-sm font-medium ${getLinkClasses()} transition-colors`}>
                             Características
                         </Link>
-                        <Link to="/#modulos" className={`text-sm font-medium ${getLinkClasses()} transition-colors`}>
-                            Módulos
-                        </Link>
-                        <Link to="/healthcheck" className={`text-sm font-medium ${getLinkClasses()} transition-colors`}>
-                            Estado del Sistema
-                        </Link>
                     </div>
 
                     {/* Auth Section */}
