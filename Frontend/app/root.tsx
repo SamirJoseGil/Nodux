@@ -59,6 +59,7 @@ export function ErrorBoundary() {
         <html lang="es">
           <head>
             <title>404 - Página no encontrada | Nodux</title>
+            <link rel="icon" href="https://www.eafit.edu.co/sites/default/files/favicon-EAFIT_0.ico" type="image/vnd.microsoft.icon" />
             <Meta />
             <Links />
           </head>

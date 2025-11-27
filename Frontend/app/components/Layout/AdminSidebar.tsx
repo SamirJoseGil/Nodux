@@ -78,10 +78,12 @@ export default function AdminSidebar() {
                 {/* Header del Sidebar */}
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between mb-4">
-                        <Link to="/" className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-lg">
-                                <span className="font-thicker text-white text-xl">N</span>
-                            </div>
+                        <Link to="/" className="flex items-center space-x-1">
+                     <img
+                    src="/images/LogoNodoEafit.png"
+                    alt="Logo Nodo EAFIT"
+                    className="w-24 h-12 object-contain"
+                    />
                             <span className="font-thicker text-xl text-gray-900">NODUX</span>
                         </Link>
                         <div className="flex items-center gap-2">

@@ -149,8 +149,8 @@ export default function SelectorModulo() {
                     console.log('→ Redirigiendo a: /modulo/academico/estudiante/dashboard');
                     navigate('/modulo/academico/estudiante/dashboard');
                 } else {
-                    console.log('→ Redirigiendo a: /modulo/academico/admin/dashboard');
-                    navigate('/modulo/academico/admin/dashboard');
+                    console.log('→ Redirigiendo a: /modulo/academico/dashboard');
+                    navigate('/modulo/academico/dashboard');
                 }
                 break;
             
@@ -221,15 +221,15 @@ export default function SelectorModulo() {
                 />
 
                 {/* Header */}
-                <header className="relative z-10 w-full py-4 px-6 glass-strong">
+                <header className="relative z-10 w-full px-6 glass-strong">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         <Link to="/" className="flex items-center gap-2">
-                            <motion.div
-                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
-                            >
-                                <span className="font-thicker text-white text-xl">N</span>
-                            </motion.div>
+                        <img
+                        src="/images/LogoNodoEafit.png"
+                        alt="Logo Nodo EAFIT"
+                        className="w-28 h-20 object-contain"
+                        style={{ filter: "brightness(0) invert(1)" }}
+                        />
                             <span className="font-thicker text-2xl text-white">NODUX</span>
                         </Link>
                     </div>
@@ -295,12 +295,12 @@ export default function SelectorModulo() {
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <motion.div
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
-                        >
-                            <span className="font-thicker text-white text-xl">N</span>
-                        </motion.div>
+                        <img
+                        src="/images/LogoNodoEafit.png"
+                        alt="Logo Nodo EAFIT"
+                        className="w-28 h-20 object-contain"
+                        style={{ filter: "brightness(0) invert(1)" }}
+                        />
                         <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                 </div>
@@ -318,7 +318,7 @@ export default function SelectorModulo() {
                     <div className="inline-block mb-6 text-left w-full">
                         <button
                             type="button"
-                            onClick={() => navigate(-2)}
+                            onClick={() => navigate("/")}
                             className="flex items-center gap-2 px-4 py-2 bg-nodux-marino/80 hover:bg-nodux-marino/90 text-white rounded-xl shadow transition-colors"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

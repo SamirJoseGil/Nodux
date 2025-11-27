@@ -165,9 +165,13 @@ export default function ModuloDashboard() {
                         transition={{ delay: 0.2, duration: 0.6 }}
                         className="mb-8"
                     >
-                        <div className="bg-gradient-to-br from-nodux-amarillo/10 to-nodux-naranja/10 border-2 border-nodux-amarillo/30 p-8 rounded-2xl text-center shadow-lg">
-                            <div className="w-16 h-16 bg-gradient-to-br from-nodux-amarillo to-nodux-naranja rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                <FeatureIcon type="lightbulb" size={32} className="text-white" />
+                        <div className="bg-gradient-to-br from-nodux-amarillo/10 to-nodux-naranja/10 border-2 border-nodux-amarillo/30 p-4 rounded-2xl text-center shadow-lg">
+                            <div className="flex justify-center">
+                                <img
+                                src="/images/LogoNodoEafit.png"
+                                alt="Logo Nodo EAFIT"
+                                className="w-32 h-24 object-contain"
+                                />
                             </div>
                             
                             <blockquote className="font-inter text-xl italic text-zafiro-900 mb-4 leading-relaxed max-w-3xl mx-auto">

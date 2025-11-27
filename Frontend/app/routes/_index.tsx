@@ -84,14 +84,14 @@ export default function Index() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 group">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
-              >
-                <span className="font-thicker text-white text-xl">N</span>
-              </motion.div>
+              <img
+              src="/images/LogoNodoEafit.png"
+              alt="Logo Nodo EAFIT"
+              className="w-24 h-24 object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+              />
               <span className="font-thicker text-2xl text-white group-hover:text-nodux-neon transition-colors">
-                NODUX
+              NODUX
               </span>
             </Link>
 
@@ -381,9 +381,12 @@ export default function Index() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center">
-                <span className="font-thicker text-white text-xl">N</span>
-              </div>
+                <img
+              src="/images/LogoNodoEafit.png"
+              alt="Logo Nodo EAFIT"
+              className="w-32 h-32 object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+              />
               <span className="font-thicker text-2xl text-white">NODUX</span>
             </div>
             <p className="font-inter text-white/60">

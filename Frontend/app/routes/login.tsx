@@ -82,15 +82,15 @@ export default function Login() {
             />
 
             {/* Header */}
-            <header className="w-full py-4 px-6 glass-strong relative z-10">
+            <header className="w-full px-6 glass-strong relative z-10">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <motion.div
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
-                        >
-                            <span className="font-thicker text-white text-xl">N</span>
-                        </motion.div>
+                    <img
+                    src="/images/LogoNodoEafit.png"
+                    alt="Logo Nodo EAFIT"
+                    className="w-28 h-20 object-contain"
+                    style={{ filter: "brightness(0) invert(1)" }}
+                    />
                         <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                     <Link 
