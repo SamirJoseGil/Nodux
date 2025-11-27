@@ -1,6 +1,7 @@
 from django.db import models
 from apps.mentors.models import Mentor
 from apps.core.models import Schedule
+from datetime import date  # ← Correcto: de datetime, no de django.db
 
 
 class Project(models.Model):
@@ -33,9 +34,11 @@ class Group(models.Model):
 class Event(models.Model):
     group = models.ForeignKey(to=Group, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
-    date = models.DateField()
-    start_date = models.DateField()
-    end_date = models.DateField()
+    event_date = models.DateField(default=date.today)  # Renombrado para evitar conflicto
+    start_date = models.DateField(default=date.today)
+    end_date = models.DateField(default=date.today)
+    is_cancelled = models.BooleanField(default=False)  # ← Nuevo campo
+    cancellation_reason = models.TextField(blank=True, null=True)  # ← Nuevo campo
 
     class Meta:
         ordering = ["id"]

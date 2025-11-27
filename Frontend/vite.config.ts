@@ -17,6 +17,7 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    allowedHosts: ['4effed0f490f.ngrok-free.app'],
   },
   define: {
     'process.env.API_BASE_URL': JSON.stringify(process.env.API_BASE_URL || 'http://localhost:8000/api'),

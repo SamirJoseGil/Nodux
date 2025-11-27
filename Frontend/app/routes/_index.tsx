@@ -1,297 +1,397 @@
-import { Link, isRouteErrorResponse, useRouteError } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { useAuth } from "~/contexts/AuthContext";
-import Navbar from "~/components/Navigation/Navbar";
-import Footer from "~/components/Navigation/Footer";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import AcademicIcon from "~/components/Icons/AcademicIcon";
 import ProductIcon from "~/components/Icons/ProductIcon";
 import AdminIcon from "~/components/Icons/AdminIcon";
-import NotFound from "~/components/ErrorBoundary/NotFound";
+import FeatureIcon from "~/components/Icons/FeatureIcon";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Nodux - Plataforma de Proyectos" },
-    {
-      name: "description",
-      content: "Plataforma de gestión de proyectos y mentores",
-    },
+    { title: "Nodux - Plataforma de Proyectos Académicos" },
+    { name: "description", content: "Plataforma de gestión de proyectos y mentores" },
   ];
+};
+
+// ✅ Variantes de animación
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.1,
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const floatVariants = {
+  initial: { y: 0 },
+  animate: {
+    y: [-10, 10, -10],
+    transition: {
+      duration: 6,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
 };
 
 export default function Index() {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const [scrollY, setScrollY] = useState(0);
+
+  // ✅ Parallax effect
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
+      <div className="flex items-center justify-center min-h-screen bg-zafiro-500">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-nodux-neon border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Navegación */}
-      <Navbar />
+    <div className="min-h-screen bg-zafiro-500 overflow-x-hidden">
+      {/* ✅ Navbar con Glassmorphism */}
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-50 navbar"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-3 group">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
+              >
+                <span className="font-thicker text-white text-xl">N</span>
+              </motion.div>
+              <span className="font-thicker text-2xl text-white group-hover:text-nodux-neon transition-colors">
+                NODUX
+              </span>
+            </Link>
 
-      {/* Hero section */}
-      <div className="relative py-20 bg-gradient-to-br from-blue-600 to-indigo-700 overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-            <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-              <h1 className="text-4xl tracking-tight font-bold text-white sm:text-5xl md:text-6xl">
-                <span className="block">Gestión de proyectos</span>
-                <span className="block text-blue-200">académicos y mentorías</span>
-              </h1>
-              <p className="mt-3 text-base text-blue-100 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Nodux es una plataforma integral para la gestión de proyectos académicos,
-                mentoría de estudiantes y seguimiento de actividades educativas.
-              </p>
+            {/* Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#caracteristicas" className="text-white/80 hover:text-white font-inter font-semibold transition-colors">
+                Características
+              </a>
               {!isAuthenticated && (
-                <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                  <div className="flex flex-col sm:flex-row gap-4 sm:justify-center lg:justify-start">
-                    <Link to="/registro" className="btn-primary px-8 py-4 text-base font-medium bg-white text-blue-600 hover:bg-gray-50">
-                      Comenzar Ahora
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="btn-secondary px-8 py-4 text-base font-medium text-white border-white hover:bg-white hover:text-blue-600"
-                    >
-                      Iniciar sesión
-                    </Link>
-                  </div>
-                </div>
+                <>
+                  <Link to="/login" className="text-white/80 hover:text-white font-inter font-semibold transition-colors">
+                    Iniciar sesión
+                  </Link>
+                  <Link to="/registro" className="btn-primary">
+                    Registrarse
+                  </Link>
+                </>
+              )}
+              {isAuthenticated && (
+                <Link to="/selector-modulo" className="btn-primary">
+                  Dashboard
+                </Link>
               )}
             </div>
+          </div>
+        </div>
+      </motion.nav>
 
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-              <div className="relative mx-auto w-full lg:max-w-md">
-                <div className="relative block w-full bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+      {/* ✅ Hero Section con SVG en lugar de emoji */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        {/* Background animated gradient */}
+        <div className="absolute inset-0 hero-gradient">
+          {/* Animated shapes */}
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 180, 0],
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid lg:grid-cols-2 gap-12 items-center"
+          >
+            {/* Left content */}
+            <motion.div variants={itemVariants} className="text-center lg:text-left">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="inline-flex items-center gap-2 mb-4 px-4 py-2 glass-strong rounded-full"
+              >
+                <FeatureIcon type="rocket" size={20} className="text-nodux-marino" />
+                <span className="text-nodux-marino font-inter font-bold text-sm">
+                  Plataforma Educativa del Futuro
+                </span>
+              </motion.div>
+
+              <h1 className="font-thicker text-5xl sm:text-6xl lg:text-7xl text-white mb-6 leading-tight">
+                Gestión de
+                <span className="block text-gradient-neon">
+                  Proyectos Académicos
+                </span>
+              </h1>
+
+              <p className="font-inter text-lg sm:text-xl text-white/80 mb-8 max-w-2xl leading-relaxed">
+                Transformamos la educación con una plataforma integral para mentoría,
+                seguimiento de proyectos y desarrollo de talento excepcional.
+              </p>
+
+              {!isAuthenticated && (
+                <motion.div
+                  variants={itemVariants}
+                  className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                >
+                  <Link to="/registro" className="btn-primary text-lg px-8 py-4">
+                    Comenzar Ahora
+                    <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                  <Link to="/login" className="btn-secondary text-lg px-8 py-4">
+                    Iniciar Sesión
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Stats */}
+              <motion.div
+                variants={itemVariants}
+                className="mt-12 grid grid-cols-3 gap-6"
+              >
+                {[
+                  {
+                    value: "500+",
+                    label: "Estudiantes",
+                  },
+                  {
+                    value: "50+",
+                    label: "Mentores",
+                  },
+                  {
+                    value: "100+",
+                    label: "Proyectos",
+                  },
+                ].map((stat, i) => (
+                  <div key={i} className="glass-strong rounded-2xl p-4 text-center">
+                    <div className="font-thicker text-3xl text-white mb-1">{stat.value}</div>
+                    <div className="font-inter text-sm text-white/70">{stat.label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Right content - Floating card */}
+            <motion.div
+              variants={floatVariants}
+              initial="initial"
+              animate="animate"
+              className="relative"
+            >
+              <div className="glass-card p-8 relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-nodux-neon/20 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-nodux-marino/20 rounded-full blur-3xl" />
+
+                <div className="relative">
                   <img
-                    className="w-full"
-                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-                    alt="Equipo de trabajo colaborando"
+                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    alt="Equipo colaborando"
+                    className="rounded-2xl shadow-2xl"
+                  />
+
+                  {/* Floating badge */}
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="absolute -bottom-4 -right-4 glass-strong px-6 py-3 rounded-2xl shadow-neon"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-nodux-marino rounded-full animate-pulse" />
+                      <span className="font-inter font-bold text-white">
+                        En vivo ahora
+                      </span>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <svg className="w-6 h-6 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.div>
+      </section>
+
+      {/* ✅ Características Section con SVG */}
+      <section id="caracteristicas" className="py-32 relative h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-thicker text-4xl sm:text-5xl text-white mb-4">
+              Características <span className="text-gradient-neon">Poderosas</span>
+            </h2>
+            <p className="font-inter text-xl text-white/70 max-w-2xl mx-auto">
+              Herramientas diseñadas específicamente para entornos educativos
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: 'chart',
+                title: "Gestión de Proyectos",
+                description: "Organiza y supervisa proyectos con herramientas avanzadas"
+              },
+              {
+                icon: 'users',
+                title: "Sistema de Mentorías",
+                description: "Conecta mentores y estudiantes eficientemente"
+              },
+              {
+                icon: 'calendar',
+                title: "Calendario Integrado",
+                description: "Coordina sesiones y eventos en tiempo real"
+              },
+              {
+                icon: 'analytics',
+                title: "Métricas y Reportes",
+                description: "Análisis detallado del progreso y desempeño"
+              },
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="glass-card group cursor-pointer p-6"
+              >
+                <div className="mb-4">
+                  <FeatureIcon 
+                    type={feature.icon as any} 
+                    size={48} 
+                    className="text-nodux-neon group-hover:text-nodux-marino transition-colors duration-300" 
                   />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Características */}
-      <div id="caracteristicas" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:text-center">
-            <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Características</h2>
-            <p className="mt-2 text-3xl leading-8 font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Una mejor manera de gestionar proyectos académicos
-            </p>
-            <p className="mt-4 max-w-2xl text-xl text-slate-600 lg:mx-auto">
-              Herramientas diseñadas específicamente para entornos educativos y de mentoría.
-            </p>
-          </div>
-
-          <div className="mt-10">
-            <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
-              {[
-                {
-                  icon: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  ),
-                  title: "Gestión de proyectos",
-                  description: "Crea, organiza y supervisa proyectos académicos con herramientas de seguimiento y evaluación."
-                },
-                {
-                  icon: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  ),
-                  title: "Sistema de mentorías",
-                  description: "Conecta mentores y estudiantes con herramientas para programar sesiones, registrar horas y evaluar avances."
-                },
-                {
-                  icon: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  ),
-                  title: "Calendario integrado",
-                  description: "Visualiza y coordina sesiones, entregas y eventos importantes en un solo lugar."
-                },
-                {
-                  icon: (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  ),
-                  title: "Métricas y reportes",
-                  description: "Obtén información valiosa sobre el progreso de los proyectos, desempeño de mentores y más."
-                }
-              ].map((feature, index) => (
-                <div key={index} className="flex">
-                  <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-blue-600 text-white shadow-lg">
-                      <svg className="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        {feature.icon}
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg leading-6 font-semibold text-slate-900">{feature.title}</h3>
-                    <p className="mt-2 text-base text-slate-600">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Módulos disponibles */}
-      <div id="modulos" className="py-16 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-slate-900 text-center mb-12">
-            Módulos disponibles
-          </h2>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {/* Módulo Académico */}
-            <div className="card group hover:shadow-lg transition-all duration-200">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center">
-                  <AcademicIcon size={32} className="text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-4">
-                  Módulo Académico
+                <h3 className="font-inter font-bold text-xl text-white mb-2">
+                  {feature.title}
                 </h3>
-                <p className="text-slate-600 mb-6">
-                  Diseñado para instituciones educativas, este módulo permite gestionar proyectos académicos,
-                  mentorías, evaluaciones y seguimiento del progreso de los estudiantes.
+                <p className="font-inter text-white/70">
+                  {feature.description}
                 </p>
-                <div>
-                  {isAuthenticated ? (
-                    <Link to="/modulo/academico/dashboard" className="btn-primary">
-                      Acceder
-                    </Link>
-                  ) : (
-                    <Link to="/login" className="btn-secondary">
-                      Iniciar sesión para acceder
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Módulo de Producto */}
-            <div className="card group hover:shadow-lg transition-all duration-200">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-600 to-teal-600 rounded-2xl flex items-center justify-center">
-                  <ProductIcon size={32} className="text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-4">
-                  Módulo de Producto
-                </h3>
-                <p className="text-slate-600 mb-6">
-                  Orientado a la gestión de productos y servicios, permite la planificación, desarrollo y seguimiento
-                  de productos desde la fase de ideación hasta el lanzamiento.
-                </p>
-                <div>
-                  {isAuthenticated ? (
-                    <Link to="/modulo/producto/dashboard" className="btn-primary">
-                      Acceder
-                    </Link>
-                  ) : (
-                    <Link to="/login" className="btn-secondary">
-                      Iniciar sesión para acceder
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Módulo de Administración */}
-            {isAuthenticated && (user?.role === 'Admin' || user?.role === 'SuperAdmin') && (
-              <div className="card group hover:shadow-lg transition-all duration-200">
-                <div className="card-body text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center">
-                    <AdminIcon size={32} className="text-white" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-4">
-                    Administración
-                  </h3>
-                  <p className="text-slate-600 mb-6">
-                    Gestión centralizada de usuarios, permisos y configuración del sistema para administradores.
-                  </p>
-                  <div>
-                    <Link to="/modulo/administracion/dashboard" className="btn-primary">
-                      Acceder
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
+              </motion.div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="relative bg-blue-600 overflow-hidden">
-        <div className="relative max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">
-            <span className="block">¿Listo para comenzar?</span>
-          </h2>
-          <p className="mt-4 text-lg leading-6 text-blue-200">
-            Únete a Nodux y lleva tus proyectos académicos y mentorías al siguiente nivel.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
-            {isAuthenticated ? (
-              <Link
-                to={user?.role === 'Admin' || user?.role === 'SuperAdmin'
-                  ? '/selector-modulo'
-                  : user?.role === 'Mentor'
-                    ? '/modulo/academico/mentor/dashboard'
-                    : '/modulo/academico/estudiante/dashboard'}
-                className="btn-primary bg-white text-blue-600 hover:bg-gray-50"
-              >
-                Ir a mi Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link to="/registro" className="btn-primary bg-white text-blue-600 hover:bg-gray-50">
-                  Registrarse
+      {/* ✅ CTA Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-nodux-neon/20 to-nodux-marino/20" />
+        
+        <div className="relative max-w-4xl mx-auto text-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="glass-card p-6"
+          >
+            <h2 className="font-thicker text-4xl sm:text-5xl text-white mb-6">
+              ¿Listo para <span className="text-gradient-neon">Comenzar?</span>
+            </h2>
+            <p className="font-inter text-xl text-white/80 mb-8">
+              Únete a Nodux y transforma tu experiencia educativa
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {isAuthenticated ? (
+                <Link to="/selector-modulo" className="btn-primary text-lg px-8 py-4">
+                  Ir a Dashboard
                 </Link>
-                <Link to="/login" className="btn-secondary text-white border-white hover:bg-white hover:text-blue-600">
-                  Iniciar sesión
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link to="/registro" className="btn-primary text-lg px-8 py-4">
+                    Registrarse Gratis
+                  </Link>
+                  <Link to="/login" className="btn-secondary text-lg px-8 py-4">
+                    Iniciar Sesión
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ✅ Footer */}
+      <footer className="py-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center">
+                <span className="font-thicker text-white text-xl">N</span>
+              </div>
+              <span className="font-thicker text-2xl text-white">NODUX</span>
+            </div>
+            <p className="font-inter text-white/60">
+              © 2024 Nodux. Todos los derechos reservados.
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return <NotFound />;
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900 mb-4">
-          Ha ocurrido un error
-        </h1>
-        <p className="text-slate-600">
-          Por favor, inténtalo de nuevo más tarde.
-        </p>
-      </div>
+      </footer>
     </div>
   );
 }

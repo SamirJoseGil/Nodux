@@ -4,15 +4,24 @@ import AdminLayout from '~/components/Layout/AdminLayout';
 import { ProtectedRoute } from '~/components/ProtectedRoute';
 import { ProjectService } from '~/services/academicService';
 import type { Project } from '~/types/academic';
+import { motion } from 'framer-motion';
+import FeatureIcon from '~/components/Icons/FeatureIcon';
 
 export const meta: MetaFunction = () => {
     return [
         { title: `Gestión de Proyectos - Académico - Nodux` },
-        {
-            name: "description",
-            content: `Gestiona proyectos en el módulo académico`,
-        },
+        { name: "description", content: `Gestiona proyectos en el módulo académico` },
     ];
+};
+
+const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
+const cardVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
 };
 
 export default function ProjectsAdmin() {
@@ -47,36 +56,6 @@ export default function ProjectsAdmin() {
         setSelectedProject(project);
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'active':
-                return 'badge-success';
-            case 'completed':
-                return 'badge-info';
-            case 'cancelled':
-                return 'badge-error';
-            case 'pending':
-                return 'badge-warning';
-            default:
-                return 'badge-neutral';
-        }
-    };
-
-    const getStatusText = (status: string) => {
-        switch (status) {
-            case 'active':
-                return 'Activo';
-            case 'completed':
-                return 'Completado';
-            case 'cancelled':
-                return 'Cancelado';
-            case 'pending':
-                return 'Pendiente';
-            default:
-                return status;
-        }
-    };
-
     const handleCreateProject = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -87,210 +66,270 @@ export default function ProjectsAdmin() {
 
         setLoading(true);
         try {
-            console.log('Creando proyecto con datos:', formData);
             const newProject = await ProjectService.createProject({
                 name: formData.name,
-                isActive: formData.isActive
+                status: formData.isActive ? 'active' : 'pending'
             });
             setProjects([...projects, newProject]);
             setShowCreateModal(false);
             setFormData({ name: '', description: '', isActive: true });
-            alert('Proyecto creado exitosamente');
         } catch (error: any) {
-            console.error('Error al crear proyecto:', error);
-            const errorMessage = error.response?.data?.message || 
-                                error.response?.data?.error ||
-                                'Error al crear proyecto. Por favor verifica los datos.';
-            alert(errorMessage);
+            alert(`Error: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active': return 'badge-success';
+            case 'completed': return 'badge-info';
+            case 'pending': return 'badge-warning';
+            default: return 'badge-neutral';
+        }
+    };
+
+    if (loading && projects.length === 0) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Gestión de Proyectos">
+                    <div className="flex justify-center items-center h-64">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="text-nodux-neon text-lg font-inter"
+                        >
+                            Cargando proyectos...
+                        </motion.div>
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
+
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Gestión de Proyectos">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Lista de proyectos */}
-                    <div className="lg:col-span-2">
-                        <div className="card">
-                            <div className="card-header flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-slate-900">
-                                    Proyectos ({projects.length})
-                                </h3>
+                <div className="min-h-screen -m-6 p-6">
+                    {/* Header */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mb-8"
+                    >
+                        <div className="glass-card p-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-nodux-marino to-nodux-amarillo rounded-xl flex items-center justify-center">
+                                        <FeatureIcon type="book" size={24} className="text-zafiro-900" />
+                                    </div>
+                                    <div>
+                                        <h1 className="font-thicker text-2xl text-zafiro-900">Gestión de Proyectos</h1>
+                                        <p className="font-inter text-sm text-zafiro-700">{projects.length} proyectos registrados</p>
+                                    </div>
+                                </div>
                                 <button 
                                     type="button" 
                                     className="btn-primary"
                                     onClick={() => setShowCreateModal(true)}
                                 >
-                                    Crear proyecto
+                                    <FeatureIcon type="book" size={20} className="inline mr-2" />
+                                    Crear Proyecto
                                 </button>
                             </div>
+                        </div>
+                    </motion.div>
 
-                            {loading ? (
-                                <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                                </div>
-                            ) : error ? (
-                                <div className="card-body">
-                                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-                                        {error}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Lista de proyectos */}
+                        <motion.div
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="lg:col-span-2"
+                        >
+                            {error ? (
+                                <div className="glass-card p-6">
+                                    <div className="flex items-center gap-3 text-nodux-naranja">
+                                        <FeatureIcon type="lightbulb" size={24} />
+                                        <p className="font-inter">{error}</p>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="table">
-                                        <thead className="table-header">
-                                            <tr>
-                                                <th className="table-header-cell">Nombre del Proyecto</th>
-                                                <th className="table-header-cell">Estado</th>
-                                                <th className="table-header-cell">Fechas</th>
-                                                <th className="table-header-cell">Estadísticas</th>
-                                                <th className="table-header-cell">
-                                                    <span className="sr-only">Acciones</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {projects.map((project) => (
-                                                <tr
-                                                    key={project.id}
-                                                    onClick={() => handleProjectSelect(project)}
-                                                    className={`table-row cursor-pointer ${selectedProject?.id === project.id ? 'bg-blue-50' : ''}`}
-                                                >
-                                                    <td className="table-cell">
-                                                        <div className="text-sm font-medium text-slate-900">{project.name}</div>
-                                                        <div className="text-sm text-slate-600 truncate max-w-xs">{project.description}</div>
-                                                    </td>
-                                                    <td className="table-cell">
+                                <div className="space-y-4">
+                                    {projects.map((project) => (
+                                        <motion.div
+                                            key={project.id}
+                                            variants={cardVariants}
+                                            whileHover={{ scale: 1.02, x: 5 }}
+                                            onClick={() => handleProjectSelect(project)}
+                                            className={`glass-card p-6 cursor-pointer transition-all ${
+                                                selectedProject?.id === project.id ? 'ring-2 ring-nodux-marino' : ''
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <h3 className="font-inter font-bold text-zafiro-900 mb-2">
+                                                        {project.name}
+                                                    </h3>
+                                                    {project.description && (
+                                                        <p className="font-inter text-sm text-zafiro-700 mb-3">
+                                                            {project.description}
+                                                        </p>
+                                                    )}
+                                                    <div className="flex items-center gap-3 flex-wrap">
                                                         <span className={`badge ${getStatusColor(project.status)}`}>
-                                                            {getStatusText(project.status)}
+                                                            {project.status === 'active' ? 'Activo' : 'Pendiente'}
                                                         </span>
-                                                    </td>
-                                                    <td className="table-cell">
-                                                        <div>Inicio: {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}</div>
-                                                        {project.endDate && (
-                                                            <div>Fin: {new Date(project.endDate).toLocaleDateString()}</div>
+                                                        {project.groups && project.groups.length > 0 && (
+                                                            <span className="badge badge-info">
+                                                                {project.groups.length} grupos
+                                                            </span>
                                                         )}
-                                                    </td>
-                                                    <td className="table-cell">
-                                                        <div>{project.mentorCount ?? 0} mentores</div>
-                                                        <div>{project.studentCount ?? 0} estudiantes</div>
-                                                        <div>{project.totalHours ?? 0} horas</div>
-                                                    </td>
-                                                    <td className="table-cell text-right">
-                                                        <button
-                                                            type="button"
-                                                            className="btn-ghost"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleProjectSelect(project);
-                                                            }}
-                                                        >
-                                                            Ver
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                    </div>
+                                                </div>
+                                                <button className="btn-ghost text-zafiro-900">Ver</button>
+                                            </div>
+                                        </motion.div>
+                                    ))}
                                 </div>
                             )}
-                        </div>
+                        </motion.div>
+
+                        {/* Panel de detalle */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="lg:col-span-1"
+                        >
+                            {selectedProject ? (
+                                <div className="glass-card overflow-hidden">
+                                    <div className="px-6 py-4 border-b border-zafiro-300">
+                                        <h3 className="font-inter text-lg font-bold text-zafiro-900">
+                                            Detalles del Proyecto
+                                        </h3>
+                                    </div>
+                                    <div className="p-6 space-y-4">
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Nombre</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">{selectedProject.name}</p>
+                                        </div>
+                                        {selectedProject.description && (
+                                            <div>
+                                                <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Descripción</span>
+                                                <p className="font-inter text-zafiro-900 mt-1">{selectedProject.description}</p>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Estado</span>
+                                            <p className="mt-1">
+                                                <span className={`badge ${getStatusColor(selectedProject.status)}`}>
+                                                    {selectedProject.status === 'active' ? 'Activo' : 'Pendiente'}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        {selectedProject.groups && selectedProject.groups.length > 0 && (
+                                            <div>
+                                                <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Grupos</span>
+                                                <p className="font-inter text-zafiro-900 mt-1">
+                                                    {selectedProject.groups.length} grupos asignados
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="px-6 py-4 border-t border-zafiro-300 flex gap-2">
+                                        <button type="button" className="btn-secondary flex-1">
+                                            Editar
+                                        </button>
+                                        <button type="button" className="btn-primary flex-1">
+                                            Ver Grupos
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="glass-card p-8 text-center">
+                                    <FeatureIcon type="book" size={48} className="mx-auto mb-4 text-zafiro-400" />
+                                    <p className="font-inter text-zafiro-700">
+                                        Selecciona un proyecto para ver sus detalles
+                                    </p>
+                                </div>
+                            )}
+                        </motion.div>
                     </div>
 
-                    {/* Panel de detalle */}
-                    <div className="lg:col-span-1">
-                        {selectedProject ? (
-                            <div className="card">
-                                <div className="card-header">
-                                    <h3 className="text-lg font-semibold text-slate-900">
-                                        Detalles del Proyecto
-                                    </h3>
+                    {/* Modal de creación */}
+                    {showCreateModal && (
+                        <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="glass-card max-w-md w-full"
+                            >
+                                <div className="px-6 py-4 border-b border-zafiro-300">
+                                    <h2 className="font-thicker text-2xl text-zafiro-900">Crear Proyecto</h2>
                                 </div>
-                                <div className="card-body space-y-4">
-                                    {/* ...existing project details... */}
-                                </div>
-                                <div className="card-footer flex gap-2">
-                                    <button type="button" className="btn-secondary">
-                                        Editar
-                                    </button>
-                                    <button type="button" className="btn-primary">
-                                        Ver detalles completos
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="card p-6 text-center">
-                                <p className="text-slate-600">Selecciona un proyecto para ver sus detalles</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Modal de creación */}
-                {showCreateModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                            <h2 className="text-xl font-bold mb-4">Crear Proyecto</h2>
-                            <form onSubmit={handleCreateProject}>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Nombre del proyecto <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            className="form-input mt-1 w-full"
-                                            placeholder="Sistema de Gestión"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Descripción</label>
-                                        <textarea
-                                            className="form-input mt-1 w-full"
-                                            rows={3}
-                                            placeholder="Descripción del proyecto..."
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="flex items-center">
+                                
+                                <form onSubmit={handleCreateProject} className="p-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="form-label text-zafiro-900">
+                                                Nombre del proyecto <span className="text-nodux-naranja">*</span>
+                                            </label>
                                             <input
-                                                type="checkbox"
-                                                className="form-checkbox h-4 w-4 text-blue-600"
-                                                checked={formData.isActive}
-                                                onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                                                type="text"
+                                                required
+                                                className="form-input w-full text-zafiro-900 placeholder-zafiro-500"
+                                                placeholder="Sistema de Gestión"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({...formData, name: e.target.value})}
                                             />
-                                            <span className="ml-2 text-sm text-gray-700">Proyecto activo</span>
-                                        </label>
+                                        </div>
+                                        <div>
+                                            <label className="form-label text-zafiro-900">Descripción</label>
+                                            <textarea
+                                                className="form-input w-full text-zafiro-900 placeholder-zafiro-500"
+                                                rows={3}
+                                                placeholder="Descripción del proyecto..."
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-zafiro-400 bg-white text-nodux-neon focus:ring-nodux-neon"
+                                                    checked={formData.isActive}
+                                                    onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                                                />
+                                                <span className="font-inter text-sm text-zafiro-900">Proyecto activo</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex gap-2 mt-6">
-                                    <button 
-                                        type="button" 
-                                        className="btn-secondary" 
-                                        onClick={() => setShowCreateModal(false)}
-                                        disabled={loading}
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button 
-                                        type="submit" 
-                                        className="btn-primary"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Creando...' : 'Crear'}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="flex gap-2 mt-6">
+                                        <button 
+                                            type="button" 
+                                            className="btn-secondary flex-1" 
+                                            onClick={() => setShowCreateModal(false)}
+                                            disabled={loading}
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            className="btn-primary flex-1"
+                                            disabled={loading}
+                                        >
+                                            {loading ? 'Creando...' : 'Crear'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </AdminLayout>
         </ProtectedRoute>
     );

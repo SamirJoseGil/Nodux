@@ -1,41 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from '@remix-run/react';
 import type { MetaFunction } from '@remix-run/node';
-import { useAuth } from '~/contexts/AuthContext';
-import ProtectedRoute from '~/components/ProtectedRoute';
-import SystemAdminLayout from '~/components/Layout/SystemAdminLayout';
+import SystemAdminLayout from '~/components/Layout/SystemAdminLayout'; // ← CAMBIO AQUÍ
+import { ProtectedRoute } from '~/components/ProtectedRoute';
 import { AdminService } from '~/services/adminService';
-import type { User, UserRole } from '~/types/auth';
+import type { User } from '~/types/auth';
+import { motion } from 'framer-motion';
+import FeatureIcon from '~/components/Icons/FeatureIcon';
 
 export const meta: MetaFunction = () => {
     return [
-        { title: `Administración de Usuarios - Nodux` },
-        {
-            name: "description",
-            content: `Gestión centralizada de usuarios en el sistema Nodux`,
-        },
+        { title: `Gestión de Usuarios - Administración - Nodux` },
+        { name: "description", content: `Administra usuarios del sistema` },
     ];
 };
 
-export default function AdminUsers() {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const { user: currentUser } = useAuth();
+export default function UsersAdmin() {
     const [users, setUsers] = useState<User[]>([]);
-    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [roleFilter, setRoleFilter] = useState<string>('all');
-    const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('filter') || 'all');
-
-    // Estado para el formulario de edición
-    const [editMode, setEditMode] = useState(false);
-    const [editForm, setEditForm] = useState({
-        name: '',
-        email: '',
-        role: '',
-        active: true
-    });
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [filterRole, setFilterRole] = useState<string>('all');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -43,7 +26,6 @@ export default function AdminUsers() {
             try {
                 const data = await AdminService.getUsers();
                 setUsers(data);
-                setFilteredUsers(data);
             } catch (error) {
                 console.error('Error al cargar usuarios:', error);
             } finally {
@@ -54,393 +36,198 @@ export default function AdminUsers() {
         fetchUsers();
     }, []);
 
-    // Efecto para aplicar filtros
-    useEffect(() => {
-        let result = [...users];
+    const filteredUsers = filterRole === 'all'
+        ? users
+        : users.filter(u => u.role === filterRole);
 
-        // Filtro por estado (activo/inactivo)
-        if (statusFilter === 'active') {
-            result = result.filter(user => user.active);
-        } else if (statusFilter === 'inactive') {
-            result = result.filter(user => !user.active);
-        }
-
-        // Filtro por rol
-        if (roleFilter !== 'all') {
-            result = result.filter(user => user.role === roleFilter);
-        }
-
-        // Filtro por término de búsqueda
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            result = result.filter(user =>
-                user.name.toLowerCase().includes(term) ||
-                user.email.toLowerCase().includes(term)
-            );
-        }
-
-        setFilteredUsers(result);
-    }, [users, searchTerm, roleFilter, statusFilter]);
-
-    const handleSelectUser = (user: User) => {
-        setSelectedUser(user);
-        setEditMode(false);
-        setEditForm({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            active: user.active || false
-        });
+    const getRoleBadgeColor = (role: string) => {
+        const colors: Record<string, string> = {
+            'SuperAdmin': 'badge-error',
+            'Admin': 'badge-warning',
+            'Mentor': 'badge-info',
+            'Estudiante': 'badge-success',
+            'Trabajador': 'badge-info',
+            'Usuario base': 'badge-neutral'
+        };
+        return colors[role] || 'badge-neutral';
     };
 
-    const handleEditToggle = () => {
-        setEditMode(!editMode);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-
-        if (name === 'active') {
-            const checkbox = e.target as HTMLInputElement;
-            setEditForm({ ...editForm, [name]: checkbox.checked });
-        } else {
-            setEditForm({ ...editForm, [name]: value });
-        }
-    };
-
-    const handleSaveChanges = async () => {
-        if (!selectedUser) return;
-
-        try {
-            const updatedUser = await AdminService.updateUser(selectedUser.id, {
-                name: editForm.name,
-                email: editForm.email,
-                role: editForm.role as UserRole,
-                active: editForm.active
-            });
-
-            // Actualizar la lista de usuarios
-            setUsers(users.map(u => u.id === selectedUser.id ? updatedUser : u));
-            setSelectedUser(updatedUser);
-            setEditMode(false);
-
-            // Mostrar mensaje de éxito
-            alert('Usuario actualizado correctamente');
-        } catch (error) {
-            console.error('Error al actualizar usuario:', error);
-            alert('Error al actualizar usuario. Inténtalo de nuevo más tarde.');
-        }
-    };
-
-    const handleDeleteUser = async () => {
-        if (!selectedUser) return;
-
-        // Evitar que el usuario elimine su propia cuenta
-        if (selectedUser.id === currentUser?.id) {
-            alert('No puedes eliminar tu propia cuenta');
-            return;
-        }
-
-        // Confirmar antes de eliminar
-        if (!window.confirm(`¿Estás seguro que deseas eliminar al usuario ${selectedUser.name}?`)) {
-            return;
-        }
-
-        try {
-            await AdminService.deleteUser(selectedUser.id);
-
-            // Actualizar la lista de usuarios
-            setUsers(users.filter(u => u.id !== selectedUser.id));
-            setSelectedUser(null);
-
-            // Mostrar mensaje de éxito
-            alert('Usuario eliminado correctamente');
-        } catch (error) {
-            console.error('Error al eliminar usuario:', error);
-            alert('Error al eliminar usuario. Inténtalo de nuevo más tarde.');
-        }
-    };
-
-    const roleOptions: UserRole[] = ['Admin', 'SuperAdmin', 'Mentor', 'Estudiante', 'Trabajador', 'Usuario base'];
+    if (loading) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <SystemAdminLayout title="Gestión de Usuarios">
+                    <div className="flex justify-center items-center h-64">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="text-nodux-naranja text-lg font-inter"
+                        >
+                            Cargando usuarios...
+                        </motion.div>
+                    </div>
+                </SystemAdminLayout>
+            </ProtectedRoute>
+        );
+    }
 
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
-            <SystemAdminLayout title="Administración de Usuarios">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Panel de filtros */}
-                    <div className="lg:col-span-3 card">
-                        <div className="card-body">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                {/* Búsqueda */}
-                                <div className="col-span-2">
-                                    <label htmlFor="search" className="form-label">Buscar usuario</label>
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        id="search"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="form-input"
-                                        placeholder="Nombre o correo electrónico"
-                                    />
+            <SystemAdminLayout title="Gestión de Usuarios"> {/* ← CAMBIO AQUÍ */}
+                <div className="min-h-screen -m-6 p-6 bg-white">
+                    {/* Header */}
+                    <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center">
+                                        <FeatureIcon type="users" size={24} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="font-thicker text-2xl text-zafiro-900">Gestión de Usuarios</h1>
+                                        <p className="font-inter text-sm text-gray-600">{filteredUsers.length} usuarios</p>
+                                    </div>
                                 </div>
+                                <select
+                                    value={filterRole}
+                                    onChange={(e) => setFilterRole(e.target.value)}
+                                    className="form-input max-w-xs text-zafiro-900"
+                                >
+                                    <option value="all" className="bg-white">Todos los roles</option>
+                                    <option value="SuperAdmin" className="bg-white">SuperAdmin</option>
+                                    <option value="Admin" className="bg-white">Admin</option>
+                                    <option value="Mentor" className="bg-white">Mentor</option>
+                                    <option value="Estudiante" className="bg-white">Estudiante</option>
+                                    <option value="Trabajador" className="bg-white">Trabajador</option>
+                                    <option value="Usuario base" className="bg-white">Usuario base</option>
+                                </select>
+                            </div>
+                        </div>
+                    </motion.div>
 
-                                {/* Filtro por rol */}
-                                <div>
-                                    <label htmlFor="role-filter" className="form-label">Filtrar por rol</label>
-                                    <select
-                                        id="role-filter"
-                                        name="role-filter"
-                                        value={roleFilter}
-                                        onChange={(e) => setRoleFilter(e.target.value)}
-                                        className="form-input"
-                                    >
-                                        <option value="all">Todos los roles</option>
-                                        {roleOptions.map(role => (
-                                            <option key={role} value={role}>{role}</option>
-                                        ))}
-                                    </select>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Lista de usuarios */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200">
+                                    <h2 className="font-inter text-xl font-bold text-zafiro-900">
+                                        Lista de Usuarios
+                                    </h2>
                                 </div>
-
-                                {/* Filtro por estado */}
-                                <div>
-                                    <label htmlFor="status-filter" className="form-label">Filtrar por estado</label>
-                                    <select
-                                        id="status-filter"
-                                        name="status-filter"
-                                        value={statusFilter}
-                                        onChange={(e) => setStatusFilter(e.target.value)}
-                                        className="form-input"
-                                    >
-                                        <option value="all">Todos los estados</option>
-                                        <option value="active">Activos</option>
-                                        <option value="inactive">Inactivos</option>
-                                    </select>
+                                <div className="p-6 space-y-4">
+                                    {filteredUsers.map((user) => (
+                                        <motion.div
+                                            key={user.id}
+                                            whileHover={{ scale: 1.02, x: 5 }}
+                                            onClick={() => setSelectedUser(user)}
+                                            className={`p-4 bg-gray-50 hover:bg-gray-100 border-2 rounded-xl cursor-pointer transition-all ${
+                                                selectedUser?.id === user.id ? 'border-nodux-neon' : 'border-gray-200'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-full flex items-center justify-center text-white font-thicker text-lg">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-inter font-bold text-zafiro-900 mb-1">
+                                                            {user.name}
+                                                        </h3>
+                                                        <p className="font-inter text-sm text-gray-600 mb-2">
+                                                            {user.email}
+                                                        </p>
+                                                        <span className={`badge ${getRoleBadgeColor(user.role)}`}>
+                                                            {user.role}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    {user.active ? (
+                                                        <span className="badge badge-success">Activo</span>
+                                                    ) : (
+                                                        <span className="badge badge-error">Inactivo</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Lista de usuarios */}
-                    <div className="lg:col-span-2">
-                        <div className="card">
-                            <div className="card-header flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-slate-900">
-                                    Usuarios ({filteredUsers.length})
-                                </h3>
-                                <button type="button" className="btn-primary">
-                                    Crear usuario
-                                </button>
-                            </div>
+                        {/* Panel de detalle */}
+                        <div className="lg:col-span-1">
+                            {selectedUser ? (
+                                <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+                                    <div className="px-6 py-4 border-b border-gray-200">
+                                        <h3 className="font-inter text-lg font-bold text-zafiro-900">
+                                            Detalles del Usuario
+                                        </h3>
+                                    </div>
+                                    <div className="p-6 space-y-4">
+                                        <div className="text-center pb-4 border-b border-gray-200">
+                                            <div className="w-20 h-20 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-full flex items-center justify-center text-white font-thicker text-3xl mx-auto mb-4">
+                                                {selectedUser.name.charAt(0)}
+                                            </div>
+                                            <h4 className="font-inter font-bold text-zafiro-900 text-lg mb-1">
+                                                {selectedUser.name}
+                                            </h4>
+                                            <p className="font-inter text-sm text-gray-600">
+                                                {selectedUser.email}
+                                            </p>
+                                        </div>
 
-                            {loading ? (
-                                <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                                </div>
-                            ) : filteredUsers.length === 0 ? (
-                                <div className="card-body text-center text-slate-500">
-                                    No se encontraron usuarios que coincidan con los criterios de búsqueda.
+                                        <div className="space-y-3">
+                                            <div>
+                                                <span className="font-inter text-xs font-bold text-gray-600 uppercase">Rol</span>
+                                                <p className="mt-1">
+                                                    <span className={`badge ${getRoleBadgeColor(selectedUser.role)}`}>
+                                                        {selectedUser.role}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span className="font-inter text-xs font-bold text-gray-600 uppercase">Estado</span>
+                                                <p className="mt-1">
+                                                    {selectedUser.active ? (
+                                                        <span className="badge badge-success">Activo</span>
+                                                    ) : (
+                                                        <span className="badge badge-error">Inactivo</span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                            {selectedUser.lastLogin && (
+                                                <div>
+                                                    <span className="font-inter text-xs font-bold text-gray-600 uppercase">Último acceso</span>
+                                                    <p className="font-inter text-zafiro-900 mt-1">
+                                                        {new Date(selectedUser.lastLogin).toLocaleString('es-ES')}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="px-6 py-4 border-t border-gray-200 flex gap-2">
+                                        <button type="button" className="btn-secondary flex-1">
+                                            Editar
+                                        </button>
+                                        <button type="button" className="btn-primary flex-1">
+                                            Cambiar Rol
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="table">
-                                        <thead className="table-header">
-                                            <tr>
-                                                <th className="table-header-cell">Usuario</th>
-                                                <th className="table-header-cell">Rol</th>
-                                                <th className="table-header-cell">Estado</th>
-                                                <th className="table-header-cell">
-                                                    <span className="sr-only">Acciones</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {filteredUsers.map((user) => (
-                                                <tr
-                                                    key={user.id}
-                                                    onClick={() => handleSelectUser(user)}
-                                                    className={`table-row cursor-pointer ${selectedUser?.id === user.id ? 'bg-gray-50' : ''}`}
-                                                >
-                                                    <td className="table-cell">
-                                                        <div className="flex items-center">
-                                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                                <span className="text-slate-700 font-medium">{user.name.charAt(0)}</span>
-                                                            </div>
-                                                            <div className="ml-4">
-                                                                <div className="text-sm font-medium text-slate-900">{user.name}</div>
-                                                                <div className="text-sm text-slate-500">{user.email}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="table-cell">
-                                                        <span className={`badge ${user.role === 'Admin' ? 'badge-info' :
-                                                            user.role === 'SuperAdmin' ? 'badge-error' :
-                                                                user.role === 'Mentor' ? 'badge-warning' :
-                                                                    user.role === 'Estudiante' ? 'badge-success' :
-                                                                        'badge-neutral'
-                                                            }`}>
-                                                            {user.role}
-                                                        </span>
-                                                    </td>
-                                                    <td className="table-cell">
-                                                        <span className={`badge ${user.active ? 'badge-success' : 'badge-error'}`}>
-                                                            {user.active ? 'Activo' : 'Inactivo'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="table-cell text-right">
-                                                        <button
-                                                            type="button"
-                                                            className="btn-ghost"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleSelectUser(user);
-                                                            }}
-                                                        >
-                                                            Ver
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg p-8 text-center">
+                                    <FeatureIcon type="users" size={48} className="mx-auto mb-4 text-gray-400" />
+                                    <p className="font-inter text-gray-600">
+                                        Selecciona un usuario para ver sus detalles
+                                    </p>
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* Panel de detalle/edición */}
-                    <div className="lg:col-span-1">
-                        {selectedUser ? (
-                            <div className="card">
-                                <div className="card-header flex justify-between items-center">
-                                    <h3 className="text-lg font-semibold text-slate-900">
-                                        Detalles del Usuario
-                                    </h3>
-                                    <div className="flex space-x-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleEditToggle}
-                                            className="btn-secondary"
-                                        >
-                                            {editMode ? 'Cancelar' : 'Editar'}
-                                        </button>
-                                        {editMode && (
-                                            <button
-                                                type="button"
-                                                onClick={handleSaveChanges}
-                                                className="btn-primary"
-                                            >
-                                                Guardar
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="card-body space-y-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="form-label">Nombre completo</label>
-                                            {editMode ? (
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={editForm.name}
-                                                    onChange={handleInputChange}
-                                                    className="form-input"
-                                                />
-                                            ) : (
-                                                <div className="text-sm text-slate-900">{selectedUser.name}</div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="form-label">Correo electrónico</label>
-                                            {editMode ? (
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={editForm.email}
-                                                    onChange={handleInputChange}
-                                                    className="form-input"
-                                                />
-                                            ) : (
-                                                <div className="text-sm text-slate-900">{selectedUser.email}</div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="form-label">Rol</label>
-                                            {editMode ? (
-                                                <select
-                                                    name="role"
-                                                    value={editForm.role}
-                                                    onChange={handleInputChange}
-                                                    className="form-input"
-                                                >
-                                                    {roleOptions.map(role => (
-                                                        <option key={role} value={role}>{role}</option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedUser.role === 'Admin' ? 'bg-blue-100 text-blue-800' :
-                                                    selectedUser.role === 'SuperAdmin' ? 'bg-red-100 text-red-800' :
-                                                        selectedUser.role === 'Mentor' ? 'bg-purple-100 text-purple-800' :
-                                                            selectedUser.role === 'Estudiante' ? 'bg-green-100 text-green-800' :
-                                                                'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                    {selectedUser.role}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="form-label">Estado</label>
-                                            {editMode ? (
-                                                <div className="flex items-center">
-                                                    <input
-                                                        id="active"
-                                                        name="active"
-                                                        type="checkbox"
-                                                        checked={editForm.active}
-                                                        onChange={handleInputChange}
-                                                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                                    />
-                                                    <label htmlFor="active" className="ml-2 block text-sm text-gray-900">
-                                                        {editForm.active ? 'Activo' : 'Inactivo'}
-                                                    </label>
-                                                </div>
-                                            ) : (
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {selectedUser.active ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="form-label">Último acceso</label>
-                                            <div className="text-sm text-slate-900">
-                                                {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : 'Nunca ha accedido'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {!editMode && (
-                                    <div className="card-footer">
-                                        <button
-                                            type="button"
-                                            onClick={handleDeleteUser}
-                                            disabled={selectedUser.id === currentUser?.id}
-                                            className={`btn-primary w-full ${selectedUser.id === currentUser?.id
-                                                ? 'opacity-50 cursor-not-allowed'
-                                                : 'bg-red-600 hover:bg-red-700'
-                                                }`}
-                                        >
-                                            {selectedUser.id === currentUser?.id ? "No puedes eliminar tu cuenta" : "Eliminar usuario"}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="card p-6 text-center">
-                                <p className="text-slate-500">Selecciona un usuario para ver sus detalles</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             </SystemAdminLayout>

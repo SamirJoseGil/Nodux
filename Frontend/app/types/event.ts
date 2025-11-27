@@ -5,7 +5,26 @@ export interface Event {
   date: string;
   startDate: string;
   endDate: string;
-  schedule: string;
+  // Schedule info (from optimized endpoint)
+  scheduleId: string | null;
+  scheduleDay: number | null;
+  scheduleDayName: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  startHour: number;
+  endHour: number;
+  duration: number;
+  // Group info
+  groupInfo: {
+    id: string;
+    location: string;
+    mode: string;
+    project: string | null;
+    mentor: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
 }
 
 export interface EventCreateData {
@@ -14,5 +33,5 @@ export interface EventCreateData {
   date: string;
   startDate: string;
   endDate: string;
-  schedule: string;
+  scheduleId: string | null;
 }

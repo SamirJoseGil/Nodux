@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@remix-run/react";
 import type { MetaFunction } from "@remix-run/node";
 import { useAuth } from "~/contexts/AuthContext";
 import { motion } from "framer-motion";
+import FeatureIcon from "~/components/Icons/FeatureIcon";
 
 export const meta: MetaFunction = () => {
     return [
@@ -61,19 +62,40 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
+        <div className="min-h-screen bg-zafiro-500 flex flex-col relative overflow-hidden">
+            {/* Background animated shapes */}
+            <motion.div
+                animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 180, 360],
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+            />
+            <motion.div
+                animate={{
+                    scale: [1.2, 1, 1.2],
+                    rotate: [360, 180, 0],
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+            />
+
             {/* Header */}
-            <header className="w-full py-4 px-6 bg-white/80 backdrop-blur-sm shadow-sm">
+            <header className="w-full py-4 px-6 glass-strong relative z-10">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">N</span>
-                        </div>
-                        <span className="text-xl font-bold text-gray-900">Nodux</span>
+                        <motion.div
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
+                        >
+                            <span className="font-thicker text-white text-xl">N</span>
+                        </motion.div>
+                        <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                     <Link 
                         to="/registro" 
-                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors"
                     >
                         Crear cuenta
                     </Link>
@@ -81,7 +103,7 @@ export default function Login() {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 flex items-center justify-center p-4">
+            <div className="flex-1 flex items-center justify-center p-4 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -89,18 +111,19 @@ export default function Login() {
                     className="w-full max-w-md"
                 >
                     {/* Card */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="glass-card overflow-hidden">
                         {/* Header del Card */}
                         <div className="px-8 pt-8 pb-6 text-center">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                </svg>
-                            </div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                            <motion.div
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                className="w-16 h-16 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-neon"
+                            >
+                                <FeatureIcon type="shield" size={32} className="text-white" />
+                            </motion.div>
+                            <h1 className="font-thicker text-3xl text-white mb-2">
                                 Iniciar Sesión
                             </h1>
-                            <p className="text-gray-600 text-sm">
+                            <p className="font-inter text-white/70">
                                 Ingresa tus credenciales para continuar
                             </p>
                         </div>
@@ -111,76 +134,61 @@ export default function Login() {
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="p-4 bg-red-50 border border-red-200 rounded-xl"
+                                    className="p-4 bg-nodux-naranja/20 border border-nodux-naranja/30 rounded-xl"
                                 >
                                     <div className="flex items-start gap-3">
-                                        <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-5 h-5 text-nodux-naranja mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                         </svg>
-                                        <p className="text-sm text-red-800 font-medium">{errors.general}</p>
+                                        <p className="text-sm text-nodux-naranja font-medium font-inter">{errors.general}</p>
                                     </div>
                                 </motion.div>
                             )}
 
                             {/* Username Field */}
                             <div className="space-y-2">
-                                <label htmlFor="username" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="username" className="form-label text-white">
                                     Usuario o Correo Electrónico
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                        <FeatureIcon type="users" size={20} className="text-black" />
                                     </div>
                                     <input
                                         id="username"
                                         type="text"
                                         value={formData.username}
                                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                        className={`w-full pl-12 pr-4 py-3 border ${errors.username ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all`}
-                                        placeholder="admin, superadmin, admin@nodux.com"
+                                        className={`form-input pl-12 ${errors.username ? 'border-nodux-naranja' : ''}`}
+                                        placeholder="admin, mentor, estudiante..."
                                         disabled={isLoading}
                                     />
                                 </div>
-                                {errors.username && <p className="text-sm text-red-600">{errors.username}</p>}
-                                
-                                {/* Credenciales de prueba */}
-                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <p className="text-xs font-semibold text-blue-800 mb-2">Credenciales de prueba:</p>
-                                    <div className="space-y-1 text-xs text-blue-700">
-                                        <p>• <strong>superadmin</strong> / admin123 (SuperAdmin)</p>
-                                        <p>• <strong>admin</strong> / admin123 (Admin)</p>
-                                        <p>• <strong>mentor</strong> / mentor123 (Mentor)</p>
-                                        <p>• <strong>estudiante</strong> / estudiante123 (Estudiante)</p>
-                                    </div>
-                                </div>
+                                {errors.username && <p className="text-sm text-nodux-naranja font-inter">{errors.username}</p>}
                             </div>
 
                             {/* Password Field */}
                             <div className="space-y-2">
-                                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="password" className="form-label text-white">
                                     Contraseña
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
+                                        <FeatureIcon type="shield" size={20} className="text-black" />
                                     </div>
                                     <input
                                         id="password"
                                         type={showPassword ? "text" : "password"}
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className={`w-full pl-12 pr-12 py-3 border ${errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-xl focus:ring-2 focus:outline-none transition-all text-gray-900 placeholder-gray-400`}
+                                        className={`form-input pl-12 pr-12 ${errors.password ? 'border-nodux-naranja' : ''}`}
                                         placeholder="••••••••"
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/40 hover:text-white/60 transition-colors"
                                     >
                                         {showPassword ? (
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,14 +202,7 @@ export default function Login() {
                                         )}
                                     </button>
                                 </div>
-                                {errors.password && (
-                                    <p className="text-sm text-red-600 flex items-center gap-1">
-                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
-                                        {errors.password}
-                                    </p>
-                                )}
+                                {errors.password && <p className="text-sm text-nodux-naranja font-inter">{errors.password}</p>}
                             </div>
 
                             {/* Submit Button */}
@@ -210,11 +211,7 @@ export default function Login() {
                                 whileHover={{ scale: isLoading ? 1 : 1.02 }}
                                 whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                 disabled={isLoading}
-                                className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 ${
-                                    isLoading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/50'
-                                }`}
+                                className="btn-primary w-full"
                             >
                                 {isLoading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -236,12 +233,12 @@ export default function Login() {
                         </form>
 
                         {/* Footer del Card */}
-                        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
-                            <p className="text-center text-sm text-gray-600">
+                        <div className="px-8 py-6 border-t border-white/10">
+                            <p className="text-center text-sm text-white/70 font-inter">
                                 ¿No tienes una cuenta?{" "}
                                 <Link
                                     to="/registro"
-                                    className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                    className="font-bold text-nodux-neon hover:text-nodux-marino transition-colors"
                                 >
                                     Regístrate aquí
                                 </Link>
@@ -253,7 +250,7 @@ export default function Login() {
                     <div className="mt-6 text-center">
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                            className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors font-inter font-semibold"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

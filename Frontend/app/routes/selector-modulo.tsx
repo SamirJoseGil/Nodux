@@ -5,6 +5,62 @@ import { useAuth } from "~/contexts/AuthContext";
 import { ModuleService } from "~/services/moduleService";
 import type { Module } from "~/types/module";
 import type { UserRole } from "~/types/auth";
+import AcademicIcon from "~/components/Icons/AcademicIcon";
+import ProductIcon from "~/components/Icons/ProductIcon";
+import AdminIcon from "~/components/Icons/AdminIcon";
+
+// ✅ Variantes de animación
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15,
+            delayChildren: 0.2,
+        }
+    }
+};
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: {
+            duration: 0.5,
+            ease: "easeOut"
+        }
+    }
+};
+
+// ✅ Función para obtener el ícono del módulo
+const getModuleIcon = (moduleName: string) => {
+    switch(moduleName) {
+        case 'Académico':
+            return <AcademicIcon size={40} className="text-white" />;
+        case 'Producto':
+            return <ProductIcon size={40} className="text-white" />;
+        case 'Administración':
+            return <AdminIcon size={40} className="text-white" />;
+        default:
+            return <AcademicIcon size={40} className="text-white" />;
+    }
+};
+
+// ✅ Función para obtener el color del gradiente según el módulo
+const getModuleGradient = (moduleName: string) => {
+    switch(moduleName) {
+        case 'Académico':
+            return 'from-nodux-neon to-nodux-marino';
+        case 'Producto':
+            return 'from-nodux-marino to-nodux-amarillo';
+        case 'Administración':
+            return 'from-nodux-naranja to-nodux-amarillo';
+        default:
+            return 'from-nodux-neon to-nodux-marino';
+    }
+};
 
 export default function SelectorModulo() {
     const { user, isLoading: authLoading } = useAuth();
@@ -122,10 +178,32 @@ export default function SelectorModulo() {
     // Loading state
     if (isLoading || authLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Cargando módulos...</p>
+            <div className="min-h-screen bg-zafiro-500 flex items-center justify-center relative overflow-hidden">
+                {/* Animated background */}
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 180, 360],
+                    }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                />
+                <motion.div
+                    animate={{
+                        scale: [1.2, 1, 1.2],
+                        rotate: [360, 180, 0],
+                    }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                    className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+                />
+
+                <div className="text-center relative z-10">
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-16 h-16 border-4 border-nodux-neon border-t-transparent rounded-full mx-auto mb-4"
+                    />
+                    <p className="text-white font-inter font-medium">Cargando módulos...</p>
                 </div>
             </div>
         );
@@ -134,41 +212,51 @@ export default function SelectorModulo() {
     // Error state
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="min-h-screen bg-zafiro-500 relative overflow-hidden">
+                {/* Background shapes */}
+                <motion.div
+                    animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                />
+
                 {/* Header */}
-                <header className="bg-white border-b border-gray-200 py-4 px-6">
+                <header className="relative z-10 w-full py-4 px-6 glass-strong">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         <Link to="/" className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-xl">N</span>
-                            </div>
-                            <span className="text-xl font-bold text-gray-900">Nodux</span>
+                            <motion.div
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
+                            >
+                                <span className="font-thicker text-white text-xl">N</span>
+                            </motion.div>
+                            <span className="font-thicker text-2xl text-white">NODUX</span>
                         </Link>
                     </div>
                 </header>
 
                 {/* Error Content */}
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-md mx-auto bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center"
+                        className="max-w-md mx-auto glass-card p-8 text-center"
                     >
-                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-16 h-16 bg-nodux-naranja/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-nodux-naranja" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Sin acceso</h3>
-                        <p className="text-gray-600 mb-1">{error}</p>
+                        <h3 className="font-thicker text-2xl text-white mb-2">Sin acceso</h3>
+                        <p className="font-inter text-white/70 mb-4">{error}</p>
                         {user && (
-                            <p className="text-sm text-gray-500 mb-4">
-                                Tu rol actual: <strong>{user.role}</strong>
+                            <p className="text-sm text-white/60 mb-6">
+                                Tu rol actual: <strong className="text-nodux-neon">{user.role}</strong>
                             </p>
                         )}
                         <button
                             onClick={() => navigate('/')}
-                            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="btn-primary w-full"
                         >
                             Volver al Inicio
                         </button>
@@ -179,40 +267,90 @@ export default function SelectorModulo() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <div className="inline-block mb-4">
-                        <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        <div className="min-h-screen bg-zafiro-500 relative overflow-hidden">
+            {/* Animated Background */}
+            <motion.div
+                animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 180, 360],
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+            />
+            <motion.div
+                animate={{
+                    scale: [1.2, 1, 1.2],
+                    rotate: [360, 180, 0],
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+            />
+
+            {/* Header */}
+            <motion.header
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative z-10 w-full py-4 px-6 glass-strong"
+            >
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <Link to="/" className="flex items-center gap-2">
+                        <motion.div
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
+                        >
+                            <span className="font-thicker text-white text-xl">N</span>
+                        </motion.div>
+                        <span className="font-thicker text-2xl text-white">NODUX</span>
+                    </Link>
+                </div>
+            </motion.header>
+
+            {/* Main Content */}
+            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* Header Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-12"
+                >
+                    <div className="inline-block mb-6 text-left w-full">
+                        <button
+                            type="button"
+                            onClick={() => navigate(-2)}
+                            className="flex items-center gap-2 px-4 py-2 bg-nodux-marino/80 hover:bg-nodux-marino/90 text-white rounded-xl shadow transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
-                        </div>
+                            <span>Volver</span>
+                        </button>
                     </div>
-                    <h1 className="text-4xl font-bold text-slate-900 mb-4">
-                        Selecciona tu módulo
+                    <h1 className="font-thicker text-4xl sm:text-5xl text-white mb-4">
+                        Selecciona tu <span className="text-gradient-neon">Módulo</span>
                     </h1>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                    <p className="font-inter text-lg text-white/70 max-w-2xl mx-auto">
                         Elige el espacio de trabajo que mejor se adapte a tus necesidades
                     </p>
-                </div>
+                </motion.div>
 
                 {/* User Info Card */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8"
+                    transition={{ delay: 0.3 }}
+                    className="glass-card p-6 mb-12"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                        <div className="w-16 h-16 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-full flex items-center justify-center text-white font-thicker text-2xl shadow-neon">
                             {user?.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1">
-                            <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
+                            <h2 className="font-inter text-xl font-bold text-white">{user?.name}</h2>
                             <div className="flex items-center gap-4 mt-1">
-                                <p className="text-gray-600">{user?.email}</p>
-                                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                <p className="font-inter text-white/70">{user?.email}</p>
+                                <span className="px-3 py-1 bg-nodux-neon/20 text-nodux-neon border border-nodux-neon/30 rounded-full text-sm font-bold font-inter">
                                     {user?.role}
                                 </span>
                             </div>
@@ -220,75 +358,73 @@ export default function SelectorModulo() {
                     </div>
                 </motion.div>
 
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                        Selecciona un Módulo
-                    </h1>
-                    <p className="text-lg text-gray-600">
-                        Elige el módulo con el que deseas trabajar
-                    </p>
-                </div>
-
+                {/* Modules Grid */}
                 {modules.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-md mx-auto bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center"
+                        className="max-w-md mx-auto glass-card p-8 text-center"
                     >
-                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-16 h-16 bg-nodux-amarillo/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-nodux-amarillo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Sin acceso</h3>
-                        <p className="text-gray-600 mb-1">
+                        <h3 className="font-thicker text-2xl text-white mb-2">Sin acceso</h3>
+                        <p className="font-inter text-white/70 mb-4">
                             No tienes acceso a ningún módulo.
                         </p>
-                        <p className="text-sm text-gray-500 mb-4">
-                            Tu rol actual: <strong>{user?.role}</strong>
+                        <p className="text-sm font-inter text-white/60 mb-6">
+                            Tu rol actual: <strong className="text-nodux-neon">{user?.role}</strong>
                         </p>
-                        <p className="text-gray-600">
+                        <p className="font-inter text-white/70">
                             Contacta al administrador para obtener los permisos necesarios.
                         </p>
                     </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {modules.map((module, index) => (
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {modules.map((module) => (
                             <motion.button
                                 key={module.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ scale: 1.02, y: -4 }}
+                                variants={cardVariants}
+                                whileHover={{ scale: 1.05, y: -8 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleModuleClick(module)}
-                                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-500 text-left group"
+                                className="glass-card p-8 text-left group relative overflow-hidden"
                             >
+                                {/* Decorative gradient on hover */}
+                                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 from-nodux-neon to-nodux-marino" />
+
                                 {/* Icon */}
-                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                    <span className="text-4xl">{module.icon}</span>
+                                <div className={`w-20 h-20 bg-gradient-to-br ${getModuleGradient(module.name)} rounded-2xl flex items-center justify-center mb-6 shadow-neon group-hover:shadow-neon-lg group-hover:scale-110 transition-all duration-300 relative z-10`}>
+                                    {getModuleIcon(module.name)}
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                                <h3 className="font-inter font-bold text-2xl text-white mb-3 group-hover:text-nodux-neon transition-colors relative z-10">
                                     {module.name}
                                 </h3>
-                                <p className="text-gray-600 mb-4">
+                                <p className="font-inter text-white/70 mb-4 relative z-10">
                                     {module.description}
                                 </p>
 
                                 {/* Arrow */}
-                                <div className="flex items-center text-blue-600 font-medium group-hover:translate-x-2 transition-transform">
+                                <div className="flex items-center text-nodux-neon font-inter font-bold group-hover:translate-x-2 transition-transform relative z-10">
                                     <span>Acceder</span>
                                     <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                     </svg>
                                 </div>
                             </motion.button>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
-            </div>
+            </main>
         </div>
     );
 }

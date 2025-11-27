@@ -41,82 +41,189 @@ export const MentorService = {
   },
 
   createMentor: async (mentorData: Partial<Mentor>): Promise<Mentor> => {
-    const nameParts = mentorData.name?.split(' ') || [''];
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    try {
+      const nameParts = mentorData.name?.split(' ') || [''];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0];
+      
+      // Generar username y password
+      const username = mentorData.email?.split('@')[0] || `mentor_${Date.now()}`;
+      const password = `Mentor${Date.now()}`;
 
-    // Estructura correcta según backend
-    const formData = new FormData();
-    formData.append('profile.user.first_name', firstName);
-    formData.append('profile.user.last_name', lastName);
-    formData.append('profile.user.email', mentorData.email || '');
-    formData.append('profile.phone', mentorData.phone || '');
-    formData.append('charge', mentorData.specialty || '');
-    formData.append('knowledge_level', 'basico'); // Default value
+      console.log('📤 Preparando datos del mentor:', {
+        firstName,
+        lastName,
+        email: mentorData.email,
+        username,
+        phone: mentorData.phone,
+        specialty: mentorData.specialty
+      });
 
-    console.log('Creating mentor with data:', {
-      firstName,
-      lastName,
-      email: mentorData.email,
-      phone: mentorData.phone,
-      charge: mentorData.specialty
-    });
+      // ✅ Estructura correcta según el backend
+      const payload = {
+        profile: {
+          user: {
+            first_name: firstName,
+            last_name: lastName,
+            email: mentorData.email || '',
+            username: username,
+            password: password
+          },
+          phone: mentorData.phone || ''
+        },
+        charge: mentorData.specialty || '',
+        knowledge_level: 'basico'
+      };
 
-    const response = await apiClient.post('/mentors/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    const m = response.data;
-    return {
-      id: String(m.id),
-      userId: String(m.id),
-      name: `${m.first_name} ${m.last_name}`,
-      email: m.email,
-      phone: m.phone || '',
-      specialty: m.charge,
-      profileImage: m.photo ?? undefined,
-      bio: '',
-      status: 'active' as const,
-      expertise: [],
-      createdAt: undefined,
-    };
+      console.log('📤 Payload a enviar:', JSON.stringify(payload, null, 2));
+
+      const response = await apiClient.post('/mentors/', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('✅ Respuesta del servidor:', response.data);
+      
+      const m = response.data;
+      return {
+        id: String(m.id),
+        userId: String(m.id),
+        name: `${m.first_name} ${m.last_name}`,
+        email: m.email,
+        phone: m.phone || '',
+        specialty: m.charge,
+        profileImage: m.photo ?? undefined,
+        bio: '',
+        status: 'active' as const,
+        expertise: [],
+        createdAt: undefined,
+      };
+    } catch (error: any) {
+      console.error('❌ Error al crear mentor:', error);
+      console.error('📋 Detalles del error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Extraer mensajes de error específicos del backend
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        console.error('🔴 Errores de validación:', JSON.stringify(errorData, null, 2));
+        
+        // Procesar errores anidados de profile.user
+        if (errorData.profile?.user) {
+          const userErrors = errorData.profile.user;
+          
+          if (userErrors.email) {
+            const emailErrors = Array.isArray(userErrors.email) 
+              ? userErrors.email[0] 
+              : userErrors.email;
+            throw new Error(`Email: ${emailErrors}`);
+          }
+          
+          if (userErrors.username) {
+            const usernameErrors = Array.isArray(userErrors.username)
+              ? userErrors.username[0]
+              : userErrors.username;
+            throw new Error(`Usuario: ${usernameErrors}`);
+          }
+          
+          if (userErrors.password) {
+            const passwordErrors = Array.isArray(userErrors.password)
+              ? userErrors.password[0]
+              : userErrors.password;
+            throw new Error(`Contraseña: ${passwordErrors}`);
+          }
+          
+          // Extraer el primer error encontrado
+          const firstErrorKey = Object.keys(userErrors)[0];
+          const firstError = userErrors[firstErrorKey];
+          if (Array.isArray(firstError)) {
+            throw new Error(`${firstErrorKey}: ${firstError[0]}`);
+          }
+        }
+        
+        if (errorData.charge) {
+          const chargeErrors = Array.isArray(errorData.charge)
+            ? errorData.charge[0]
+            : errorData.charge;
+          throw new Error(`Cargo: ${chargeErrors}`);
+        }
+        
+        if (errorData.knowledge_level) {
+          const levelErrors = Array.isArray(errorData.knowledge_level)
+            ? errorData.knowledge_level[0]
+            : errorData.knowledge_level;
+          throw new Error(`Nivel: ${levelErrors}`);
+        }
+        
+        // Error genérico
+        const errorMsg = errorData.detail || 
+                        errorData.message || 
+                        JSON.stringify(errorData);
+        throw new Error(`Error de validación: ${errorMsg}`);
+      }
+      
+      throw new Error(error.message || 'Error al crear mentor');
+    }
   },
 
   updateMentor: async (mentorId: string, mentorData: Partial<Mentor>): Promise<Mentor> => {
-    const nameParts = mentorData.name?.split(' ') || [''];
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    try {
+      const nameParts = mentorData.name?.split(' ') || [''];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0];
 
-    const formData = new FormData();
-    formData.append('profile.user.first_name', firstName);
-    formData.append('profile.user.last_name', lastName);
-    formData.append('profile.user.email', mentorData.email || '');
-    formData.append('profile.phone', mentorData.phone || '');
-    formData.append('charge', mentorData.specialty || '');
-    formData.append('knowledge_level', 'basico');
+      const payload = {
+        user: {
+          first_name: firstName,
+          last_name: lastName,
+          email: mentorData.email || ''
+        },
+        phone: mentorData.phone || '',
+        charge: mentorData.specialty || '',
+        knowledge_level: 'basico'
+      };
 
-    const response = await apiClient.put(`/mentors/${mentorId}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    const m = response.data;
-    return {
-      id: String(m.id),
-      userId: String(m.id),
-      name: `${m.first_name} ${m.last_name}`,
-      email: m.email,
-      phone: m.phone || '',
-      specialty: m.charge,
-      profileImage: m.photo ?? undefined,
-      bio: '',
-      status: 'active' as const,
-      expertise: [],
-      createdAt: undefined,
-    };
+      console.log('📤 Actualizando mentor:', JSON.stringify(payload, null, 2));
+
+      const response = await apiClient.put(`/mentors/${mentorId}/`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const m = response.data;
+      return {
+        id: String(m.id),
+        userId: String(m.id),
+        name: `${m.first_name} ${m.last_name}`,
+        email: m.email,
+        phone: m.phone || '',
+        specialty: m.charge,
+        profileImage: m.photo ?? undefined,
+        bio: '',
+        status: 'active' as const,
+        expertise: [],
+        createdAt: undefined,
+      };
+    } catch (error: any) {
+      console.error('❌ Error al actualizar mentor:', error);
+      console.error('📋 Respuesta del servidor:', error.response?.data);
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        const errorMsg = errorData.detail || 
+                        errorData.message || 
+                        JSON.stringify(errorData);
+        throw new Error(errorMsg);
+      }
+      
+      throw error;
+    }
   },
 
   deleteMentor: async (mentorId: string): Promise<void> => {
@@ -239,7 +346,7 @@ export const GroupService = {
     const data = response.data.results || response.data;
     return (Array.isArray(data) ? data : []).map((g: any) => ({
       id: String(g.id),
-      name: '',
+      name: g.name || `Grupo ${g.id}`,
       projectId: String(g.project),
       mentorId: String(g.mentor),
       students: [],
@@ -260,21 +367,170 @@ export const GroupService = {
     }));
   },
 
-  createGroup: async (projectId: string, groupData: Partial<Group>): Promise<Group> => {
+  createGroup: async (projectId: string, groupData: {
+    mentorId: string;
+    location: string;
+    mode: 'presencial' | 'virtual' | 'hibrido';
+    scheduleDay: number;
+    startTime: string;
+    endTime: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<Group> => {
+    // ✅ Asegurarnos de que el mentor sea un número entero
+    const mentorId = parseInt(groupData.mentorId);
+    
+    // ✅ Validar que todos los campos requeridos estén presentes
+    if (!mentorId || isNaN(mentorId)) {
+      throw new Error('El ID del mentor es inválido');
+    }
+    
+    if (!groupData.location || !groupData.location.trim()) {
+      throw new Error('La ubicación es requerida');
+    }
+    
+    if (groupData.scheduleDay < 0 || groupData.scheduleDay > 6) {
+      throw new Error('El día de la semana debe estar entre 0 (Lunes) y 6 (Domingo)');
+    }
+    
+    if (!groupData.startTime || !groupData.endTime) {
+      throw new Error('Las horas de inicio y fin son requeridas');
+    }
+    
+    if (!groupData.startDate || !groupData.endDate) {
+      throw new Error('Las fechas de inicio y fin son requeridas');
+    }
+    
+    // ✅ Construir payload exactamente como el backend lo espera
     const payload = {
-      mentor: groupData.mentorId,
-      schedule: groupData.schedule?.[0]?.id,
-      location: groupData.schedule?.[0]?.location || '',
-      mode: 'presencial', // default
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +6 months
+      mentor: mentorId,                          // ← INTEGER, no string
+      location: groupData.location.trim(),       // ← STRING, sin espacios extra
+      mode: groupData.mode,                      // ← STRING: "presencial", "virtual", "hibrido"
+      start_date: groupData.startDate,           // ← DATE: "YYYY-MM-DD"
+      end_date: groupData.endDate,               // ← DATE: "YYYY-MM-DD"
+      schedule_day: groupData.scheduleDay,       // ← INTEGER: 0-6
+      start_time: groupData.startTime,           // ← TIME: "HH:MM:SS"
+      end_time: groupData.endTime                // ← TIME: "HH:MM:SS"
     };
     
-    const response = await apiClient.post(`/projects/${projectId}/groups/`, payload);
+    console.log('📤 Payload de creación de grupo (validado):', JSON.stringify(payload, null, 2));
+    console.log('📋 Tipos de datos:', {
+      mentor: typeof payload.mentor,
+      location: typeof payload.location,
+      mode: typeof payload.mode,
+      start_date: typeof payload.start_date,
+      end_date: typeof payload.end_date,
+      schedule_day: typeof payload.schedule_day,
+      start_time: typeof payload.start_time,
+      end_time: typeof payload.end_time
+    });
+    
+    try {
+      const response = await apiClient.post(`/projects/${projectId}/groups/`, payload);
+      
+      console.log('✅ Respuesta del backend:', JSON.stringify(response.data, null, 2));
+      
+      const g = response.data;
+      return {
+        id: String(g.id),
+        name: g.name || `Grupo ${g.id}`,
+        projectId: String(g.project),
+        mentorId: String(g.mentor),
+        students: [],
+        schedule: g.schedule
+          ? [{
+              id: String(g.schedule.id),
+              groupId: String(g.id),
+              day: String(g.schedule.day),
+              startTime: g.schedule.start_time,
+              endTime: g.schedule.end_time,
+              location: g.location ?? undefined,
+            }]
+          : [],
+        projectName: '',
+        mentorName: '',
+        description: '',
+        createdAt: undefined,
+      };
+    } catch (error: any) {
+      console.error('❌ Error completo al crear grupo:', error);
+      console.error('📋 Response status:', error.response?.status);
+      console.error('📋 Response data:', JSON.stringify(error.response?.data, null, 2));
+      console.error('📋 Request config:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.config?.data
+      });
+      
+      // Extraer mensaje de error específico del backend
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // El backend puede retornar errores en diferentes formatos
+        if (typeof errorData === 'string') {
+          throw new Error(errorData);
+        }
+        
+        if (errorData.error) {
+          throw new Error(errorData.error);
+        }
+        
+        if (errorData.detail) {
+          throw new Error(errorData.detail);
+        }
+        
+        // Errores de validación por campo
+        if (typeof errorData === 'object') {
+          const fieldErrors = [];
+          
+          for (const [field, messages] of Object.entries(errorData)) {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            fieldErrors.push(`${field}: ${messageArray.join(', ')}`);
+          }
+          
+          if (fieldErrors.length > 0) {
+            throw new Error(`Errores de validación:\n${fieldErrors.join('\n')}`);
+          }
+        }
+        
+        throw new Error(JSON.stringify(errorData));
+      }
+      
+      throw new Error(error.message || 'Error al crear grupo');
+    }
+  },
+
+  updateGroup: async (projectId: string, groupId: string, groupData: {
+    mentorId: string;
+    location: string;
+    mode: 'presencial' | 'virtual' | 'hibrido';
+    scheduleDay: number;
+    startTime: string;
+    endTime: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<Group> => {
+    const payload = {
+      mentor: parseInt(groupData.mentorId),
+      location: groupData.location,
+      mode: groupData.mode,
+      schedule_day: groupData.scheduleDay,
+      start_time: groupData.startTime,
+      end_time: groupData.endTime,
+      start_date: groupData.startDate,
+      end_date: groupData.endDate
+    };
+    
+    console.log('📤 Actualizando grupo:', JSON.stringify(payload, null, 2));
+    
+    const response = await apiClient.put(`/projects/${projectId}/groups/${groupId}/`, payload);
+    
+    console.log('✅ Grupo actualizado:', JSON.stringify(response.data, null, 2));
+    
     const g = response.data;
     return {
       id: String(g.id),
-      name: '',
+      name: g.name || `Grupo ${g.id}`,
       projectId: String(g.project),
       mentorId: String(g.mentor),
       students: [],
@@ -294,38 +550,33 @@ export const GroupService = {
       createdAt: undefined,
     };
   },
+
+  deleteGroup: async (projectId: string, groupId: string): Promise<void> => {
+    console.log('🗑️ Eliminando grupo:', groupId);
+    
+    await apiClient.delete(`/projects/${projectId}/groups/${groupId}/`);
+    
+    console.log('✅ Grupo eliminado exitosamente');
+  },
 };
 
-// ScheduleService
+// ScheduleService - Solo para consultas, NO para crear schedules manualmente
 export const ScheduleService = {
   getSchedules: async (): Promise<Schedule[]> => {
-    const response = await apiClient.get('/schedule/');
-    const data = response.data.results || response.data;
-    return (Array.isArray(data) ? data : []).map((s: any) => ({
-      id: String(s.id),
-      groupId: '',
-      day: String(s.day),
-      startTime: s.start_time,
-      endTime: s.end_time,
-      location: undefined,
-    }));
-  },
-  
-  createSchedule: async (scheduleData: Partial<Schedule>): Promise<Schedule> => {
-    const payload = {
-      day: Number(scheduleData.day),
-      start_time: scheduleData.startTime,
-      end_time: scheduleData.endTime,
-    };
-    const response = await apiClient.post('/schedule/', payload);
-    const s = response.data;
-    return {
-      id: String(s.id),
-      groupId: '',
-      day: String(s.day),
-      startTime: s.start_time,
-      endTime: s.end_time,
-      location: undefined,
-    };
+    try {
+      const response = await apiClient.get('/schedule/');
+      const data = response.data.results || response.data;
+      return (Array.isArray(data) ? data : []).map((s: any) => ({
+        id: String(s.id),
+        groupId: '',
+        day: String(s.day),
+        startTime: s.start_time,
+        endTime: s.end_time,
+        location: undefined,
+      }));
+    } catch (error) {
+      console.warn('⚠️ Error al cargar schedules (no crítico):', error);
+      return [];
+    }
   },
 };

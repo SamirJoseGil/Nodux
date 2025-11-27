@@ -114,8 +114,9 @@ MentorAvailability
 - **Responsabilidades**:
   - CRUD de proyectos
   - Gestión de grupos por proyecto
+  - **Generación automática de eventos** al crear grupos
   - Gestión de eventos por grupo
-  - Endpoint global de eventos
+  - Endpoint global de eventos optimizado para calendario
 
 **Relaciones:**
 ```
@@ -123,47 +124,72 @@ Project
   ↓ OneToMany
 Group
   ↓ ManyToOne (Mentor, Schedule)
-  ↓ OneToMany
+  ↓ OneToMany (generados automáticamente)
 Event
+```
+
+**Funcionalidad Clave: Generación Automática de Eventos**
+
+Cuando se crea un grupo, el sistema:
+1. Busca o crea un `Schedule` con el horario especificado
+2. Crea el `Group` con referencia al schedule
+3. Calcula todas las fechas entre `start_date` y `end_date` que coincidan con el día de la semana
+4. Genera eventos automáticamente con `bulk_create` (operación optimizada)
+5. Retorna el grupo con el contador de eventos creados
+
+```python
+# Ejemplo de generación
+Group: Lunes 8-10am, del 15/01/2024 al 15/06/2024
+→ Genera ~24 Events (uno por cada Lunes en ese periodo)
+→ Todos aparecen automáticamente en el calendario
 ```
 
 ## 🔄 Flujo de Datos
 
-### Ejemplo: Creación de Mentor
+### Ejemplo: Creación de Grupo con Eventos
 
 ```
 1. Request
-   POST /api/mentors/
+   POST /api/projects/1/groups/
    {
-     "profile": {
-       "user": {...},
-       "phone": "..."
-     },
-     "charge": "...",
-     "knowledge_level": "...",
-     "certificate": <file>
+     "mentor": 2,
+     "location": "Sala A",
+     "mode": "presencial",
+     "start_date": "2024-01-15",
+     "end_date": "2024-06-15",
+     "schedule_day": 0,  // Lunes
+     "start_time": "08:00:00",
+     "end_time": "10:00:00"
    }
    
-2. MentorViewSet.create()
+2. GroupViewSet.create()
    ↓
-3. MentorSerializer.create()
+3. Schedule.objects.get_or_create()
+   → Busca o crea Schedule (Lunes 8-10am)
    ↓
-4. CredentialService.generateUsername()
-   CredentialService.generatePassword()
+4. Group.objects.create()
+   → Crea grupo con schedule
    ↓
-5. User.objects.create_user()
+5. _generate_events_for_group()
+   → Calcula fechas (todos los Lunes entre 15/01 y 15/06)
+   → Usa bulk_create para eficiencia
    ↓
-6. Profile.objects.create()
+6. Event.objects.bulk_create()
+   → Crea 24 eventos (uno por semana durante 6 meses)
    ↓
-7. Mentor.objects.create()
-   ↓
-8. Response
+7. Response
    {
      "id": 1,
-     "first_name": "...",
-     ...
+     "events_created": 24,
+     "message": "✅ Grupo creado con 24 eventos..."
    }
 ```
+
+**Optimizaciones:**
+- `bulk_create()` para crear múltiples eventos en una sola query
+- `get_or_create()` para evitar duplicar schedules
+- Validación de fechas antes de crear eventos
+- Cálculo eficiente usando `timedelta(days=7)`
 
 ## 🔐 Autenticación y Permisos
 

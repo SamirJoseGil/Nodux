@@ -262,7 +262,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
@@ -274,22 +274,22 @@ LOGGING = {
         },
         'django.db.backends': {
             'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO (elimina queries SQL)
         },
         'apps.users': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
             'propagate': False,
         },
         'rest_framework_simplejwt': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
             'propagate': False,
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG' if DEBUG else 'INFO',
+        'level': 'INFO',  # ← Cambiar de DEBUG a INFO
     },
 }
 

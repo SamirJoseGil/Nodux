@@ -333,6 +333,28 @@ Representa un grupo dentro de un proyecto.
 
 - Al eliminar Project, se eliminan sus grupos (CASCADE)
 - No se puede eliminar Mentor o Schedule si están asignados a grupos (PROTECT)
+- **Al crear un grupo, se generan eventos automáticamente** basados en:
+  - El día de la semana del Schedule
+  - El rango de fechas (start_date - end_date)
+  - Frecuencia semanal (un evento por semana)
+- Los eventos heredan la ubicación del grupo
+- Si el grupo dura 6 meses con clases semanales, se crearán ~24 eventos
+
+### Flujo de Creación
+
+```
+1. Frontend envía datos del grupo con horario integrado
+   ↓
+2. Backend busca o crea un Schedule con los datos de horario
+   ↓
+3. Se crea el Group con referencia al Schedule
+   ↓
+4. Se calculan todas las fechas que coinciden con schedule_day
+   ↓
+5. Se crean eventos automáticamente para cada fecha
+   ↓
+6. Los eventos aparecen en el calendario inmediatamente
+```
 
 ### Ejemplo JSON
 
@@ -345,7 +367,8 @@ Representa un grupo dentro de un proyecto.
     "location": "Sala A",
     "mode": "presencial",
     "start_date": "2024-01-15",
-    "end_date": "2024-06-15"
+    "end_date": "2024-06-15",
+    "events_generated": 24
 }
 ```
 

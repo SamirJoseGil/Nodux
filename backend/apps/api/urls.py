@@ -24,7 +24,7 @@ router.register(r"attendance", MentorAttendanceViewSet, basename="attendance")
 router.register(r"projects", ProjectViewSet, basename="project")
 router.register(r"schedule", ScheduleViewSet, basename="schedule")
 
-# 👇 Nuevo endpoint global solo lectura de eventos
+# 👇 Este endpoint ya retorna eventos con schedule info
 router.register(r"events", EventListViewSet, basename="events")
 
 # --- Routers anidados ---

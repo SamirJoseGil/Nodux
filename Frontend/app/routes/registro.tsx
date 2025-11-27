@@ -4,6 +4,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { useAuth } from "~/contexts/AuthContext";
 import type { UserRole } from "~/contexts/AuthContext";
 import { motion } from "framer-motion";
+import FeatureIcon from "~/components/Icons/FeatureIcon";
 
 export const meta: MetaFunction = () => {
     return [
@@ -21,7 +22,7 @@ export default function Registro() {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "Estudiante" as UserRole // ← Default role
+        role: "Estudiante" as UserRole
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +93,7 @@ export default function Registro() {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                role: formData.role // ← Enviar rol seleccionado
+                role: formData.role
             });
         } catch (err: any) {
             console.error('Error en registro:', err);
@@ -104,47 +105,54 @@ export default function Registro() {
         }
     };
 
-    const availableRoles: { value: UserRole; label: string; icon: string; description: string }[] = [
+    const availableRoles: { value: UserRole; label: string; description: string }[] = [
         { 
             value: 'Estudiante', 
-            label: 'Estudiante', 
-            icon: '🎓',
+            label: 'Estudiante',
             description: 'Acceso a cursos y proyectos académicos'
         },
         { 
             value: 'Mentor', 
-            label: 'Mentor', 
-            icon: '👨‍🏫',
+            label: 'Mentor',
             description: 'Mentoría y guía de proyectos'
-        },
-        { 
-            value: 'Trabajador', 
-            label: 'Trabajador', 
-            icon: '👷',
-            description: 'Acceso al módulo de productos'
-        },
-        { 
-            value: 'Usuario base', 
-            label: 'Usuario Base', 
-            icon: '👤',
-            description: 'Acceso básico a la plataforma'
         },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
+        <div className="min-h-screen bg-zafiro-500 flex flex-col relative overflow-hidden">
+            {/* Background animated shapes */}
+            <motion.div
+                animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 180, 360],
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+            />
+            <motion.div
+                animate={{
+                    scale: [1.2, 1, 1.2],
+                    rotate: [360, 180, 0],
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+            />
+
             {/* Header */}
-            <header className="w-full py-4 px-6 bg-white/80 backdrop-blur-sm shadow-sm">
+            <header className="w-full py-4 px-6 glass-strong relative z-10">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">N</span>
-                        </div>
-                        <span className="text-xl font-bold text-gray-900">Nodux</span>
+                        <motion.div
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            className="w-10 h-10 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-xl flex items-center justify-center shadow-neon"
+                        >
+                            <span className="font-thicker text-white text-xl">N</span>
+                        </motion.div>
+                        <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                     <Link 
                         to="/login" 
-                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors"
                     >
                         Iniciar sesión
                     </Link>
@@ -152,7 +160,7 @@ export default function Registro() {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 flex items-center justify-center p-4 py-8">
+            <div className="flex-1 flex items-center justify-center p-4 py-8 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -160,13 +168,13 @@ export default function Registro() {
                     className="w-full max-w-md"
                 >
                     {/* Card */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="glass-card overflow-hidden">
                         {/* Header del Card */}
                         <div className="px-8 pt-8 pb-6 text-center">
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h1 className="font-thicker text-3xl text-white mb-2">
                                 Crear Cuenta
                             </h1>
-                            <p className="text-gray-600 text-sm">
+                            <p className="font-inter text-white/70">
                                 Completa los datos para registrarte
                             </p>
                         </div>
@@ -177,27 +185,25 @@ export default function Registro() {
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="p-4 bg-red-50 border border-red-200 rounded-xl"
+                                    className="p-4 bg-nodux-naranja/20 border border-nodux-naranja/30 rounded-xl"
                                 >
                                     <div className="flex items-start gap-3">
-                                        <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-5 h-5 text-nodux-naranja mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                         </svg>
-                                        <p className="text-sm text-red-800 font-medium">{errors.general}</p>
+                                        <p className="text-sm text-nodux-naranja font-medium font-inter">{errors.general}</p>
                                     </div>
                                 </motion.div>
                             )}
 
                             {/* Name Field */}
                             <div className="space-y-2">
-                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="name" className="form-label text-white text-white">
                                     Nombre Completo
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                        <FeatureIcon type="users" size={20} className="text-black" />
                                     </div>
                                     <input
                                         id="name"
@@ -205,22 +211,22 @@ export default function Registro() {
                                         type="text"
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className={`w-full pl-12 pr-4 py-3 border ${errors.name ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all`}
+                                        className={`form-input pl-12 ${errors.name ? 'border-nodux-naranja' : ''}`}
                                         placeholder="Juan Pérez"
                                         disabled={isLoading}
                                     />
                                 </div>
-                                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+                                {errors.name && <p className="text-sm text-nodux-naranja font-inter">{errors.name}</p>}
                             </div>
 
                             {/* Email Field */}
                             <div className="space-y-2">
-                                <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="email" className="form-label text-white text-white">
                                     Correo Electrónico
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="h-5 w-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                                         </svg>
                                     </div>
@@ -230,24 +236,22 @@ export default function Registro() {
                                         type="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className={`w-full pl-12 pr-4 py-3 border ${errors.email ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all`}
+                                        className={`form-input pl-12 ${errors.email ? 'border-nodux-naranja' : ''}`}
                                         placeholder="juan@correo.com"
                                         disabled={isLoading}
                                     />
                                 </div>
-                                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                                {errors.email && <p className="text-sm text-nodux-naranja font-inter">{errors.email}</p>}
                             </div>
 
                             {/* Password Field */}
                             <div className="space-y-2">
-                                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="password" className="form-label text-white">
                                     Contraseña
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
+                                        <FeatureIcon type="shield" size={20} className="text-black" />
                                     </div>
                                     <input
                                         id="password"
@@ -255,14 +259,14 @@ export default function Registro() {
                                         type={showPassword ? "text" : "password"}
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className={`w-full pl-12 pr-12 py-3 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all`}
+                                        className={`form-input pl-12 pr-12 ${errors.password ? 'border-nodux-naranja' : ''}`}
                                         placeholder="Mínimo 6 caracteres"
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-black hover:text-white/60 transition-colors"
                                     >
                                         {showPassword ? (
                                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,19 +280,17 @@ export default function Registro() {
                                         )}
                                     </button>
                                 </div>
-                                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+                                {errors.password && <p className="text-sm text-nodux-naranja font-inter">{errors.password}</p>}
                             </div>
 
                             {/* Confirm Password Field */}
                             <div className="space-y-2">
-                                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                                <label htmlFor="confirmPassword" className="form-label text-white">
                                     Confirmar Contraseña
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                        <FeatureIcon type="target" size={20} className="text-black" />
                                     </div>
                                     <input
                                         id="confirmPassword"
@@ -296,49 +298,46 @@ export default function Registro() {
                                         type="password"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className={`w-full pl-12 pr-4 py-3 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all`}
+                                        className={`form-input pl-12 ${errors.confirmPassword ? 'border-nodux-naranja' : ''}`}
                                         placeholder="Repite tu contraseña"
                                         disabled={isLoading}
                                     />
                                 </div>
-                                {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
+                                {errors.confirmPassword && <p className="text-sm text-nodux-naranja font-inter">{errors.confirmPassword}</p>}
                             </div>
 
-                            {/* Role Selector */}
-                            <div className="space-y-2">
-                                <label htmlFor="role" className="block text-sm font-semibold text-gray-700">
-                                    Selecciona tu Rol
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <select
-                                        id="role"
-                                        name="role"
-                                        value={formData.role}
-                                        onChange={handleChange}
-                                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all appearance-none bg-white"
-                                        disabled={isLoading}
-                                    >
+                                {/* Role Selector as Cards */}
+                                <div className="space-y-2">
+                                    <label className="form-label text-white">
+                                        Selecciona tu Rol
+                                    </label>
+                                    <div className="flex gap-4">
                                         {availableRoles.map(role => (
-                                            <option key={role.value} value={role.value}>
-                                                {role.icon} {role.label}
-                                            </option>
+                                            <button
+                                                key={role.value}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, role: role.value })}
+                                                disabled={isLoading}
+                                                className={`
+                                                    flex-1 p-4 rounded-xl border transition-all
+                                                    ${formData.role === role.value
+                                                        ? "bg-nodux-neon/10 border-nodux-neon shadow-neon text-nodux-neon"
+                                                        : "bg-white/5 border-white/10 text-white/80 hover:border-nodux-neon/60"}
+                                                    flex flex-col items-center gap-2
+                                                    focus:outline-none
+                                                `}
+                                            >
+                                                <FeatureIcon
+                                                    type={role.value === "Estudiante" ? "users" : "star"}
+                                                    size={28}
+                                                    className={formData.role === role.value ? "text-nodux-neon" : "text-white"}
+                                                />
+                                                <span className="font-bold text-base">{role.label}</span>
+                                                <span className="text-xs text-white/60 text-center">{role.description}</span>
+                                            </button>
                                         ))}
-                                    </select>
-                                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-500">
-                                    {availableRoles.find(r => r.value === formData.role)?.description}
-                                </p>
-                            </div>
 
                             {/* Submit Button */}
                             <motion.button
@@ -346,11 +345,7 @@ export default function Registro() {
                                 whileHover={{ scale: isLoading ? 1 : 1.02 }}
                                 whileTap={{ scale: isLoading ? 1 : 0.98 }}
                                 disabled={isLoading}
-                                className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 ${
-                                    isLoading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/50'
-                                }`}
+                                className="btn-primary w-full"
                             >
                                 {isLoading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -367,12 +362,12 @@ export default function Registro() {
                         </form>
 
                         {/* Footer del Card */}
-                        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
-                            <p className="text-center text-sm text-gray-600">
+                        <div className="px-8 py-6 border-t border-white/10">
+                            <p className="text-center text-sm text-white/70 font-inter">
                                 ¿Ya tienes una cuenta?{" "}
                                 <Link
                                     to="/login"
-                                    className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                    className="font-bold text-nodux-neon hover:text-nodux-marino transition-colors"
                                 >
                                     Inicia sesión
                                 </Link>
@@ -384,7 +379,7 @@ export default function Registro() {
                     <div className="mt-6 text-center">
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                            className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors font-inter font-semibold"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

@@ -8,9 +8,10 @@ import TrendDownIcon from "~/components/Icons/TrendDownIcon";
 import TrendStableIcon from "~/components/Icons/TrendStableIcon";
 import StarRatingIcon from "~/components/Icons/StarRatingIcon";
 import { StatsService } from '~/services/statsService';
-import { MentorService } from '~/services/mentorService';
-import { ProjectService } from '~/services/projectService';
+import { MentorService } from '~/services/academicService';  // ← Cambiar import
+import { ProjectService } from '~/services/academicService';  // ← Cambiar import
 import { AttendanceService } from '~/services/attendanceService';
+import { motion } from "framer-motion";
 
 export const meta: MetaFunction = () => {
     return [
@@ -56,15 +57,37 @@ export default function MetricsAdmin() {
             setError(null);
             
             try {
-                // Obtener estadísticas generales del endpoint /api/stats/
-                const stats = await StatsService.getStats();
+                console.log('📊 Cargando métricas...');
                 
-                // Obtener datos adicionales para cálculos
+                // Obtener datos de múltiples servicios en paralelo
                 const [mentors, attendances, projects] = await Promise.all([
                     MentorService.getMentors(),
                     AttendanceService.getAttendances(),
                     ProjectService.getProjects()
                 ]);
+                
+                console.log('✅ Datos cargados:', {
+                    mentors: mentors.length,
+                    attendances: attendances.length,
+                    projects: projects.length
+                });
+
+                // Calcular grupos desde proyectos
+                let totalGroups = 0;
+                for (const project of projects) {
+                    if (project.groups && Array.isArray(project.groups)) {
+                        totalGroups += project.groups.length;
+                    }
+                }
+
+                // Crear objeto stats manualmente
+                const stats = {
+                    mentors: mentors.length,
+                    projects: projects.length,
+                    groups: totalGroups
+                };
+
+                console.log('✅ Stats calculados:', stats);
 
                 // Calcular métricas de horas
                 const totalHours = attendances.reduce((sum, a) => sum + a.hours, 0);
@@ -73,14 +96,14 @@ export default function MetricsAdmin() {
                     .reduce((sum, a) => sum + a.hours, 0);
                 const pendingAttendances = attendances.filter(a => !a.isConfirmed).length;
 
-                // Calcular valores previos (simulados para tendencia)
+                // Calcular valores previos (simulados)
                 const previousMentors = stats.mentors - Math.floor(stats.mentors * 0.1);
                 const previousProjects = stats.projects - Math.floor(stats.projects * 0.08);
                 const previousGroups = stats.groups - Math.floor(stats.groups * 0.12);
                 const previousHours = totalHours - Math.floor(totalHours * 0.15);
                 const previousConfirmed = confirmedHours - Math.floor(confirmedHours * 0.12);
 
-                // Construir métricas con datos reales
+                // Construir métricas
                 setMetrics([
                     {
                         id: '1',
@@ -150,7 +173,7 @@ export default function MetricsAdmin() {
                     }
                 ]);
 
-                // Calcular top mentores por horas trabajadas
+                // Calcular top mentores
                 const mentorHours = mentors.map(mentor => {
                     const mentorAttendances = attendances.filter(
                         a => a.mentor.id === mentor.id
@@ -161,10 +184,10 @@ export default function MetricsAdmin() {
                     );
                     
                     return {
-                        name: `${mentor.firstName} ${mentor.lastName}`,
+                        name: mentor.name,
                         hours: totalMentorHours,
-                        students: 0, // Calcular cuando tengamos la relación
-                        rating: 4.5 + Math.random() * 0.5 // Mock rating por ahora
+                        students: 0,
+                        rating: 4.5 + Math.random() * 0.5
                     };
                 });
 
@@ -182,9 +205,9 @@ export default function MetricsAdmin() {
                     
                     return {
                         name: project.name,
-                        completion: project.isActive ? 75 + Math.random() * 20 : 100,
-                        students: activeGroups * 5, // Estimación
-                        mentor: mentors[0]?.firstName || 'N/A',
+                        completion: project.status === 'active' ? 75 + Math.random() * 20 : 100,
+                        students: activeGroups * 5,
+                        mentor: mentors[0]?.name || 'N/A',
                         groups: activeGroups
                     };
                 });
@@ -195,9 +218,14 @@ export default function MetricsAdmin() {
                         .slice(0, 4)
                 );
 
-            } catch (err) {
-                setError('Error al cargar las métricas. Verifica la conexión con el servidor.');
-                console.error('Error loading metrics:', err);
+                console.log('✅ Métricas calculadas exitosamente');
+
+            } catch (err: any) {
+                console.error('❌ Error al cargar métricas:', err);
+                const errorMessage = err.response?.status === 404 
+                    ? 'No se encontraron datos. Verifica que existan mentores, proyectos o asistencias.'
+                    : `Error al cargar las métricas: ${err.message || 'Error desconocido'}`;
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }
@@ -237,7 +265,14 @@ export default function MetricsAdmin() {
             <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
                 <AdminLayout title="Métricas y Analytics">
                     <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="text-nodux-neon text-lg font-inter"
+                        >
+                            Cargando métricas...
+                        </motion.div>
                     </div>
                 </AdminLayout>
             </ProtectedRoute>
@@ -249,7 +284,8 @@ export default function MetricsAdmin() {
             <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
                 <AdminLayout title="Métricas y Analytics">
                     <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-                        {error}
+                        <p className="font-semibold mb-2">{error}</p>
+                        <p className="text-sm">Verifica que el backend esté ejecutándose en http://localhost:8000</p>
                     </div>
                 </AdminLayout>
             </ProtectedRoute>

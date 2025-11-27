@@ -603,20 +603,65 @@ knowledge_level: "avanzado"
 ```json
 {
     "mentor": 2,
-    "schedule": 3,
     "location": "Sala A",
     "mode": "presencial",
     "start_date": "2024-01-15",
-    "end_date": "2024-06-15"
+    "end_date": "2024-06-15",
+    "schedule_day": 0,
+    "start_time": "08:00:00",
+    "end_time": "10:00:00"
 }
 ```
 
-**Opciones de `mode`:**
-- "presencial"
-- "virtual"
-- "hibrido"
+**Campos:**
+- `mentor` (int, required): ID del mentor asignado
+- `location` (string, required): Ubicación física o virtual
+- `mode` (string, required): Modalidad ("presencial", "virtual", "hibrido")
+- `start_date` (date, required): Fecha de inicio del grupo (YYYY-MM-DD)
+- `end_date` (date, required): Fecha de fin del grupo (YYYY-MM-DD)
+- `schedule_day` (int, required): Día de la semana (0=Lunes, 1=Martes, ..., 6=Domingo)
+- `start_time` (time, required): Hora de inicio (HH:MM:SS)
+- `end_time` (time, required): Hora de fin (HH:MM:SS)
 
 **Response:** `201 Created`
+```json
+{
+    "id": 1,
+    "project": 1,
+    "mentor": 2,
+    "schedule": {
+        "id": 3,
+        "day": 0,
+        "start_time": "08:00:00",
+        "end_time": "10:00:00",
+        "created": true
+    },
+    "location": "Sala A",
+    "mode": "presencial",
+    "start_date": "2024-01-15",
+    "end_date": "2024-06-15",
+    "events_created": 24,
+    "message": "✅ Grupo creado con 24 eventos generados automáticamente"
+}
+```
+
+**Notas:**
+- El backend crea automáticamente un `Schedule` si no existe
+- Se generan eventos automáticamente para cada ocurrencia del día especificado
+- Los eventos se crean con frecuencia semanal (cada 7 días)
+- Si el grupo dura 6 meses y es semanal, se crearán aproximadamente 24 eventos
+- Los eventos aparecen inmediatamente en el calendario
+- Todos los eventos heredan la ubicación del grupo
+
+**Validaciones:**
+- `end_date` debe ser posterior a `start_date`
+- `schedule_day` debe estar entre 0 y 6
+- Las horas deben tener formato HH:MM:SS
+- El mentor debe existir en la base de datos
+
+**Errores:**
+- `400 Bad Request`: Datos inválidos o campos faltantes
+- `404 Not Found`: Proyecto no encontrado
 
 ---
 
@@ -685,7 +730,7 @@ knowledge_level: "avanzado"
 
 **Endpoint:** `GET /api/events/`
 
-**Descripción:** Endpoint de solo lectura para obtener todos los eventos del sistema
+**Descripción:** Endpoint optimizado para el calendario. Retorna eventos con información completa del schedule incluida.
 
 **Response:** `200 OK`
 ```json
@@ -694,14 +739,46 @@ knowledge_level: "avanzado"
     "results": [
         {
             "id": 1,
-            "group": 1,
+            "group": 5,
             "location": "Auditorio Principal",
             "date": "2024-02-15",
             "start_date": "2024-02-15",
-            "end_date": "2024-02-15"
+            "end_date": "2024-02-15",
+            "schedule_id": 3,
+            "schedule_day": 0,
+            "schedule_day_name": "Lunes",
+            "start_time": "08:00:00",
+            "end_time": "10:00:00",
+            "start_hour": 8,
+            "end_hour": 10,
+            "duration": 2,
+            "group_info": {
+                "id": 5,
+                "location": "Sala A",
+                "mode": "presencial",
+                "project": "Proyecto Alpha",
+                "mentor": {
+                    "id": 2,
+                    "name": "Ana García"
+                }
+            }
         }
     ]
 }
+```
+
+**Notas:**
+- Los eventos vienen con toda la información del schedule incluida
+- No necesitas hacer un segundo request a `/api/schedule/`
+- Los campos `start_hour`, `end_hour` y `duration` están pre-calculados
+- Si un evento no tiene schedule, retorna valores por defecto (8-10am)
+- Los eventos están ordenados por fecha y hora de inicio
+
+**Filtros disponibles:**
+```
+GET /api/events/?date=2024-02-15
+GET /api/events/?date__gte=2024-02-01&date__lte=2024-02-28
+GET /api/events/?group=5
 ```
 
 ---

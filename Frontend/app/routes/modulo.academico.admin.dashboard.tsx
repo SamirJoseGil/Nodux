@@ -1,140 +1,319 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import { useAuth } from '~/contexts/AuthContext';
 import { ProtectedRoute } from '~/components/ProtectedRoute';
 import AdminLayout from '~/components/Layout/AdminLayout';
+import { motion } from 'framer-motion';
+import FeatureIcon from '~/components/Icons/FeatureIcon';
+import { StatsService } from '~/services/statsService';
+import { AttendanceService } from '~/services/attendanceService';
 
 export const meta: MetaFunction = () => {
     return [
-        { title: `Dashboard Admin Académico - Nodux` },
+        { title: `Dashboard Admin - Académico - Nodux` },
         { name: "description", content: `Dashboard administrativo del módulo académico` },
     ];
 };
 
-export default function AcademicoAdminDashboard() {
-    const { user } = useAuth();
-    const [currentQuote, setCurrentQuote] = useState(0);
-
-    const philosophicalQuotes = [
-        {
-            text: "La educación es el arma más poderosa que puedes usar para cambiar el mundo.",
-            author: "Nelson Mandela"
-        },
-        {
-            text: "El aprendizaje nunca agota la mente.",
-            author: "Leonardo da Vinci"
-        },
-        {
-            text: "La inversión en conocimiento produce siempre los mejores intereses.",
-            author: "Benjamin Franklin"
-        },
-        {
-            text: "Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo.",
-            author: "Benjamin Franklin"
-        },
-        {
-            text: "La educación no es preparación para la vida; la educación es la vida en sí misma.",
-            author: "John Dewey"
+// ✅ Variantes de animación
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
         }
-    ];
+    }
+};
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.5, ease: "easeOut" }
+    }
+};
+
+export default function AdminAcademicoDashboard() {
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        mentors: 0,
+        projects: 0,
+        groups: 0,
+        pendingHours: 0,
+        totalHours: 0,
+        confirmedHours: 0
+    });
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentQuote((prev) => (prev + 1) % philosophicalQuotes.length);
-        }, 6000);
+        const fetchData = async () => {
+            try {
+                const [statsData, attendances] = await Promise.all([
+                    StatsService.getStats(),
+                    AttendanceService.getAttendances()
+                ]);
 
-        return () => clearInterval(interval);
+                const totalHours = attendances.reduce((sum, a) => sum + a.hours, 0);
+                const confirmedHours = attendances.filter(a => a.isConfirmed).reduce((sum, a) => sum + a.hours, 0);
+                const pendingHours = attendances.filter(a => !a.isConfirmed).length;
+
+                setStats({
+                    mentors: statsData.mentors,
+                    projects: statsData.projects,
+                    groups: statsData.groups,
+                    pendingHours,
+                    totalHours,
+                    confirmedHours
+                });
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const getCurrentTimeGreeting = () => {
         const now = new Date();
         const hour = now.getHours();
-
         if (hour < 12) return "Buenos días";
         if (hour < 18) return "Buenas tardes";
         return "Buenas noches";
     };
 
+    const adminStats = [
+        {
+            icon: 'users',
+            title: 'Mentores Activos',
+            value: stats.mentors.toString(),
+            subtitle: 'En la plataforma',
+            color: 'from-nodux-neon to-nodux-marino',
+            link: '/modulo/academico/admin/mentors'
+        },
+        {
+            icon: 'book',
+            title: 'Proyectos',
+            value: stats.projects.toString(),
+            subtitle: 'Total de proyectos',
+            color: 'from-nodux-marino to-nodux-amarillo',
+            link: '/modulo/academico/admin/projects'
+        },
+        {
+            icon: 'chart',
+            title: 'Grupos Activos',
+            value: stats.groups.toString(),
+            subtitle: 'Grupos académicos',
+            color: 'from-nodux-neon to-nodux-marino',
+            link: '/modulo/academico/admin/groups'
+        },
+        {
+            icon: 'clock',
+            title: 'Horas Totales',
+            value: stats.totalHours.toString(),
+            subtitle: `${stats.confirmedHours} confirmadas`,
+            color: 'from-nodux-amarillo to-nodux-naranja',
+            link: '/modulo/academico/admin/hours'
+        }
+    ];
+
+    const quickActions = [
+        { icon: 'users', label: 'Gestionar Mentores', link: '/modulo/academico/admin/mentors', color: 'text-nodux-neon' },
+        { icon: 'book', label: 'Ver Proyectos', link: '/modulo/academico/admin/projects', color: 'text-nodux-marino' },
+        { icon: 'chart', label: 'Administrar Grupos', link: '/modulo/academico/admin/groups', color: 'text-nodux-amarillo' },
+        { icon: 'calendar', label: 'Calendario', link: '/modulo/academico/admin/calendar', color: 'text-nodux-naranja' },
+        { icon: 'clock', label: 'Registro de Horas', link: '/modulo/academico/admin/hours', color: 'text-nodux-neon' },
+        { icon: 'trending', label: 'Métricas', link: '/modulo/academico/admin/metrics', color: 'text-nodux-marino' },
+    ];
+
+    if (loading) {
+        return (
+            <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
+                <AdminLayout title="Dashboard Académico">
+                    <div className="flex justify-center items-center h-64">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-16 h-16 border-4 border-nodux-neon border-t-transparent rounded-full"
+                        />
+                    </div>
+                </AdminLayout>
+            </ProtectedRoute>
+        );
+    }
+
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <AdminLayout title="Dashboard Académico">
-                <div className="max-w-4xl mx-auto">
-                    {/* Header principal */}
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            {getCurrentTimeGreeting()}, {user?.name?.split(' ')[0] || 'Administrador'}
-                        </h1>
-                        <h2 className="text-2xl text-gray-600 mb-8">
-                            Módulo Académico - Panel de Administración
-                        </h2>
-                        <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                            Gestiona proyectos, mentores, grupos y eventos académicos desde un solo lugar.
-                        </p>
+                <div className="min-h-screen -m-6 p-6">
+                    {/* Hero Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="mb-8"
+                    >
+                        <div className="glass-card p-8 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-nodux-neon/20 rounded-full blur-3xl" />
+                            <div className="absolute bottom-0 left-0 w-40 h-40 bg-nodux-marino/20 rounded-full blur-3xl" />
+
+                            <div className="relative z-10">
+                                <h1 className="font-thicker text-4xl text-white mb-2">
+                                    {getCurrentTimeGreeting()}, {user?.name?.split(' ')[0] || 'Administrador'} 👨‍💼
+                                </h1>
+                                <p className="font-inter text-lg text-white/70">
+                                    Panel de control - Módulo Académico
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Estadísticas */}
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                    >
+                        {adminStats.map((stat, index) => (
+                            <motion.a
+                                key={index}
+                                href={stat.link}
+                                variants={cardVariants}
+                                whileHover={{ scale: 1.05, y: -5 }}
+                                className="glass-card p-6 cursor-pointer"
+                            >
+                                <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center mb-4 shadow-neon`}>
+                                    <FeatureIcon type={stat.icon as any} size={28} className="text-white" />
+                                </div>
+                                <h3 className="font-inter text-sm font-medium text-white/70 mb-2">
+                                    {stat.title}
+                                </h3>
+                                <p className="font-thicker text-3xl text-white mb-1">
+                                    {stat.value}
+                                </p>
+                                <p className="font-inter text-xs text-white/60">
+                                    {stat.subtitle}
+                                </p>
+                            </motion.a>
+                        ))}
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Acciones Rápidas */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="lg:col-span-2"
+                        >
+                            <div className="glass-card overflow-hidden">
+                                <div className="px-6 py-4 border-b border-white/10">
+                                    <h2 className="font-inter text-xl font-bold text-white">
+                                        ⚡ Acciones Rápidas
+                                    </h2>
+                                </div>
+                                <div className="p-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {quickActions.map((action, index) => (
+                                            <motion.a
+                                                key={index}
+                                                href={action.link}
+                                                whileHover={{ scale: 1.02, x: 5 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-nodux-neon/50 rounded-xl transition-all group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <FeatureIcon 
+                                                        type={action.icon as any} 
+                                                        size={24} 
+                                                        className={action.color}
+                                                    />
+                                                    <span className="font-inter text-sm font-medium text-white group-hover:text-nodux-neon transition-colors">
+                                                        {action.label}
+                                                    </span>
+                                                </div>
+                                            </motion.a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Resumen Rápido */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="lg:col-span-1"
+                        >
+                            <div className="glass-card p-6 mb-6">
+                                <h3 className="font-inter text-lg font-bold text-white mb-4">
+                                    📊 Resumen del Día
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                                        <span className="font-inter text-sm text-white/70">Horas Pendientes</span>
+                                        <span className="font-thicker text-lg text-nodux-amarillo">{stats.pendingHours}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                                        <span className="font-inter text-sm text-white/70">Horas Confirmadas</span>
+                                        <span className="font-thicker text-lg text-nodux-marino">{stats.confirmedHours}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                                        <span className="font-inter text-sm text-white/70">Total de Horas</span>
+                                        <span className="font-thicker text-lg text-nodux-neon">{stats.totalHours}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Nota Informativa */}
+                            <div className="glass-card p-6">
+                                <div className="text-center">
+                                    <div className="w-12 h-12 bg-nodux-neon/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FeatureIcon type="lightbulb" size={24} className="text-nodux-neon" />
+                                    </div>
+                                    <h3 className="font-inter font-bold text-white mb-2">
+                                        💡 Consejo del día
+                                    </h3>
+                                    <p className="font-inter text-sm text-white/70 leading-relaxed">
+                                        Revisa regularmente las métricas para identificar oportunidades de mejora 
+                                        en los procesos académicos.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
 
-                    {/* Sección de frases filosóficas */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8 mb-8 border border-blue-200">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                </svg>
-                            </div>
-
-                            <blockquote className="text-xl sm:text-2xl italic font-medium text-gray-800 mb-4 leading-relaxed">
-                                "{philosophicalQuotes[currentQuote].text}"
-                            </blockquote>
-
-                            <cite className="text-blue-600 font-semibold text-lg">
-                                — {philosophicalQuotes[currentQuote].author}
-                            </cite>
-                        </div>
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Total Mentores</p>
-                                    <p className="text-2xl font-bold text-gray-900">-</p>
+                    {/* Información del Sistema */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="mt-8"
+                    >
+                        <div className="glass-card p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-nodux-marino/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <FeatureIcon type="star" size={24} className="text-nodux-marino" />
                                 </div>
-                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
+                                <div className="flex-1">
+                                    <h3 className="font-inter font-bold text-white mb-2">
+                                        🎯 Bienvenido al Panel Administrativo
+                                    </h3>
+                                    <p className="font-inter text-sm text-white/70 leading-relaxed">
+                                        Desde aquí puedes gestionar todos los aspectos del módulo académico: 
+                                        mentores, proyectos, grupos, horarios y registros de asistencia. 
+                                        Utiliza el menú lateral para navegar entre las diferentes secciones.
+                                    </p>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Proyectos Activos</p>
-                                    <p className="text-2xl font-bold text-gray-900">-</p>
-                                </div>
-                                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Grupos Totales</p>
-                                    <p className="text-2xl font-bold text-gray-900">-</p>
-                                </div>
-                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </motion.div>
                 </div>
             </AdminLayout>
         </ProtectedRoute>

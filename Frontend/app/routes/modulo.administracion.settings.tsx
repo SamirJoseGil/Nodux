@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
-import ProtectedRoute from '~/components/ProtectedRoute';
+import { ProtectedRoute } from '~/components/ProtectedRoute';
 import SystemAdminLayout from '~/components/Layout/SystemAdminLayout';
 import SettingsIcon from "~/components/Icons/SettingsIcon";
 import SecurityIcon from "~/components/Icons/SecurityIcon";
@@ -9,11 +9,8 @@ import ModulesIcon from "~/components/Icons/ModulesIcon";
 
 export const meta: MetaFunction = () => {
     return [
-        { title: `Configuración del Sistema - Nodux` },
-        {
-            name: "description",
-            content: `Configuración general del sistema Nodux`,
-        },
+        { title: `Configuración - Administración - Nodux` },
+        { name: "description", content: `Configuración del sistema` },
     ];
 };
 
@@ -43,7 +40,7 @@ interface SystemSettings {
     };
 }
 
-export default function SystemSettings() {
+export default function SettingsAdmin() {
     const [settings, setSettings] = useState<SystemSettings>({
         general: {
             siteName: 'Nodux',
@@ -108,7 +105,22 @@ export default function SystemSettings() {
     return (
         <ProtectedRoute allowedRoles={['Admin', 'SuperAdmin']}>
             <SystemAdminLayout title="Configuración del Sistema">
-                <div className="space-y-6">
+                <div className="min-h-screen -m-6 p-6 bg-white">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-nodux-marino to-nodux-amarillo rounded-xl flex items-center justify-center">
+                                    <SettingsIcon size={24} className="text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="font-thicker text-2xl text-zafiro-900">Configuración del Sistema</h1>
+                                    <p className="font-inter text-sm text-gray-600">Administra parámetros globales</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Tabs */}
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex space-x-8">
