@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from '@remix-run/react';
 import type { MetaFunction } from '@remix-run/node';
 import { useAuth } from '~/contexts/AuthContext';
-import ProtectedRoute from '~/components/ProtectedRoute';
+import { ProtectedRoute } from '~/components/ProtectedRoute';
 import ProductLayout from '~/components/Layout/ProductLayout';
 
 export const meta: MetaFunction = () => {
