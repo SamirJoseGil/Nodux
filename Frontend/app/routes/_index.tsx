@@ -200,11 +200,11 @@ export default function Index() {
               >
                 {[
                   {
-                    value: "500+",
+                    value: "11000+",
                     label: "Estudiantes",
                   },
                   {
-                    value: "50+",
+                    value: "20+",
                     label: "Mentores",
                   },
                   {
