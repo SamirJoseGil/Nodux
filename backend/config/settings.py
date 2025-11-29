@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+from huey import RedisHuey
 import os
 
 
@@ -99,6 +100,9 @@ DATABASES = {
         "PASSWORD": config('DB_PASSWORD'),
         "HOST": config('DB_HOST'),
         "PORT": config('DB_PORT'),
+        "OPTIONS": {
+            "sslmode": config('DB_SSLMODE', default='require'),
+        }
     }
 }
 
@@ -266,9 +270,9 @@ PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 # 2 MB
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 ALLOWED_FILE_EXTENSIONS = ['.pdf']
 
-HUEY = {
-    'huey_class': 'huey.RedisHuey',
-    'name': 'nodux',
-    'results': True,
-    'immediate': False,
-}
+HUEY = RedisHuey(
+    name="nodux",
+    host=config('REDIS_HOST'),
+    port=config('REDIS_PORT', cast=int),
+    results=True,
+)

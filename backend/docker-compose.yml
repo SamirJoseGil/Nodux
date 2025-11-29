@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    container_name: django_web
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    restart: always
+
+  huey:
+    build: .
+    container_name: huey_worker
+    env_file: .env
+    command: ["python", "manage.py", "run_huey"]
+    depends_on:
+      - redis
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: redis_server
+    restart: always
+    ports:
+      - "6379:6379"
