@@ -107,6 +107,6 @@ docker run -p 5173:5173 frontend
 
 ## ✨ Equipo
 
-* **Líder técnico:** Samir Osorio
-* **UI/UX:** Heydi, Salomón
-* **Frontend Devs:** Heydi, Sofía, Alejandro
+* **Líder técnico:** Samir Gil
+* **Frontend Dev:** Samir Gil
+* **Backend Dev** Juan Avendaño
