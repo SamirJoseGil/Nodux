@@ -38,11 +38,9 @@ class Mentor(models.Model):
 
 class MentorAttendance(models.Model):
     mentor = models.ForeignKey(to=Mentor, on_delete=models.CASCADE)
-    confirmed_by = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
+    registered_by = models.ForeignKey(to=User, on_delete=models.CASCADE, null=True, blank=True)  # ← Ahora nullable
     hours = models.IntegerField()
-    is_confirmed = models.BooleanField(default=False)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    date = models.DateField(default=date.today)  # ← Valor por defecto que se puede cambiar
 
 
 class MentorAvailability(models.Model):

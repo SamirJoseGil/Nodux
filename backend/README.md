@@ -1,135 +1,142 @@
-# ⚙️ Backend — Plataforma de Mentores & Proyectos
+# Nodux Backend API
 
-## 🧠 Descripción
+Backend RESTful API para la plataforma Nodux, desarrollado con Django y Django REST Framework.
 
-API REST desarrollada en **Django 4.2 + Django REST Framework**, que gestiona la información de mentores, proyectos, grupos, calendarios, registro de horas, usuarios y métricas.
-El backend expone endpoints seguros y escalables con autenticación **JWT (SimpleJWT)** y soporte para integraciones **Microsoft Graph (Bookings / Loop experimental)**.
+## 📋 Tabla de Contenidos
 
----
+- [Características](#características)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Configuración](#configuración)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Documentación](#documentación)
+- [Healthcheck](#healthcheck)
 
-## 🧩 Tech Stack
+## ✨ Características
 
-* **Framework:** Django 4.2
-* **API:** Django REST Framework (DRF)
-* **Auth:** SimpleJWT (rotación + blacklist)
-* **DB:** PostgreSQL 15
-* **Cache / Blacklist:** Redis 7
-* **Seguridad:** django-cors-headers + django-cryptography
-* **Infraestructura:** Docker + Nginx + Certbot
-* **Monitorización:** Sentry / Prometheus
+- **Autenticación JWT** con tokens de acceso y refresh
+- **Gestión de Usuarios** con perfiles y fotos
+- **Gestión de Mentores** con certificados y asistencia
+- **Gestión de Proyectos** con grupos y eventos
+- **Sistema de Horarios** flexible
+- **Seguridad robusta** con rate limiting, CORS y django-axes
+- **API RESTful** con endpoints anidados
+- **Upload de archivos** con validación y almacenamiento seguro
 
----
+## 🔧 Requisitos
 
-## 🗃️ Estructura del proyecto
+- Python 3.8+
+- PostgreSQL 12+ (o base de datos compatible)
+- pip
+- virtualenv (recomendado)
+
+## 🚀 Instalación
+
+1. Clonar el repositorio:
+```bash
+git clone <repository-url>
+cd backend
+```
+
+2. Crear entorno virtual:
+```bash
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+```
+
+3. Instalar dependencias:
+```bash
+pip install -r requirements.txt
+```
+
+4. Configurar variables de entorno (ver sección [Configuración](#configuración))
+
+5. Ejecutar migraciones:
+```bash
+python manage.py migrate
+```
+
+6. Crear superusuario:
+```bash
+python manage.py createsuperuser
+```
+
+7. **Crear usuarios de prueba** (opcional pero recomendado):
+```bash
+python manage.py create_test_users
+```
+
+Esto creará los siguientes usuarios:
+- **superadmin** / admin123 (SuperAdmin)
+- **admin** / admin123 (Admin)
+- **mentor** / mentor123 (Mentor)
+- **estudiante** / estudiante123 (Estudiante)
+
+8. Ejecutar servidor de desarrollo:
+```bash
+python manage.py runserver
+```
+
+## ⚙️ Configuración
+
+Crear archivo `.env` en la raíz del proyecto con las siguientes variables:
+
+```env
+# Django
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=nodux_db
+DB_USER=postgres
+DB_PASSWORD=your-password
+DB_HOST=localhost
+DB_PORT=5432
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+## 📁 Estructura del Proyecto
 
 ```
 backend/
-│
-├── core/                     # Configuración general (settings, urls, middleware)
 ├── apps/
-│   ├── usuarios/             # Roles, usuarios, fotos, autenticación
-│   ├── mentores/             # CRUD de mentores, conocimientos, disponibilidad
-│   ├── proyectos/            # Proyectos, grupos y relaciones
-│   ├── calendario/           # Calendario académico y horarios
-│   ├── registros/            # Registro de horas
-│   ├── archivos/             # Uploads y archivos por usuario
-│   └── metricas/             # KPIs y datos globales
-│
-├── requirements.txt
+│   ├── api/          # Configuración principal de API y rutas
+│   ├── core/         # Modelos y servicios compartidos
+│   ├── users/        # Gestión de usuarios y autenticación
+│   ├── mentors/      # Gestión de mentores y asistencia
+│   └── projects/     # Gestión de proyectos, grupos y eventos
+├── config/           # Configuración de Django
+├── media/            # Archivos subidos por usuarios
+├── staticfiles/      # Archivos estáticos
+├── docs/             # Documentación adicional
 └── manage.py
 ```
 
----
+## 📚 Documentación
 
-## 📚 Principales Modelos
+- [Arquitectura del Sistema](docs/ARCHITECTURE.md)
+- [Endpoints API](docs/ENDPOINTS.md)
+- [Modelos de Datos](docs/MODELS.md)
+- [Seguridad](docs/SECURITY.md)
 
-* **Usuario / Rol:** manejo de permisos y perfiles
-* **Mentor:** datos personales, conocimientos, certificados, disponibilidad
-* **Proyecto / Grupo:** estructura jerárquica para asignar mentores y grupos
-* **Calendario / Horario:** días hábiles, horas de clase y agenda
-* **RegistroHoras:** control del tiempo de trabajo por mentor/proyecto
-* **Archivo / Foto:** subida de archivos y fotos
-* **Métrica:** estadísticas (proyectos activos, horas totales, mentores)
+## 🏥 Healthcheck
 
----
-
-## 🔐 Seguridad
-
-* JWT con refresh rotativo y blacklist
-* Cookies HttpOnly + Secure + SameSite=Strict
-* CSRF activo en endpoints cookie-based
-* CORS restringido a orígenes del frontend
-* Encriptación con django-cryptography
-* Rate limiting + backoff para llamadas a Graph API
-
----
-
-## 🧰 Endpoints principales
-
-| Endpoint                      | Método             | Descripción                        |
-| ----------------------------- | ------------------ | ---------------------------------- |
-| `/api/mentores/`              | GET / POST         | Listar o crear mentores            |
-| `/api/mentores/{id}/`         | GET / PUT / DELETE | Ver, editar o eliminar mentor      |
-| `/api/proyectos/`             | GET / POST         | Gestionar proyectos                |
-| `/api/proyectos/{id}/grupos/` | GET / POST         | Crear o listar grupos del proyecto |
-| `/api/registro-horas/`        | POST               | Registrar horas trabajadas         |
-| `/api/metricas/`              | GET                | Consultar métricas globales        |
-
----
-
-## 🧱 Docker
+El sistema incluye un endpoint de healthcheck en:
 
 ```
-docker-compose up --build
+GET /api/healthcheck/
 ```
 
-Servicios disponibles:
+Retorna información sobre el estado del servicio, base de datos, JWT y métricas de rendimiento.
 
-| Servicio  | Puerto   | Descripción          |
-| --------- | -------- | -------------------- |
-| `backend` | 8000     | API principal Django |
-| `db`      | 5432     | PostgreSQL           |
-| `redis`   | 6379     | Cache y tokens       |
-| `nginx`   | 80 / 443 | Reverse proxy + SSL  |
+## 📝 Licencia
 
----
+[Especificar licencia]
 
-## 🧩 Integraciones Microsoft (Graph)
+## 👥 Contribuidores
 
-* **Bookings API:** manejo de citas, staff y clientes
-  → Scopes requeridos: `Bookings.ReadWrite.All`
-* **Loop (experimental):** integración parcial vía Power Automate o Graph Beta
-* **MSAL Python:** flujo OAuth2 Authorization Code
-
----
-
-## 📎 Variables de entorno
-
-```
-DJANGO_SECRET_KEY=...
-DATABASE_URL=postgres://user:pass@db:5432/appdb
-REDIS_URL=redis://redis:6379/0
-CORS_ALLOWED_ORIGINS=http://localhost:5173
-SIMPLE_JWT_ROTATE_REFRESH_TOKENS=True
-SIMPLE_JWT_BLACKLIST_AFTER_ROTATION=True
-```
-
----
-
-## 📈 Métricas y administración
-
-* Panel de métricas para administrador:
-
-  * Total de proyectos activos
-  * Total de mentores registrados
-  * Total de horas acumuladas
-* Soporte para Django Admin y endpoints de estadísticas (DRF)
-
----
-
-## 👥 Equipo
-
-* **Project Manager:** Samir Osorio
-* **Backend Devs:** Jose Daniel, Stiven, Sara
-* **Base de datos:** Sara, Samir
-* **Infraestructura:** Samir
+[Lista de contribuidores]

@@ -13,9 +13,9 @@ from apps.projects.views import (
     ProjectViewSet,
     GroupViewSet,
     EventViewSet,
-    EventListViewSet,
+    EventListViewSet,  # 👈 nuevo viewset
 )
-from apps.core.views import ScheduleViewSet, SummaryViewSet
+from apps.core.views import ScheduleViewSet
 
 # --- Router principal ---
 router = DefaultRouter()
@@ -24,8 +24,8 @@ router.register(r"attendance", MentorAttendanceViewSet, basename="attendance")
 router.register(r"projects", ProjectViewSet, basename="project")
 router.register(r"schedule", ScheduleViewSet, basename="schedule")
 
+# 👇 Este endpoint ya retorna eventos con schedule info
 router.register(r"events", EventListViewSet, basename="events")
-router.register(r"stats", SummaryViewSet, basename="stats")
 
 # --- Routers anidados ---
 projectsRouter = routers.NestedDefaultRouter(router, r"projects", lookup="project")

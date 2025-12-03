@@ -1,3 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ✅ Thicker Font Face */
+@font-face {
+  font-family: 'Thicker';
+  src: url('/fonts/Thicker-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* ✅ Colores Nodux Oficiales */
+    --nodux-black: #000000;
+    --nodux-zafiro: #000023;
+    --nodux-neon: #006FFF;
+    --nodux-marino: #00D9AC;
+    --nodux-amarillo: #F8D300;
+    --nodux-naranja: #FF8F1B;
+    color: #000000;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    @apply text-white bg-zafiro-500 antialiased;
+    letter-spacing: -0.015em; /* Tracking: -15 */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Thicker', 'Inter', sans-serif;
+    @apply text-white font-black;
+    letter-spacing: 0; /* Tracking: 0 */
+  }
+
+  p, span, div {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.015em; /* Tracking: -15 */
+  }
+
+  strong, b {
+    font-family: 'Inter', sans-serif;
+    @apply font-bold;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  /* ✅ Glassmorphism Base */
+  .glass {
+    @apply backdrop-blur-glass bg-white/10 border-b border-white/20;
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-glass-lg bg-white/15 border-b border-white/30;
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl shadow-glass hover:shadow-glass-hover 
+           transition-all duration-300;
+  }
+
+  /* ✅ Botones con Glassmorphism */
+  .btn-primary {
+    @apply bg-nodux-neon hover:bg-neon-600 text-white font-bold py-3 px-6 rounded-xl
+           shadow-neon hover:shadow-neon-lg transition-all duration-300 
+           border border-neon-400/30
+           focus:outline-none focus:ring-2 focus:ring-nodux-neon focus:ring-offset-2 focus:ring-offset-zafiro-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    letter-spacing: -0.015em;
+  }
+
+  .btn-secondary {
+    @apply glass-strong hover:bg-white/20 border-slate-500 text-black font-bold py-3 px-6 rounded-xl
+           transition-all duration-300
+           focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-zafiro-500;
+    letter-spacing: -0.015em;
+  }
+
+  .btn-ghost {
+    @apply text-white/80 hover:text-white hover:bg-white/10 font-semibold 
+           py-2 px-4 rounded-lg transition-all duration-200;
+    letter-spacing: -0.015em;
+  }
+
+  /* ✅ Cards con Glassmorphism */
+  .card {
+    @apply glass-card p-6;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-white/10;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-footer {
+    @apply px-6 py-4 border-t border-white/10 rounded-b-2xl;
+  }
+
+  /* ✅ Inputs con mejor contraste */
+  .form-input {
+    @apply block w-full rounded-xl border-2 border-zafiro-300 
+           bg-white
+           px-4 py-3 text-zafiro-900 placeholder-zafiro-500
+           focus:border-nodux-neon focus:ring-2 focus:ring-nodux-neon/50
+           transition-all duration-200;
+    letter-spacing: -0.015em;
+  }
+
+  /* ✅ Labels oscuros para fondos claros */
+  .form-label {
+    @apply block text-sm font-bold text-zafiro-900 mb-2;
+    letter-spacing: -0.015em;
+  }
+
+  /* ✅ Select con glassmorphism */
+  select.form-input {
+    @apply appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25em 1.25em;
+    padding-right: 2.5rem;
+  }
+
+  /* ✅ Textarea con glassmorphism */
+  textarea.form-input {
+    @apply resize-none;
+  }
+
+  /* ✅ Badges con colores Nodux */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+    letter-spacing: -0.015em;
+  }
+
+  .badge-success {
+    @apply bg-nodux-marino/20 text-nodux-marino border border-nodux-marino/30;
+  }
+
+  .badge-warning {
+    @apply bg-nodux-amarillo/20 text-nodux-amarillo border border-nodux-amarillo/30;
+  }
+
+  .badge-error {
+    @apply bg-nodux-naranja/20 text-nodux-naranja border border-nodux-naranja/30;
+  }
+
+  .badge-info {
+    @apply bg-nodux-neon/20 text-nodux-neon border border-nodux-neon/30;
+  }
+
+  /* ✅ Tables con Glassmorphism */
+  .table {
+    @apply min-w-full divide-y divide-white/10;
+  }
+
+  .table-header {
+    @apply glass-strong;
+  }
+
+  .table-header-cell {
+    @apply px-6 py-4 text-left text-xs font-bold text-white/70 uppercase tracking-wider;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-white/90;
+  }
+
+  .table-row {
+    @apply hover:bg-white/5 transition-colors duration-150;
+  }
+
+  /* ✅ Navbar y Sidebar con Glassmorphism */
+  .navbar {
+    @apply glass-strong border-b border-white/10 shadow-glass;
+  }
+
+  .sidebar {
+    @apply glass-strong border-r border-white/10 shadow-glass;
+  }
+
+  /* ✅ Hero Section */
+  .hero-gradient {
+    background: linear-gradient(135deg, #000023 0%, #000035 50%, #006FFF 100%);
+  }
+
+  /* ✅ Text Gradients */
+  .text-gradient-neon {
+    @apply bg-gradient-to-r from-nodux-neon to-nodux-marino bg-clip-text text-transparent;
+  }
+
+  .text-gradient-warm {
+    @apply bg-gradient-to-r from-nodux-amarillo to-nodux-naranja bg-clip-text text-transparent;
+  }
+
+  /* ✅ Glow Effects */
+  .glow-neon {
+    box-shadow: 0 0 20px rgba(0, 111, 255, 0.5), 0 0 40px rgba(0, 111, 255, 0.3);
+  }
+
+  .glow-marino {
+    box-shadow: 0 0 20px rgba(0, 217, 172, 0.5), 0 0 40px rgba(0, 217, 172, 0.3);
+  }
+}
+
+@layer utilities {
+  /* ✅ Scrollbar personalizado */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-zafiro-700 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-nodux-neon rounded-full hover:bg-neon-400;
+  }
+
+  /* ✅ Tracking utilities */
+  .tracking-text {
+    letter-spacing: -0.015em;
+  }
+
+  .tracking-title {
+    letter-spacing: 0;
+  }
+
+  /* ✅ Glass utilities */
+  .glass-overlay {
+    @apply fixed inset-0 bg-zafiro-100/50 backdrop-blur-sm;
+  }
+}

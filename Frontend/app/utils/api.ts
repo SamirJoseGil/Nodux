@@ -1,18 +1,16 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import Cookies from 'js-cookie';
 
-declare global {
-  interface Window {
-    ENV?: {
-      API_BASE_URL?: string;
-      [key: string]: any;
-    };
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // En el cliente, usar la URL del servidor de desarrollo o producción
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
   }
-}
+  // En el servidor (SSR)
+  return process.env.API_BASE_URL || 'http://localhost:8000/api';
+};
 
-const API_BASE_URL = typeof window !== 'undefined' 
-  ? window.ENV?.API_BASE_URL || 'http://localhost:8000/api'
-  : process.env.API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -29,6 +27,15 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log requests en desarrollo
+    if (import.meta.env.DEV) {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+      if (config.data && config.method?.toLowerCase() !== 'get') {
+        console.log('[API Request Body]', config.data);
+      }
+    }
+    
     return config;
   },
   (error) => {
@@ -38,30 +45,58 @@ apiClient.interceptors.request.use(
 
 // Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log responses en desarrollo
+    if (import.meta.env.DEV) {
+      console.log(`[API Response] ${response.status} ${response.config.url}`);
+      console.log('[API Response Data]', response.data);
+    }
+    return response;
+  },
   async (error: AxiosError) => {
+    // Log errors en desarrollo
+    if (import.meta.env.DEV) {
+      console.error(`[API Error] ${error.response?.status} ${error.config?.url}`);
+      if (error.response?.data) {
+        console.error('[API Error Data]', error.response.data);
+      }
+    }
+    
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      originalRequest._retry = true;
+    if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
+      (originalRequest as any)._retry = true;
       
       try {
         const refreshToken = Cookies.get('refresh_token');
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          console.log('[API] Refrescando token...');
+          const response = await axios.post(`${API_BASE_URL}/users/refresh/`, {
             refresh: refreshToken,
           });
           
           const { access } = response.data;
-          Cookies.set('access_token', access, { expires: 1/24 }); // 1 hour
+          Cookies.set('access_token', access, { 
+            expires: 1/24,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+          });
           
-          originalRequest.headers.Authorization = `Bearer ${access}`;
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${access}`;
+          }
+          console.log('[API] Token refrescado exitosamente');
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        console.error('[API] Error al refrescar token:', refreshError);
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('user_id');
+        
         if (typeof window !== 'undefined') {
+          console.log('[API] Redirigiendo a login...');
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);
@@ -99,9 +134,3 @@ export const getBackendHealth = async () => {
     };
   }
 };
-
-declare module 'axios' {
-  export interface AxiosRequestConfig {
-    _retry?: boolean;
-  }
-}

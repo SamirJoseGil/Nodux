@@ -15,6 +15,7 @@ from decouple import config
 from datetime import timedelta
 from huey import RedisHuey
 import os
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,6 +30,9 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+# Detectar entorno
+ENVIRONMENT = config('ENVIRONMENT', default='development')
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
@@ -54,7 +58,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "axes",
-    "huey.contrib.djhuey",
 ]
 
 MIDDLEWARE = [
@@ -92,6 +95,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+<<<<<<< HEAD
 DATABASES = {
     "default": {
         "ENGINE": config('DB_ENGINE'),
@@ -102,9 +106,30 @@ DATABASES = {
         "PORT": config('DB_PORT'),
         "OPTIONS": {
             "sslmode": config('DB_SSLMODE', default='require'),
+=======
+if ENVIRONMENT == 'production':
+    # Configuración para Supabase en producción usando DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
+    }
+else:
+    # Configuración para desarrollo local
+    DATABASES = {
+        "default": {
+            "ENGINE": config('DB_ENGINE'),
+            "NAME": config('DB_NAME'),
+            "USER": config('DB_USER'),
+            "PASSWORD": config('DB_PASSWORD'),
+            "HOST": config('DB_HOST'),
+            "PORT": config('DB_PORT'),
+>>>>>>> 8e30b86b30563c9be403421008bf6e164f796169
         }
     }
-}
 
 
 # Password validation
@@ -131,7 +156,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'America/Bogota'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -180,11 +205,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-if DEBUG:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
-    REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
-        "rest_framework.permissions.AllowAny",
-    )
+# ❌ COMENTAR O ELIMINAR ESTE BLOQUE EN DESARROLLO
+# if DEBUG:
+#     REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
+#     REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
+#         "rest_framework.permissions.AllowAny",
+#     )
 
 # ==================================================
 # JWT CONFIGURATION
@@ -249,6 +275,55 @@ AXES_LOCKOUT_TEMPLATE = None
 AXES_RESET_ON_SUCCESS = True
 
 # ==================================================
+# LOGGING CONFIGURATION
+# ==================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO (elimina queries SQL)
+        },
+        'apps.users': {
+            'handlers': ['console'],
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
+            'propagate': False,
+        },
+        'rest_framework_simplejwt': {
+            'handlers': ['console'],
+            'level': 'INFO',  # ← Cambiar de DEBUG a INFO
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # ← Cambiar de DEBUG a INFO
+    },
+}
+
+# ==================================================
 # SECURITY SETTINGS
 # ==================================================
 if not DEBUG:
@@ -264,15 +339,19 @@ if not DEBUG:
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
-PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 # 2 MB
+PHOTO_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024        # 2 MB
 
 #File extension settings
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 ALLOWED_FILE_EXTENSIONS = ['.pdf']
 
+<<<<<<< HEAD
 HUEY = RedisHuey(
     name="nodux",
     host=config('REDIS_HOST'),
     port=config('REDIS_PORT', cast=int),
     results=True,
 )
+=======
+
+>>>>>>> 8e30b86b30563c9be403421008bf6e164f796169
