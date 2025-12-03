@@ -1,0 +1,36 @@
+services:
+  web:
+    build: .
+    container_name: django_web
+    env_file: .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - internal
+
+  huey:
+    build: .
+    container_name: huey_worker
+    env_file: .env
+    command: ["python", "manage.py", "run_huey"]
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - internal
+
+  redis:
+    image: redis:7
+    container_name: redis_server
+    restart: always
+    networks:
+      - internal
+    expose:
+      - "6379"
+
+networks:
+  internal:
+    driver: bridge
