@@ -32,10 +32,10 @@ export default function Registro() {
         if (isAuthenticated && user) {
             switch (user.role) {
                 case 'Mentor':
-                    navigate('/modulo/academico/mentor/dashboard');
+                    navigate('/mentores/dashboard');
                     break;
                 case 'Estudiante':
-                    navigate('/modulo/academico/estudiante/dashboard');
+                    navigate('/estudiantes/dashboard');
                     break;
                 case 'Admin':
                 case 'SuperAdmin':
@@ -139,22 +139,16 @@ export default function Registro() {
             />
 
             {/* Header */}
-            <header className="w-full px-6 glass-strong relative z-10">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
-                    <img
-                    src="/images/LogoNodoEafit.png"
-                    alt="Logo Nodo EAFIT"
-                    className="w-28 h-20 object-contain"
-                    style={{ filter: "brightness(0) invert(1)" }}
-                    />
+            <header className="w-full px-4 md:px-6 glass-strong relative z-10 h-16 min-h-[4rem]">
+                <div className="max-w-7xl mx-auto flex flex-row items-center h-full justify-between">
+                    <Link to="/" className="flex items-center gap-2 h-full">
                         <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                     <Link 
-                        to="/login" 
-                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors"
+                        to="/registro" 
+                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors h-full flex items-center"
                     >
-                        Iniciar sesión
+                        Crear cuenta
                     </Link>
                 </div>
             </header>

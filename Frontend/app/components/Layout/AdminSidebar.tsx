@@ -1,4 +1,4 @@
-import { Link, useLocation } from '@remix-run/react';
+import { Link, useLocation, useNavigate } from '@remix-run/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebar } from '~/contexts/SidebarContext';
 import { useAuth } from '~/contexts/AuthContext';
@@ -8,6 +8,7 @@ export default function AdminSidebar() {
     const { isCollapsed, isPinned, toggleCollapse, togglePin } = useSidebar();
     const { user, logout } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const menuItems = [
         {
@@ -49,6 +50,18 @@ export default function AdminSidebar() {
 
     const isActive = (path: string) => location.pathname === path;
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Redirigir al home después de cerrar sesión
+            navigate('/', { replace: true });
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            // Redirigir de todos modos
+            navigate('/', { replace: true });
+        }
+    };
+
     return (
         <>
             {/* Overlay para mobile */}
@@ -79,11 +92,6 @@ export default function AdminSidebar() {
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                         <Link to="/" className="flex items-center space-x-1">
-                     <img
-                    src="/images/LogoNodoEafit.png"
-                    alt="Logo Nodo EAFIT"
-                    className="w-24 h-12 object-contain"
-                    />
                             <span className="font-thicker text-xl text-gray-900">NODUX</span>
                         </Link>
                         <div className="flex items-center gap-2">
@@ -147,7 +155,7 @@ export default function AdminSidebar() {
                     </Link>
 
                     <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-nodux-neon/10 hover:text-nodux-neon rounded-xl transition-all w-full"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

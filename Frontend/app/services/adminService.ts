@@ -1,42 +1,48 @@
 import { User, UserRole, UpdateUserData } from '~/types/auth';
 import { apiClient } from '~/utils/api';
 
-// Datos mock para estadísticas
-const MOCK_STATS = {
-  totalUsers: 124,
-  activeUsers: 98,
-  totalRoles: 6,
-  totalModules: 3,
-  newUsersThisWeek: 12,
-  loginAttempts: {
-    successful: 245,
-    failed: 18
-  },
-  systemHealth: {
-    cpu: 32, // porcentaje
-    memory: 45, // porcentaje
-    storage: 28 // porcentaje
-  },
-  activityLogs: [
-    { id: '1', user: 'Admin', action: 'Usuario creado', target: 'usuario@example.com', timestamp: '2023-06-15T10:30:00Z' },
-    { id: '2', user: 'SuperAdmin', action: 'Permiso modificado', target: 'Mentor', timestamp: '2023-06-15T09:45:00Z' },
-    { id: '3', user: 'Admin', action: 'Módulo actualizado', target: 'Académico', timestamp: '2023-06-14T16:20:00Z' },
-    { id: '4', user: 'Admin', action: 'Usuario desactivado', target: 'antiguo@example.com', timestamp: '2023-06-13T11:10:00Z' },
-    { id: '5', user: 'SuperAdmin', action: 'Configuración actualizada', target: 'Sistema', timestamp: '2023-06-12T14:25:00Z' },
-  ]
-};
-
 export const AdminService = {
-  getDashboardStats: async (): Promise<typeof MOCK_STATS> => {
+  getDashboardStats: async (): Promise<any> => {
     try {
-      // En producción, esto sería una llamada a la API
-      // const response = await apiClient.get('/admin/stats/');
-      // return response.data;
-      
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulación de latencia
-      return MOCK_STATS;
+      const response = await apiClient.get('/admin/dashboard/stats/');
+      return response.data;
     } catch (error) {
       console.error('Error al obtener estadísticas del dashboard:', error);
+      throw error;
+    }
+  },
+
+  getSystemSettings: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/admin/settings/');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener configuración del sistema:', error);
+      throw error;
+    }
+  },
+
+  updateSystemSettings: async (settings: any): Promise<any> => {
+    try {
+      const response = await apiClient.post('/admin/settings/update/', settings);
+      return response.data;
+    } catch (error) {
+      console.error('Error al actualizar configuración:', error);
+      throw error;
+    }
+  },
+
+  getRoleStatistics: async (): Promise<Array<{
+    name: UserRole;
+    count: number;
+    description: string;
+    permissions: string[];
+  }>> => {
+    try {
+      const response = await apiClient.get('/admin/roles/statistics/');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener estadísticas de roles:', error);
       throw error;
     }
   },

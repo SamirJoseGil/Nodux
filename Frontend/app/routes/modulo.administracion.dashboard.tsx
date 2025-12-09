@@ -18,15 +18,18 @@ export default function AdministracionDashboard() {
     const { user } = useAuth();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             setLoading(true);
+            setError(null);
             try {
                 const data = await AdminService.getDashboardStats();
                 setStats(data);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error al cargar estadísticas:', error);
+                setError(error.message || 'Error al cargar estadísticas del sistema');
             } finally {
                 setLoading(false);
             }
@@ -62,10 +65,28 @@ export default function AdministracionDashboard() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.8 }}
-                                className="text-nodux-naranja text-lg font-inter"
+                                className="text-center"
                             >
-                                Cargando estadísticas...
+                                <svg className="animate-spin h-8 w-8 text-nodux-neon mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p className="text-nodux-neon font-inter">Cargando estadísticas del sistema...</p>
                             </motion.div>
+                        </div>
+                    ) : error ? (
+                        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
+                            <svg className="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-red-600 font-inter font-bold mb-2">Error al cargar datos</p>
+                            <p className="text-red-500 font-inter text-sm">{error}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="mt-4 btn-primary"
+                            >
+                                Reintentar
+                            </button>
                         </div>
                     ) : stats ? (
                         <>
@@ -262,11 +283,7 @@ export default function AdministracionDashboard() {
                                 </div>
                             </div>
                         </>
-                    ) : (
-                        <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 text-center">
-                            <p className="text-gray-600">No se pudieron cargar las estadísticas del sistema.</p>
-                        </div>
-                    )}
+                    ) : null}
                 </div>
             </SystemAdminLayout>
         </ProtectedRoute>

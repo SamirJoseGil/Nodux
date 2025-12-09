@@ -17,13 +17,13 @@ export const meta: MetaFunction = () => {
 };
 
 const DAYS_OF_WEEK = [
-    { value: 0, label: 'Lunes' },
-    { value: 1, label: 'Martes' },
-    { value: 2, label: 'Miércoles' },
-    { value: 3, label: 'Jueves' },
-    { value: 4, label: 'Viernes' },
-    { value: 5, label: 'Sábado' },
-    { value: 6, label: 'Domingo' }
+    { value: 0, label: 'Lunes', short: 'Lun' },
+    { value: 1, label: 'Martes', short: 'Mar' },
+    { value: 2, label: 'Miércoles', short: 'Mié' },
+    { value: 3, label: 'Jueves', short: 'Jue' },
+    { value: 4, label: 'Viernes', short: 'Vie' },
+    { value: 5, label: 'Sábado', short: 'Sáb' },
+    { value: 6, label: 'Domingo', short: 'Dom' }
 ];
 
 const MODE_OPTIONS = [
@@ -41,12 +41,12 @@ export default function GroupsAdmin() {
     const [projects, setProjects] = useState<any[]>([]);
     const [mentors, setMentors] = useState<any[]>([]);
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+    const [selectedDays, setSelectedDays] = useState<number[]>([]);
     const [formData, setFormData] = useState({
         projectId: '',
         mentorId: '',
         location: '',
         mode: 'presencial' as 'presencial' | 'virtual' | 'hibrido',
-        scheduleDay: '1',
         startTime: '08:00',
         endTime: '10:00',
         startDate: new Date().toISOString().split('T')[0],
@@ -98,6 +98,16 @@ export default function GroupsAdmin() {
         }
     };
 
+    const handleDayToggle = (dayValue: number) => {
+        setSelectedDays(prev => {
+            if (prev.includes(dayValue)) {
+                return prev.filter(d => d !== dayValue);
+            } else {
+                return [...prev, dayValue].sort();
+            }
+        });
+    };
+
     const handleCreateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -106,32 +116,63 @@ export default function GroupsAdmin() {
             return;
         }
 
+        if (selectedDays.length === 0) {
+            alert('Por favor selecciona al menos un día de la semana');
+            return;
+        }
+
         setLoading(true);
         try {
-            const newGroup = await GroupService.createGroup(formData.projectId, {
-                mentorId: formData.mentorId,
-                location: formData.location,
-                mode: formData.mode,
-                scheduleDay: parseInt(formData.scheduleDay),
-                startTime: `${formData.startTime}:00`,
-                endTime: `${formData.endTime}:00`,
-                startDate: formData.startDate,
-                endDate: formData.endDate
-            });
-            
-            setGroups([...groups, newGroup]);
+            const createdGroups: Group[] = [];
+            const errors: string[] = [];
+
+            // Crear un grupo por cada día seleccionado
+            for (const day of selectedDays) {
+                try {
+                    const newGroup = await GroupService.createGroup(formData.projectId, {
+                        mentorId: formData.mentorId,
+                        location: formData.location,
+                        mode: formData.mode,
+                        scheduleDay: day,
+                        startTime: `${formData.startTime}:00`,
+                        endTime: `${formData.endTime}:00`,
+                        startDate: formData.startDate,
+                        endDate: formData.endDate
+                    });
+                    createdGroups.push(newGroup);
+                } catch (error: any) {
+                    const dayName = DAYS_OF_WEEK.find(d => d.value === day)?.label || `Día ${day}`;
+                    errors.push(`${dayName}: ${error.message}`);
+                }
+            }
+
+            // Actualizar la lista de grupos con los grupos creados
+            if (createdGroups.length > 0) {
+                setGroups([...groups, ...createdGroups]);
+            }
+
+            // Cerrar modal y resetear formulario
             setShowCreateModal(false);
+            setSelectedDays([]);
             setFormData({
                 projectId: formData.projectId,
                 mentorId: '',
                 location: '',
                 mode: 'presencial',
-                scheduleDay: '1',
                 startTime: '08:00',
                 endTime: '10:00',
                 startDate: new Date().toISOString().split('T')[0],
                 endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
             });
+
+            // Mostrar mensaje de resultado
+            if (errors.length === 0) {
+                alert(`✅ Se crearon ${createdGroups.length} grupo(s) exitosamente`);
+            } else if (createdGroups.length > 0) {
+                alert(`⚠️ Se crearon ${createdGroups.length} grupo(s).\n\nErrores:\n${errors.join('\n')}`);
+            } else {
+                alert(`❌ No se pudo crear ningún grupo:\n${errors.join('\n')}`);
+            }
         } catch (error: any) {
             alert(`Error: ${error.message}`);
         } finally {
@@ -246,7 +287,68 @@ export default function GroupsAdmin() {
                                             <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">ID</span>
                                             <p className="font-inter text-zafiro-900 mt-1">{selectedGroup.id}</p>
                                         </div>
-                                        {/* ...más detalles... */}
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Proyecto</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">
+                                                {projects.find(p => p.id === selectedGroup.projectId)?.name || 'Proyecto ID: ' + selectedGroup.projectId}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Mentor</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">
+                                                {mentors.find(m => m.id === selectedGroup.mentorId)?.name || 'Mentor ID: ' + selectedGroup.mentorId}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Modalidad</span>
+                                            <p className="font-inter text-zafiro-900 mt-1 capitalize">
+                                                {selectedGroup.mode || 'No especificada'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Ubicación</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">
+                                                {selectedGroup.location || 'No especificada'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Horario</span>
+                                            {selectedGroup.schedule && selectedGroup.schedule.length > 0 ? (
+                                                <ul className="mt-1 space-y-1">
+                                                    {selectedGroup.schedule.map((sch, idx) => {
+                                                        const dayNum = parseInt(sch.day);
+                                                        const dayObj = DAYS_OF_WEEK.find(d => d.value === dayNum);
+                                                        return (
+                                                            <li key={idx} className="font-inter text-zafiro-900">
+                                                                {dayObj?.label || `Día ${sch.day}`}: {sch.startTime} - {sch.endTime}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            ) : (
+                                                <p className="font-inter text-zafiro-900 mt-1">Sin horario definido</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Fecha de inicio</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">
+                                                {selectedGroup.startDate || 'No especificada'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Fecha de fin</span>
+                                            <p className="font-inter text-zafiro-900 mt-1">
+                                                {selectedGroup.endDate || 'No especificada'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="font-inter text-xs font-bold text-zafiro-600 uppercase">Estado</span>
+                                            <p className="mt-1">
+                                                <span className={`badge ${selectedGroup.status === 'active' ? 'badge-success' : 'badge-neutral'}`}>
+                                                    {selectedGroup.status === 'active' ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -270,6 +372,9 @@ export default function GroupsAdmin() {
                             >
                                 <div className="px-6 py-4 border-b border-zafiro-300">
                                     <h2 className="font-thicker text-2xl text-zafiro-900">Crear Nuevo Grupo</h2>
+                                    <p className="font-inter text-sm text-zafiro-700 mt-1">
+                                        Selecciona múltiples días para crear varios grupos con el mismo horario
+                                    </p>
                                 </div>
                                 
                                 <form onSubmit={handleCreateGroup} className="p-6">
@@ -328,23 +433,49 @@ export default function GroupsAdmin() {
                                             </select>
                                         </div>
 
-                                        {/* Schedule Day */}
+                                        {/* Days of Week - Botones de Selección Múltiple */}
                                         <div>
-                                            <label className="form-label">
-                                                Día de la semana <span className="text-nodux-naranja">*</span>
+                                            <label className="form-label mb-3 block">
+                                                Días de la semana <span className="text-nodux-naranja">*</span>
                                             </label>
-                                            <select
-                                                required
-                                                className="form-input w-full"
-                                                value={formData.scheduleDay}
-                                                onChange={(e) => setFormData({...formData, scheduleDay: e.target.value})}
-                                            >
-                                                {DAYS_OF_WEEK.map(day => (
-                                                    <option key={day.value} value={day.value} className="bg-zafiro-700 text-white">
-                                                        {day.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                                                {DAYS_OF_WEEK.map(day => {
+                                                    const isSelected = selectedDays.includes(day.value);
+                                                    return (
+                                                        <motion.button
+                                                            key={day.value}
+                                                            type="button"
+                                                            whileHover={{ scale: 1.05 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            onClick={() => handleDayToggle(day.value)}
+                                                            className={`
+                                                                py-3 px-2 rounded-lg font-inter font-bold text-sm transition-all
+                                                                ${isSelected 
+                                                                    ? 'bg-nodux-neon text-white shadow-neon' 
+                                                                    : 'bg-white/50 text-zafiro-700 hover:bg-white/70 border border-zafiro-300'
+                                                                }
+                                                            `}
+                                                        >
+                                                            <div className="hidden sm:block">{day.short}</div>
+                                                            <div className="sm:hidden">{day.label}</div>
+                                                        </motion.button>
+                                                    );
+                                                })}
+                                            </div>
+                                            {selectedDays.length > 0 && (
+                                                <p className="text-sm text-nodux-neon mt-2 font-inter font-medium">
+                                                    ✓ {selectedDays.length} día(s) seleccionado(s): {
+                                                        selectedDays
+                                                            .map(d => DAYS_OF_WEEK.find(day => day.value === d)?.short)
+                                                            .join(', ')
+                                                    }
+                                                </p>
+                                            )}
+                                            {selectedDays.length === 0 && (
+                                                <p className="text-sm text-zafiro-600 mt-2 font-inter">
+                                                    Selecciona uno o más días de la semana
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Time Range */}
@@ -402,13 +533,39 @@ export default function GroupsAdmin() {
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Resumen de grupos a crear */}
+                                        {selectedDays.length > 0 && (
+                                            <div className="bg-nodux-neon/10 border border-nodux-neon/30 rounded-xl p-4">
+                                                <h4 className="font-inter font-bold text-zafiro-900 mb-2 flex items-center gap-2">
+                                                    <FeatureIcon type="calendar" size={18} className="text-nodux-neon" />
+                                                    Resumen de creación
+                                                </h4>
+                                                <p className="font-inter text-sm text-zafiro-700">
+                                                    Se crearán <span className="font-bold text-nodux-neon">{selectedDays.length} grupo(s)</span> con el siguiente horario:
+                                                </p>
+                                                <ul className="mt-2 space-y-1">
+                                                    {selectedDays.map(dayValue => {
+                                                        const day = DAYS_OF_WEEK.find(d => d.value === dayValue);
+                                                        return (
+                                                            <li key={dayValue} className="font-inter text-sm text-zafiro-700">
+                                                                • <span className="font-semibold">{day?.label}</span>: {formData.startTime} - {formData.endTime}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex gap-2 mt-6 text-black">
                                         <button 
                                             type="button" 
                                             className="btn-secondary flex-1" 
-                                            onClick={() => setShowCreateModal(false)}
+                                            onClick={() => {
+                                                setShowCreateModal(false);
+                                                setSelectedDays([]);
+                                            }}
                                             disabled={loading}
                                         >
                                             Cancelar
@@ -416,9 +573,19 @@ export default function GroupsAdmin() {
                                         <button 
                                             type="submit" 
                                             className="btn-primary flex-1"
-                                            disabled={loading}
+                                            disabled={loading || selectedDays.length === 0}
                                         >
-                                            {loading ? 'Creando...' : 'Crear Grupo'}
+                                            {loading ? (
+                                                <span className="flex items-center justify-center gap-2">
+                                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Creando grupos...
+                                                </span>
+                                            ) : (
+                                                `Crear ${selectedDays.length > 0 ? selectedDays.length : ''} Grupo${selectedDays.length !== 1 ? 's' : ''}`
+                                            )}
                                         </button>
                                     </div>
                                 </form>

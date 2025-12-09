@@ -14,28 +14,30 @@ export default function ProductSidebar() {
     const { user, logout } = useAuth();
     const { isCollapsed, isPinned, toggleCollapsed, togglePinned } = useSidebar();
 
+    // Definición de los ítems del menú lateral
     const menuItems = [
-        { name: 'Dashboard', path: '/modulo/producto/dashboard', icon: DashboardIcon },
-        { name: 'Productos', path: '/modulo/producto/products', icon: ProjectIcon },
-        {
-            name: 'Inventario', path: '/modulo/producto/inventory', icon: () => (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-            )
-        },
-        { name: 'Proveedores', path: '/modulo/producto/suppliers', icon: UsersIcon },
-        { name: 'Reportes', path: '/modulo/producto/reports', icon: ChartIcon },
-        { name: 'Configuración', path: '/modulo/producto/settings', icon: SettingsIcon },
+        // { name: 'Dashboard', path: '/modulo/producto/dashboard', icon: DashboardIcon },
+        // { name: 'Productos', path: '/modulo/producto/products', icon: ProjectIcon },
+        // {
+        //     name: 'Inventario', path: '/modulo/producto/inventory', icon: () => (
+        //         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        //         </svg>
+        //     )
+        // },
+        // { name: 'Proveedores', path: '/modulo/producto/suppliers', icon: UsersIcon },
+        // { name: 'Reportes', path: '/modulo/producto/reports', icon: ChartIcon },
+        // { name: 'Configuración', path: '/modulo/producto/settings', icon: SettingsIcon },
     ];
 
+    // Función para determinar si la ruta está activa
     const isActive = (path: string) => {
         return location.pathname === path;
     };
 
     return (
         <>
-            {/* Overlay for mobile when sidebar is expanded */}
+            {/* Overlay para móvil cuando el sidebar está expandido */}
             {!isCollapsed && !isPinned && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
@@ -53,7 +55,7 @@ export default function ProductSidebar() {
                 h-screen overflow-hidden
                 flex flex-col
             `}>
-                {/* Sidebar Header */}
+                {/* Encabezado del sidebar */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
                     {!isCollapsed && (
                         <>
@@ -88,7 +90,7 @@ export default function ProductSidebar() {
 
                 {!isCollapsed && (
                     <>
-                        {/* User info */}
+                        {/* Información del usuario */}
                         <div className="p-4 border-b border-gray-200 flex-shrink-0">
                             <div className="flex items-center space-x-3">
                                 <div className="relative flex-shrink-0">
@@ -104,9 +106,21 @@ export default function ProductSidebar() {
                             </div>
                         </div>
 
-                        {/* Navigation menu */}
+                        {/* Menú de navegación (actualmente en desarrollo) */}
                         <nav className="flex-1 p-4 overflow-y-auto min-h-0">
                             <ul className="space-y-1">
+                                {/* Los links del menú están comentados porque el sidebar está en desarrollo */}
+                                <li>
+                                    <div className="flex items-center px-4 py-3 rounded-lg bg-yellow-50 text-yellow-800 border border-yellow-200">
+                                        <svg className="mr-3 w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                                        </svg>
+                                        <span className="font-medium break-words whitespace-normal">
+                                            Este menú está en desarrollo
+                                        </span>
+                                    </div>
+                                </li>
+                                {/* 
                                 {menuItems.map((item) => {
                                     const IconComponent = item.icon;
                                     return (
@@ -130,11 +144,13 @@ export default function ProductSidebar() {
                                         </li>
                                     );
                                 })}
+                                */}
                             </ul>
                         </nav>
 
-                        {/* Footer actions */}
+                        {/* Acciones del footer */}
                         <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2 flex-shrink-0">
+                            {/* Link para cambiar de módulo */}
                             <Link
                                 to="/selector-modulo"
                                 className="flex items-center px-4 py-3 w-full text-slate-700 hover:bg-white hover:shadow-sm rounded-lg transition-all"
@@ -144,7 +160,7 @@ export default function ProductSidebar() {
                                 </svg>
                                 <span className="font-medium truncate">Cambiar módulo</span>
                             </Link>
-
+                            {/* Botón para cerrar sesión */}
                             <button
                                 onClick={logout}
                                 className="flex items-center px-4 py-3 w-full text-slate-700 hover:bg-red-50 hover:text-red-700 rounded-lg transition-all"
@@ -159,7 +175,7 @@ export default function ProductSidebar() {
                 )}
             </div>
 
-            {/* Toggle button when collapsed - posicionado correctamente */}
+            {/* Botón para mostrar el sidebar cuando está colapsado */}
             {isCollapsed && (
                 <button
                     onClick={toggleCollapsed}

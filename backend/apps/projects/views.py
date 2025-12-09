@@ -366,8 +366,8 @@ class EventListViewSet(mixins.ListModelMixin,
             'group__mentor__profile__user'
         ).all()
         
-        date_from = self.request.query_params.get('event_date__gte')
-        date_to = self.request.query_params.get('event_date__lte')
+        date_from = self.request.GET.get('event_date__gte')
+        date_to = self.request.GET.get('event_date__lte')
         
         if date_from:
             queryset = queryset.filter(event_date__gte=date_from)

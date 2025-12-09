@@ -224,12 +224,6 @@ export default function SelectorModulo() {
                 <header className="relative z-10 w-full px-6 glass-strong">
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         <Link to="/" className="flex items-center gap-2">
-                        <img
-                        src="/images/LogoNodoEafit.png"
-                        alt="Logo Nodo EAFIT"
-                        className="w-28 h-20 object-contain"
-                        style={{ filter: "brightness(0) invert(1)" }}
-                        />
                             <span className="font-thicker text-2xl text-white">NODUX</span>
                         </Link>
                     </div>
@@ -295,12 +289,6 @@ export default function SelectorModulo() {
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <img
-                        src="/images/LogoNodoEafit.png"
-                        alt="Logo Nodo EAFIT"
-                        className="w-28 h-20 object-contain"
-                        style={{ filter: "brightness(0) invert(1)" }}
-                        />
                         <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                 </div>

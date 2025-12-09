@@ -40,7 +40,7 @@ class CurrentUserView(APIView):
         try:
             profile = user.profile
             serializer = ProfileSerializer(profile, context={'request': request})
-            data = serializer.data
+            data = dict(serializer.data)
             
             # Asegurar que el rol esté disponible
             data['role'] = profile.role
@@ -65,28 +65,28 @@ class ChangePasswordView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = ChangePasswordSerializer(data=request.data)
 
-        if serializer.is_valid():
-            user = request.user
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            old_password = serializer.validated_data["old_password"]
-            new_password = serializer.validated_data["new_password"]
+        user = request.user
 
-            if not user.check_password(old_password):
-                return Response(
-                    {"error": "Current password is incorrect"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        old_password = serializer.validated_data["old_password"]
+        new_password = serializer.validated_data["new_password"]
 
-            # Cambiar contraseña
-            user.set_password(new_password)
-            user.save()
-
+        if not user.check_password(old_password):
             return Response(
-                {"message": "Password changed succesfully"},
-                status=status.HTTP_200_OK
+                {"error": "Current password is incorrect"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Cambiar contraseña
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {"message": "Password changed succesfully"},
+            status=status.HTTP_200_OK
+        )
 
 
 class UserManagementViewSet(viewsets.ModelViewSet):
@@ -112,13 +112,15 @@ class UserManagementViewSet(viewsets.ModelViewSet):
         SuperAdmin can see all users.
         Admin can see all users except SuperAdmin.
         """
-        user_role = self.request.user.profile.role
-        
+        user = getattr(self.request, "user", None)
+        profile = getattr(user, "profile", None)
+        user_role = getattr(profile, "role", None)
+
         if user_role == 'SuperAdmin':
             return Profile.objects.all()
         elif user_role == 'Admin':
             return Profile.objects.exclude(role='SuperAdmin')
-        
+
         return Profile.objects.none()
     
     def update(self, request, *args, **kwargs):

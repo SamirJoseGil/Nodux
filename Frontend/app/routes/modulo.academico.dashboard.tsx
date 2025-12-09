@@ -165,15 +165,7 @@ export default function ModuloDashboard() {
                         transition={{ delay: 0.2, duration: 0.6 }}
                         className="mb-8"
                     >
-                        <div className="bg-gradient-to-br from-nodux-amarillo/10 to-nodux-naranja/10 border-2 border-nodux-amarillo/30 p-4 rounded-2xl text-center shadow-lg">
-                            <div className="flex justify-center">
-                                <img
-                                src="/images/LogoNodoEafit.png"
-                                alt="Logo Nodo EAFIT"
-                                className="w-32 h-24 object-contain"
-                                />
-                            </div>
-                            
+                        <div className="bg-gradient-to-br from-nodux-amarillo/10 to-nodux-naranja/10 border-2 border-nodux-amarillo/30 p-4 rounded-2xl text-center shadow-lg">                           
                             <blockquote className="font-inter text-xl italic text-zafiro-900 mb-4 leading-relaxed max-w-3xl mx-auto">
                                 "{philosophicalQuotes[currentQuote].text}"
                             </blockquote>

@@ -183,4 +183,107 @@ export const EventService = {
       throw error;
     }
   },
+
+  // ✅ Nuevo: Obtener estado de un evento (si ya pasó, está pendiente, etc.)
+  getEventStatus: (event: Event): EventStatus => {
+    const now = new Date();
+    const eventDate = new Date(event.date);
+    
+    // Si el evento fue cancelado o marcado como "missed"
+    if (event.status === 'cancelled' || event.status === 'missed') {
+      return event.status;
+    }
+    
+    // Si el evento fue completado
+    if (event.status === 'completed' || event.attendanceConfirmed) {
+      return 'completed';
+    }
+    
+    // Si la fecha del evento ya pasó y no está confirmado
+    if (eventDate < now) {
+      // Si el mentor no asistió o no se confirmó la asistencia
+      if (event.mentorAttended === false) {
+        return 'missed';
+      }
+      return 'completed'; // Asumimos que se completó si pasó la fecha
+    }
+    
+    // Si el evento está en el futuro
+    return 'pending';
+  },
+
+  // ✅ Nuevo: Marcar evento como completado
+  markEventAsCompleted: async (projectId: string, groupId: string, eventId: string): Promise<Event> => {
+    try {
+      const response = await apiClient.patch(
+        `/projects/${projectId}/groups/${groupId}/events/${eventId}/`,
+        { status: 'completed', mentorAttended: true }
+      );
+      
+      const e = response.data;
+      return {
+        id: String(e.id),
+        group: String(e.group),
+        location: e.location || 'Sin ubicación',
+        date: e.date || e.event_date,
+        startDate: e.start_date || e.date || e.event_date,
+        endDate: e.end_date || e.date || e.event_date,
+        scheduleId: e.schedule_id ? String(e.schedule_id) : null,
+        scheduleDay: e.schedule_day !== undefined ? Number(e.schedule_day) : null,
+        scheduleDayName: e.schedule_day_name || null,
+        startTime: e.start_time || null,
+        endTime: e.end_time || null,
+        startHour: e.start_hour !== undefined ? Number(e.start_hour) : 8,
+        endHour: e.end_hour !== undefined ? Number(e.end_hour) : 10,
+        duration: e.duration !== undefined ? Number(e.duration) : 2,
+        status: e.status || 'completed',
+        attendanceConfirmed: e.attendance_confirmed,
+        mentorAttended: e.mentor_attended,
+        groupInfo: e.group_info || null,
+      };
+    } catch (error) {
+      console.error('❌ Error al marcar evento como completado:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Nuevo: Marcar evento como perdido (mentor no asistió)
+  markEventAsMissed: async (projectId: string, groupId: string, eventId: string, notes?: string): Promise<Event> => {
+    try {
+      const response = await apiClient.patch(
+        `/projects/${projectId}/groups/${groupId}/events/${eventId}/`,
+        { 
+          status: 'missed', 
+          mentorAttended: false,
+          notes: notes || 'Mentor no asistió'
+        }
+      );
+      
+      const e = response.data;
+      return {
+        id: String(e.id),
+        group: String(e.group),
+        location: e.location || 'Sin ubicación',
+        date: e.date || e.event_date,
+        startDate: e.start_date || e.date || e.event_date,
+        endDate: e.end_date || e.date || e.event_date,
+        scheduleId: e.schedule_id ? String(e.schedule_id) : null,
+        scheduleDay: e.schedule_day !== undefined ? Number(e.schedule_day) : null,
+        scheduleDayName: e.schedule_day_name || null,
+        startTime: e.start_time || null,
+        endTime: e.end_time || null,
+        startHour: e.start_hour !== undefined ? Number(e.start_hour) : 8,
+        endHour: e.end_hour !== undefined ? Number(e.end_hour) : 10,
+        duration: e.duration !== undefined ? Number(e.duration) : 2,
+        status: e.status || 'missed',
+        attendanceConfirmed: e.attendance_confirmed,
+        mentorAttended: e.mentor_attended,
+        notes: e.notes,
+        groupInfo: e.group_info || null,
+      };
+    } catch (error) {
+      console.error('❌ Error al marcar evento como perdido:', error);
+      throw error;
+    }
+  },
 };

@@ -344,27 +344,69 @@ export const GroupService = {
   getGroups: async (projectId: string): Promise<Group[]> => {
     const response = await apiClient.get(`/projects/${projectId}/groups/`);
     const data = response.data.results || response.data;
-    return (Array.isArray(data) ? data : []).map((g: any) => ({
-      id: String(g.id),
-      name: g.name || `Grupo ${g.id}`,
-      projectId: String(g.project),
-      mentorId: String(g.mentor),
-      students: [],
-      schedule: g.schedule
-        ? [{
-            id: String(g.schedule.id),
-            groupId: String(g.id),
-            day: String(g.schedule.day),
-            startTime: g.schedule.start_time,
-            endTime: g.schedule.end_time,
-            location: g.location ?? undefined,
-          }]
-        : [],
-      projectName: '',
-      mentorName: '',
-      description: '',
-      createdAt: undefined,
-    }));
+    
+    console.log('📦 Respuesta raw de grupos:', JSON.stringify(data, null, 2));
+    
+    // Si schedule es un ID, necesitamos obtener los schedules por separado
+    const schedules: Record<string, any> = {};
+    
+    // Intentar obtener todos los schedules
+    try {
+      const schedulesResponse = await apiClient.get('/schedule/');
+      const schedulesData = schedulesResponse.data.results || schedulesResponse.data;
+      
+      if (Array.isArray(schedulesData)) {
+        schedulesData.forEach((sch: any) => {
+          schedules[String(sch.id)] = sch;
+        });
+      }
+    } catch (error) {
+      console.warn('⚠️ No se pudieron cargar los schedules:', error);
+    }
+    
+    return (Array.isArray(data) ? data : []).map((g: any) => {
+      console.log('🔍 Procesando grupo:', JSON.stringify(g, null, 2));
+      
+      // Determinar el schedule (puede ser un ID o un objeto)
+      let scheduleData = null;
+      
+      if (typeof g.schedule === 'number') {
+        // schedule es un ID, buscar en los schedules cargados
+        scheduleData = schedules[String(g.schedule)];
+        console.log(`📅 Schedule ID ${g.schedule} encontrado:`, scheduleData);
+      } else if (typeof g.schedule === 'object' && g.schedule !== null) {
+        // schedule ya es un objeto
+        scheduleData = g.schedule;
+        console.log('📅 Schedule como objeto:', scheduleData);
+      }
+      
+      return {
+        id: String(g.id),
+        name: g.name || `Grupo ${g.id}`,
+        projectId: String(g.project),
+        projectName: '', // Se puede obtener del proyecto padre si es necesario
+        mentorId: String(g.mentor),
+        mentorName: '', // No viene en la respuesta, se debe obtener por separado
+        mode: g.mode || '',
+        location: g.location || '',
+        startDate: g.start_date || '',
+        endDate: g.end_date || '',
+        status: g.is_active ? 'active' : 'inactive',
+        students: [], // No viene en esta respuesta
+        schedule: scheduleData ? [{
+          id: String(scheduleData.id),
+          groupId: String(g.id),
+          day: String(scheduleData.day),
+          startTime: scheduleData.start_time || '',
+          endTime: scheduleData.end_time || '',
+          location: g.location,
+          startDate: g.start_date,
+          endDate: g.end_date,
+        }] : [],
+        description: g.description || '',
+        createdAt: g.created_at || undefined,
+      };
+    });
   },
 
   createGroup: async (projectId: string, groupData: {
@@ -403,27 +445,17 @@ export const GroupService = {
     
     // ✅ Construir payload exactamente como el backend lo espera
     const payload = {
-      mentor: mentorId,                          // ← INTEGER, no string
-      location: groupData.location.trim(),       // ← STRING, sin espacios extra
-      mode: groupData.mode,                      // ← STRING: "presencial", "virtual", "hibrido"
-      start_date: groupData.startDate,           // ← DATE: "YYYY-MM-DD"
-      end_date: groupData.endDate,               // ← DATE: "YYYY-MM-DD"
-      schedule_day: groupData.scheduleDay,       // ← INTEGER: 0-6
-      start_time: groupData.startTime,           // ← TIME: "HH:MM:SS"
-      end_time: groupData.endTime                // ← TIME: "HH:MM:SS"
+      mentor: mentorId,
+      location: groupData.location.trim(),
+      mode: groupData.mode,
+      start_date: groupData.startDate,
+      end_date: groupData.endDate,
+      schedule_day: groupData.scheduleDay,
+      start_time: groupData.startTime,
+      end_time: groupData.endTime
     };
     
     console.log('📤 Payload de creación de grupo (validado):', JSON.stringify(payload, null, 2));
-    console.log('📋 Tipos de datos:', {
-      mentor: typeof payload.mentor,
-      location: typeof payload.location,
-      mode: typeof payload.mode,
-      start_date: typeof payload.start_date,
-      end_date: typeof payload.end_date,
-      schedule_day: typeof payload.schedule_day,
-      start_time: typeof payload.start_time,
-      end_time: typeof payload.end_time
-    });
     
     try {
       const response = await apiClient.post(`/projects/${projectId}/groups/`, payload);
@@ -431,42 +463,63 @@ export const GroupService = {
       console.log('✅ Respuesta del backend:', JSON.stringify(response.data, null, 2));
       
       const g = response.data;
+      
+      // El backend puede retornar schedule como ID o como objeto
+      let scheduleData = null;
+      
+      if (typeof g.schedule === 'number') {
+        // Si es un ID, intentar obtener el schedule completo
+        try {
+          const scheduleResponse = await apiClient.get(`/schedule/${g.schedule}/`);
+          scheduleData = scheduleResponse.data;
+          console.log('📅 Schedule obtenido del backend:', scheduleData);
+        } catch (error) {
+          console.warn('⚠️ No se pudo obtener el schedule completo, usando datos del payload');
+          // Usar los datos del payload si no se puede obtener
+          scheduleData = {
+            id: g.schedule,
+            day: groupData.scheduleDay,
+            start_time: groupData.startTime,
+            end_time: groupData.endTime
+          };
+        }
+      } else if (typeof g.schedule === 'object' && g.schedule !== null) {
+        scheduleData = g.schedule;
+      }
+      
       return {
         id: String(g.id),
         name: g.name || `Grupo ${g.id}`,
         projectId: String(g.project),
-        mentorId: String(g.mentor),
-        students: [],
-        schedule: g.schedule
-          ? [{
-              id: String(g.schedule.id),
-              groupId: String(g.id),
-              day: String(g.schedule.day),
-              startTime: g.schedule.start_time,
-              endTime: g.schedule.end_time,
-              location: g.location ?? undefined,
-            }]
-          : [],
         projectName: '',
+        mentorId: String(g.mentor),
         mentorName: '',
+        mode: g.mode || '',
+        location: g.location || '',
+        startDate: g.start_date || '',
+        endDate: g.end_date || '',
+        status: g.is_active ? 'active' : 'inactive',
+        students: [],
+        schedule: scheduleData ? [{
+          id: String(scheduleData.id),
+          groupId: String(g.id),
+          day: String(scheduleData.day),
+          startTime: scheduleData.start_time || '',
+          endTime: scheduleData.end_time || '',
+          location: g.location,
+          startDate: g.start_date,
+          endDate: g.end_date,
+        }] : [],
         description: '',
         createdAt: undefined,
       };
     } catch (error: any) {
       console.error('❌ Error completo al crear grupo:', error);
-      console.error('📋 Response status:', error.response?.status);
       console.error('📋 Response data:', JSON.stringify(error.response?.data, null, 2));
-      console.error('📋 Request config:', {
-        url: error.config?.url,
-        method: error.config?.method,
-        data: error.config?.data
-      });
       
-      // Extraer mensaje de error específico del backend
       if (error.response?.data) {
         const errorData = error.response.data;
         
-        // El backend puede retornar errores en diferentes formatos
         if (typeof errorData === 'string') {
           throw new Error(errorData);
         }
@@ -479,7 +532,6 @@ export const GroupService = {
           throw new Error(errorData.detail);
         }
         
-        // Errores de validación por campo
         if (typeof errorData === 'object') {
           const fieldErrors = [];
           

@@ -84,12 +84,6 @@ export default function Index() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 group">
-              <img
-              src="/images/LogoNodoEafit.png"
-              alt="Logo Nodo EAFIT"
-              className="w-24 h-24 object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
-              />
               <span className="font-thicker text-2xl text-white group-hover:text-nodux-neon transition-colors">
               NODUX
               </span>
@@ -111,9 +105,14 @@ export default function Index() {
                 </>
               )}
               {isAuthenticated && (
-                <Link to="/selector-modulo" className="btn-primary">
-                  Dashboard
-                </Link>
+                <>
+                  <Link 
+                    to={user?.role === "Estudiante" ? "/estudiantes/dashboard" : "/selector-modulo"} 
+                    className="btn-primary"
+                  >
+                    {user?.role === "Estudiante" ? "Mi Dashboard" : "Dashboard"}
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -189,6 +188,23 @@ export default function Index() {
                   </Link>
                   <Link to="/login" className="btn-secondary text-lg px-8 py-4">
                     Iniciar Sesión
+                  </Link>
+                </motion.div>
+              )}
+
+              {isAuthenticated && (
+                <motion.div
+                  variants={itemVariants}
+                  className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                >
+                  <Link 
+                    to={user?.role === "Estudiante" ? "/estudiantes/dashboard" : "/selector-modulo"} 
+                    className="btn-primary text-lg px-8 py-4"
+                  >
+                    Ir a mi Dashboard
+                    <svg className="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </Link>
                 </motion.div>
               )}
@@ -358,7 +374,10 @@ export default function Index() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
-                <Link to="/selector-modulo" className="btn-primary text-lg px-8 py-4">
+                <Link 
+                  to={user?.role === "Estudiante" ? "/estudiantes/dashboard" : "/selector-modulo"} 
+                  className="btn-primary text-lg px-8 py-4"
+                >
                   Ir a Dashboard
                 </Link>
               ) : (
@@ -381,16 +400,10 @@ export default function Index() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-                <img
-              src="/images/LogoNodoEafit.png"
-              alt="Logo Nodo EAFIT"
-              className="w-32 h-32 object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
-              />
               <span className="font-thicker text-2xl text-white">NODUX</span>
             </div>
             <p className="font-inter text-white/60">
-              © 2024 Nodux. Todos los derechos reservados.
+              © 2025 Nodux. Todos los derechos reservados.
             </p>
           </div>
         </div>

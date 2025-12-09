@@ -55,6 +55,145 @@ export const UserManagementService = {
   },
 
   /**
+   * Crea un nuevo usuario (Admin/SuperAdmin)
+   */
+  createUser: async (userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    password: string;
+    phone?: string;
+    role: UserRole;
+  }): Promise<UserProfile> => {
+    try {
+      const payload = {
+        user: {
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          email: userData.email,
+          username: userData.username,
+          password: userData.password
+        },
+        phone: userData.phone || '',
+        role: userData.role
+      };
+
+      console.log('📤 Creando usuario:', payload);
+
+      const response = await apiClient.post('/users/manage/', payload);
+      const profile = response.data;
+      
+      return {
+        id: String(profile.id),
+        user: {
+          id: String(profile.user.id),
+          username: profile.user.username,
+          firstName: profile.user.first_name,
+          lastName: profile.user.last_name,
+          email: profile.user.email
+        },
+        phone: profile.phone || '',
+        photo: profile.photo,
+        role: profile.role
+      };
+    } catch (error: any) {
+      console.error('Error al crear usuario:', error);
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Manejar errores de usuario anidados
+        if (errorData.user) {
+          if (errorData.user.email) {
+            throw new Error(`Email: ${Array.isArray(errorData.user.email) ? errorData.user.email[0] : errorData.user.email}`);
+          }
+          if (errorData.user.username) {
+            throw new Error(`Usuario: ${Array.isArray(errorData.user.username) ? errorData.user.username[0] : errorData.user.username}`);
+          }
+        }
+        
+        if (errorData.role) {
+          throw new Error(`Rol: ${Array.isArray(errorData.role) ? errorData.role[0] : errorData.role}`);
+        }
+        
+        if (errorData.detail) {
+          throw new Error(errorData.detail);
+        }
+      }
+      
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza la información completa de un usuario (Admin/SuperAdmin)
+   */
+  updateUser: async (userId: string, userData: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    role?: UserRole;
+  }): Promise<UserProfile> => {
+    try {
+      const payload: any = {};
+      
+      // Solo incluir campos que fueron modificados
+      if (userData.firstName !== undefined || userData.lastName !== undefined || userData.email !== undefined) {
+        payload.user = {};
+        if (userData.firstName !== undefined) payload.user.first_name = userData.firstName;
+        if (userData.lastName !== undefined) payload.user.last_name = userData.lastName;
+        if (userData.email !== undefined) payload.user.email = userData.email;
+      }
+      
+      if (userData.phone !== undefined) payload.phone = userData.phone;
+      if (userData.role !== undefined) payload.role = userData.role;
+
+      console.log('📤 Actualizando usuario:', payload);
+
+      const response = await apiClient.patch(`/users/manage/${userId}/`, payload);
+      const profile = response.data;
+      
+      return {
+        id: String(profile.id),
+        user: {
+          id: String(profile.user.id),
+          username: profile.user.username,
+          firstName: profile.user.first_name,
+          lastName: profile.user.last_name,
+          email: profile.user.email
+        },
+        phone: profile.phone || '',
+        photo: profile.photo,
+        role: profile.role
+      };
+    } catch (error: any) {
+      console.error('Error al actualizar usuario:', error);
+      
+      if (error.response?.status === 403) {
+        throw new Error('No tienes permisos para actualizar este usuario');
+      }
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        if (errorData.user) {
+          if (errorData.user.email) {
+            throw new Error(`Email: ${Array.isArray(errorData.user.email) ? errorData.user.email[0] : errorData.user.email}`);
+          }
+        }
+        
+        if (errorData.detail) {
+          throw new Error(errorData.detail);
+        }
+      }
+      
+      throw error;
+    }
+  },
+
+  /**
    * Cambia el rol de un usuario (Admin/SuperAdmin)
    */
   changeUserRole: async (userId: string, newRole: UserRole): Promise<UserProfile> => {

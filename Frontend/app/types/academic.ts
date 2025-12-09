@@ -35,15 +35,20 @@ export interface Project {
 
 export interface Group {
   id: string;
-  name: string;
+  name?: string;
   projectId: string;
-  mentorId: string;
-  students: Student[];
-  schedule?: Schedule[];
   projectName?: string;
+  mentorId: string;
   mentorName?: string;
-  description?: string; // Añadido para resolver error
-  createdAt?: string; // Añadido para resolver error
+  mode?: 'presencial' | 'virtual' | 'hibrido' | '';
+  location?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: 'active' | 'inactive' | '';
+  students?: Student[];
+  schedule?: Schedule[];
+  description?: string;
+  createdAt?: string;
 }
 
 export interface Student {

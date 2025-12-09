@@ -13,7 +13,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Login() {
-    const { login, isAuthenticated } = useAuth();
+    const { login, isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -24,10 +24,17 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/selector-modulo');
+        if (isAuthenticated && user) {
+            // Redirigir según el rol del usuario
+            if (user.role === 'Estudiante') {
+                navigate('/estudiantes/dashboard');
+            } else if (user.role === 'Mentor') {
+                navigate('/mentores/dashboard');
+            } else {
+                navigate('/selector-modulo');
+            }
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, user, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,6 +58,7 @@ export default function Login() {
         setIsLoading(true);
         try {
             await login(formData.username, formData.password);
+            // La redirección se maneja en el useEffect
         } catch (error: any) {
             console.error('Error en login:', error);
             setErrors({ 
@@ -70,7 +78,7 @@ export default function Login() {
                     rotate: [0, 180, 360],
                 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                className="absolute top-10 right-2 md:top-20 md:right-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-neon/10 rounded-full blur-3xl"
             />
             <motion.div
                 animate={{
@@ -78,24 +86,18 @@ export default function Login() {
                     rotate: [360, 180, 0],
                 }}
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+                className="absolute bottom-10 left-2 md:bottom-20 md:left-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-marino/10 rounded-full blur-3xl"
             />
 
             {/* Header */}
-            <header className="w-full px-6 glass-strong relative z-10">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
-                    <img
-                    src="/images/LogoNodoEafit.png"
-                    alt="Logo Nodo EAFIT"
-                    className="w-28 h-20 object-contain"
-                    style={{ filter: "brightness(0) invert(1)" }}
-                    />
+            <header className="w-full px-4 md:px-6 glass-strong relative z-10 h-16 min-h-[4rem]">
+                <div className="max-w-7xl mx-auto flex flex-row items-center h-full justify-between">
+                    <Link to="/" className="flex items-center gap-2 h-full">
                         <span className="font-thicker text-2xl text-white">NODUX</span>
                     </Link>
                     <Link 
                         to="/registro" 
-                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors"
+                        className="text-white/80 hover:text-white font-inter font-semibold transition-colors h-full flex items-center"
                     >
                         Crear cuenta
                     </Link>
