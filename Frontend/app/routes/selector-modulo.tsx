@@ -178,7 +178,7 @@ export default function SelectorModulo() {
     // Loading state
     if (isLoading || authLoading) {
         return (
-            <div className="min-h-screen bg-zafiro-500 flex items-center justify-center relative overflow-hidden">
+            <div className="min-h-screen bg-zafiro-500 flex items-center justify-center relative overflow-hidden px-4">
                 {/* Animated background */}
                 <motion.div
                     animate={{
@@ -186,7 +186,7 @@ export default function SelectorModulo() {
                         rotate: [0, 180, 360],
                     }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                    className="absolute top-10 right-2 md:top-20 md:right-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-neon/10 rounded-full blur-3xl"
                 />
                 <motion.div
                     animate={{
@@ -194,16 +194,16 @@ export default function SelectorModulo() {
                         rotate: [360, 180, 0],
                     }}
                     transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+                    className="absolute bottom-10 left-2 md:bottom-20 md:left-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-marino/10 rounded-full blur-3xl"
                 />
 
                 <div className="text-center relative z-10">
                     <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-16 h-16 border-4 border-nodux-neon border-t-transparent rounded-full mx-auto mb-4"
+                        className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-nodux-neon border-t-transparent rounded-full mx-auto mb-4"
                     />
-                    <p className="text-white font-inter font-medium">Cargando módulos...</p>
+                    <p className="text-white font-inter font-medium text-sm sm:text-base">Cargando módulos...</p>
                 </div>
             </div>
         );
@@ -217,40 +217,40 @@ export default function SelectorModulo() {
                 <motion.div
                     animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                    className="absolute top-10 right-2 md:top-20 md:right-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-neon/10 rounded-full blur-3xl"
                 />
 
                 {/* Header */}
-                <header className="relative z-10 w-full px-6 glass-strong">
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <header className="relative z-10 w-full px-4 sm:px-6 glass-strong h-16 min-h-[4rem]">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between h-full">
                         <Link to="/" className="flex items-center gap-2">
-                            <span className="font-thicker text-2xl text-white">NODUX</span>
+                            <span className="font-thicker text-xl sm:text-2xl text-white">NODUX</span>
                         </Link>
                     </div>
                 </header>
 
                 {/* Error Content */}
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-md mx-auto glass-card p-8 text-center"
+                        className="max-w-md mx-auto glass-card p-6 sm:p-8 text-center"
                     >
-                        <div className="w-16 h-16 bg-nodux-naranja/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-nodux-naranja" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-nodux-naranja/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-nodux-naranja" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h3 className="font-thicker text-2xl text-white mb-2">Sin acceso</h3>
-                        <p className="font-inter text-white/70 mb-4">{error}</p>
+                        <h3 className="font-thicker text-xl sm:text-2xl text-white mb-2">Sin acceso</h3>
+                        <p className="font-inter text-sm sm:text-base text-white/70 mb-4">{error}</p>
                         {user && (
-                            <p className="text-sm text-white/60 mb-6">
+                            <p className="text-xs sm:text-sm text-white/60 mb-6">
                                 Tu rol actual: <strong className="text-nodux-neon">{user.role}</strong>
                             </p>
                         )}
                         <button
                             onClick={() => navigate('/')}
-                            className="btn-primary w-full"
+                            className="btn-primary w-full text-sm sm:text-base"
                         >
                             Volver al Inicio
                         </button>
@@ -269,7 +269,7 @@ export default function SelectorModulo() {
                     rotate: [0, 180, 360],
                 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute top-20 right-20 w-96 h-96 bg-nodux-neon/10 rounded-full blur-3xl"
+                className="absolute top-10 right-2 md:top-20 md:right-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-neon/10 rounded-full blur-3xl"
             />
             <motion.div
                 animate={{
@@ -277,7 +277,7 @@ export default function SelectorModulo() {
                     rotate: [360, 180, 0],
                 }}
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute bottom-20 left-20 w-96 h-96 bg-nodux-marino/10 rounded-full blur-3xl"
+                className="absolute bottom-10 left-2 md:bottom-20 md:left-20 w-60 h-60 md:w-96 md:h-96 bg-nodux-marino/10 rounded-full blur-3xl"
             />
 
             {/* Header */}
@@ -285,40 +285,40 @@ export default function SelectorModulo() {
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative z-10 w-full py-4 px-6 glass-strong"
+                className="relative z-10 w-full py-3 sm:py-4 px-4 sm:px-6 glass-strong"
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2">
-                        <span className="font-thicker text-2xl text-white">NODUX</span>
+                        <span className="font-thicker text-xl sm:text-2xl text-white">NODUX</span>
                     </Link>
                 </div>
             </motion.header>
 
             {/* Main Content */}
-            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                 {/* Header Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="text-center mb-12"
+                    className="text-center mb-8 sm:mb-12"
                 >
-                    <div className="inline-block mb-6 text-left w-full">
+                    <div className="inline-block mb-4 sm:mb-6 text-left w-full">
                         <button
                             type="button"
                             onClick={() => navigate("/")}
-                            className="flex items-center gap-2 px-4 py-2 bg-nodux-marino/80 hover:bg-nodux-marino/90 text-white rounded-xl shadow transition-colors"
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-nodux-marino/80 hover:bg-nodux-marino/90 text-white rounded-xl shadow transition-colors text-sm sm:text-base"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                             <span>Volver</span>
                         </button>
                     </div>
-                    <h1 className="font-thicker text-4xl sm:text-5xl text-white mb-4">
+                    <h1 className="font-thicker text-3xl sm:text-4xl lg:text-5xl text-white mb-3 sm:mb-4 px-4">
                         Selecciona tu <span className="text-gradient-neon">Módulo</span>
                     </h1>
-                    <p className="font-inter text-lg text-white/70 max-w-2xl mx-auto">
+                    <p className="font-inter text-base sm:text-lg lg:text-xl text-white/70 max-w-2xl mx-auto px-4">
                         Elige el espacio de trabajo que mejor se adapte a tus necesidades
                     </p>
                 </motion.div>
@@ -328,17 +328,17 @@ export default function SelectorModulo() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="glass-card p-6 mb-12"
+                    className="glass-card p-4 sm:p-6 mb-8 sm:mb-12"
                 >
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-full flex items-center justify-center text-white font-thicker text-2xl shadow-neon">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-nodux-neon to-nodux-marino rounded-full flex items-center justify-center text-white font-thicker text-xl sm:text-2xl shadow-neon flex-shrink-0">
                             {user?.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="flex-1">
-                            <h2 className="font-inter text-xl font-bold text-white">{user?.name}</h2>
-                            <div className="flex items-center gap-4 mt-1">
-                                <p className="font-inter text-white/70">{user?.email}</p>
-                                <span className="px-3 py-1 bg-nodux-neon/20 text-nodux-neon border border-nodux-neon/30 rounded-full text-sm font-bold font-inter">
+                        <div className="flex-1 text-center sm:text-left">
+                            <h2 className="font-inter text-lg sm:text-xl font-bold text-white">{user?.name}</h2>
+                            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-1">
+                                <p className="font-inter text-sm sm:text-base text-white/70">{user?.email}</p>
+                                <span className="px-3 py-1 bg-nodux-neon/20 text-nodux-neon border border-nodux-neon/30 rounded-full text-xs sm:text-sm font-bold font-inter">
                                     {user?.role}
                                 </span>
                             </div>
@@ -351,21 +351,21 @@ export default function SelectorModulo() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-md mx-auto glass-card p-8 text-center"
+                        className="max-w-md mx-auto glass-card p-6 sm:p-8 text-center"
                     >
-                        <div className="w-16 h-16 bg-nodux-amarillo/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-nodux-amarillo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-nodux-amarillo/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-nodux-amarillo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h3 className="font-thicker text-2xl text-white mb-2">Sin acceso</h3>
-                        <p className="font-inter text-white/70 mb-4">
+                        <h3 className="font-thicker text-xl sm:text-2xl text-white mb-2">Sin acceso</h3>
+                        <p className="font-inter text-sm sm:text-base text-white/70 mb-4">
                             No tienes acceso a ningún módulo.
                         </p>
-                        <p className="text-sm font-inter text-white/60 mb-6">
+                        <p className="text-xs sm:text-sm font-inter text-white/60 mb-4 sm:mb-6">
                             Tu rol actual: <strong className="text-nodux-neon">{user?.role}</strong>
                         </p>
-                        <p className="font-inter text-white/70">
+                        <p className="font-inter text-sm sm:text-base text-white/70">
                             Contacta al administrador para obtener los permisos necesarios.
                         </p>
                     </motion.div>
@@ -374,7 +374,7 @@ export default function SelectorModulo() {
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                     >
                         {modules.map((module) => (
                             <motion.button
@@ -383,28 +383,28 @@ export default function SelectorModulo() {
                                 whileHover={{ scale: 1.05, y: -8 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleModuleClick(module)}
-                                className="glass-card p-8 text-left group relative overflow-hidden"
+                                className="glass-card p-6 sm:p-8 text-left group relative overflow-hidden"
                             >
                                 {/* Decorative gradient on hover */}
                                 <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 from-nodux-neon to-nodux-marino" />
 
                                 {/* Icon */}
-                                <div className={`w-20 h-20 bg-gradient-to-br ${getModuleGradient(module.name)} rounded-2xl flex items-center justify-center mb-6 shadow-neon group-hover:shadow-neon-lg group-hover:scale-110 transition-all duration-300 relative z-10`}>
+                                <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br ${getModuleGradient(module.name)} rounded-2xl flex items-center justify-center mb-4 sm:mb-6 shadow-neon group-hover:shadow-neon-lg group-hover:scale-110 transition-all duration-300 relative z-10`}>
                                     {getModuleIcon(module.name)}
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="font-inter font-bold text-2xl text-white mb-3 group-hover:text-nodux-neon transition-colors relative z-10">
+                                <h3 className="font-inter font-bold text-xl sm:text-2xl text-white mb-2 sm:mb-3 group-hover:text-nodux-neon transition-colors relative z-10">
                                     {module.name}
                                 </h3>
-                                <p className="font-inter text-white/70 mb-4 relative z-10">
+                                <p className="font-inter text-sm sm:text-base text-white/70 mb-3 sm:mb-4 relative z-10 line-clamp-2">
                                     {module.description}
                                 </p>
 
                                 {/* Arrow */}
-                                <div className="flex items-center text-nodux-neon font-inter font-bold group-hover:translate-x-2 transition-transform relative z-10">
+                                <div className="flex items-center text-nodux-neon font-inter font-bold text-sm sm:text-base group-hover:translate-x-2 transition-transform relative z-10">
                                     <span>Acceder</span>
-                                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                     </svg>
                                 </div>
