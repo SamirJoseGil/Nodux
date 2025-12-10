@@ -66,10 +66,11 @@ export default function AdminSidebar() {
         }
     };
 
-    // ✅ Handler mejorado para cerrar el menú
+    // ✅ Handler mejorado para cerrar el menú (solo en mobile)
     const handleMenuItemClick = () => {
         console.log('🔘 Item del menú clickeado, isPinned:', isPinned);
-        if (!isPinned) {
+        // Solo cerrar si NO está pinned y estamos en mobile
+        if (!isPinned && window.innerWidth < 1024) {
             toggleCollapse();
         }
     };
@@ -91,7 +92,7 @@ export default function AdminSidebar() {
 
     return (
         <>
-            {/* Overlay para mobile - ✅ Mejorado */}
+            {/* Overlay para mobile */}
             <AnimatePresence>
                 {!isCollapsed && !isPinned && (
                     <motion.div
@@ -105,7 +106,7 @@ export default function AdminSidebar() {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar - ✅ Mejorado */}
+            {/* Sidebar */}
             <motion.aside
                 initial={false}
                 animate={{
@@ -123,24 +124,32 @@ export default function AdminSidebar() {
                             <span className="font-thicker text-lg sm:text-xl text-gray-900">NODUX</span>
                         </Link>
                         <div className="flex items-center gap-2">
-                            {/* Pin button - solo en desktop */}
+                            {/* ✅ Pin button - visible en desktop Y mobile */}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
                                     togglePin();
                                 }}
-                                className="hidden lg:block p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                title={isPinned ? 'Desanclar' : 'Anclar'}
+                                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors ${
+                                    isPinned ? 'bg-nodux-neon/10' : ''
+                                }`}
+                                title={isPinned ? 'Desanclar sidebar' : 'Anclar sidebar'}
                                 type="button"
                             >
-                                <FeatureIcon 
-                                    type={isPinned ? 'target' : 'settings'} 
-                                    size={18} 
-                                    className="text-gray-600"
-                                />
+                                {isPinned ? (
+                                    // Icono de "pinned" (pin lleno)
+                                    <svg className="w-5 h-5 text-nodux-neon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z" />
+                                    </svg>
+                                ) : (
+                                    // Icono de "unpinned" (pin outline)
+                                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                )}
                             </button>
-                            {/* Close button - solo en mobile - ✅ MEJORADO */}
+                            {/* ✅ Close button - siempre visible */}
                             <button
                                 onClick={handleCloseClick}
                                 onTouchEnd={(e) => {
@@ -149,7 +158,7 @@ export default function AdminSidebar() {
                                     console.log('🔘 Touch en botón X');
                                     toggleCollapse();
                                 }}
-                                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation active:bg-gray-200"
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation active:bg-gray-200"
                                 aria-label="Cerrar menú"
                                 type="button"
                                 style={{ 
@@ -158,7 +167,7 @@ export default function AdminSidebar() {
                                     minHeight: '44px'
                                 }}
                             >
-                                <svg className="w-6 h-6 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -177,7 +186,7 @@ export default function AdminSidebar() {
                             to={item.path}
                             onClick={handleMenuItemClick}
                             onTouchEnd={(e) => {
-                                if (!isPinned) {
+                                if (!isPinned && window.innerWidth < 1024) {
                                     e.preventDefault();
                                     navigate(item.path);
                                     setTimeout(() => toggleCollapse(), 100);
@@ -205,7 +214,7 @@ export default function AdminSidebar() {
                         to="/selector-modulo"
                         onClick={handleMenuItemClick}
                         onTouchEnd={(e) => {
-                            if (!isPinned) {
+                            if (!isPinned && window.innerWidth < 1024) {
                                 e.preventDefault();
                                 navigate('/selector-modulo');
                                 setTimeout(() => toggleCollapse(), 100);
@@ -225,7 +234,7 @@ export default function AdminSidebar() {
                         onTouchEnd={(e) => {
                             e.preventDefault();
                             handleLogout();
-                            if (!isPinned) {
+                            if (!isPinned && window.innerWidth < 1024) {
                                 setTimeout(() => toggleCollapse(), 100);
                             }
                         }}

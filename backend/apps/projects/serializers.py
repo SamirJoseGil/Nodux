@@ -23,10 +23,22 @@ class GroupSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = "__all__"
-        extra_kwargs = {
-            "group": {"read_only": True}
-        }
+        fields = ['id', 'group', 'location', 'event_date', 
+                  'is_cancelled', 'cancellation_reason']
+        read_only_fields = ['id']
+    
+    def validate(self, data):
+        """Asegurar que event_date esté presente"""
+        if 'event_date' not in data and 'start_date' in data:
+            # Si solo viene start_date, usar ese valor para event_date
+            data['event_date'] = data['start_date']
+        
+        if 'event_date' not in data:
+            raise serializers.ValidationError({
+                'event_date': 'Este campo es requerido'
+            })
+        
+        return data
 
 
 # --- Event (global read-only endpoint with schedule info) ---
@@ -35,30 +47,14 @@ class EventListSerializer(serializers.ModelSerializer):
     Read-only serializer for the global `/api/events/` endpoint.
     Includes schedule information for calendar display.
     """
-    schedule = serializers.SerializerMethodField()
     group_info = serializers.SerializerMethodField()
     
     class Meta:
         model = Event
-        fields = "__all__"
-    
-    def get_schedule(self, obj):
-        """
-        Returns schedule information from the group's schedule.
-        """
-        if obj.group and obj.group.schedule:
-            schedule = obj.group.schedule
-            return {
-                "id": schedule.id,
-                "day": schedule.day,
-                "day_name": schedule.get_day_display(),
-                "start_time": obj.start_datetime.strftime("%H:%M:%S"),
-                "end_time": obj.end_datetime.strftime("%H:%M:%S"),
-                "start_hour": schedule.start_time.hour,
-                "end_hour": schedule.end_time.hour,
-                "duration": (schedule.end_time.hour - schedule.start_time.hour)
-            }
-        return None
+        fields = [
+            'id', 'group', 'location', 'event_date',
+            'group_info', 'is_cancelled', 'cancellation_reason'
+        ]
     
     def get_group_info(self, obj):
         """
@@ -88,17 +84,17 @@ class EventListSerializer(serializers.ModelSerializer):
         if 'event_date' in representation:
             representation['date'] = representation.pop('event_date')
         
-        # Flatten schedule data for easier frontend consumption
-        schedule = representation.pop('schedule', None)
-        if schedule:
-            representation['schedule_id'] = schedule['id']
-            representation['schedule_day'] = schedule['day']
-            representation['schedule_day_name'] = schedule['day_name']
-            representation['start_time'] = schedule['start_time']
-            representation['end_time'] = schedule['end_time']
-            representation['start_hour'] = schedule['start_hour']
-            representation['end_hour'] = schedule['end_hour']
-            representation['duration'] = schedule['duration']
+        # ✅ Obtener schedule desde el grupo y aplanarlo
+        if instance.group and instance.group.schedule:
+            schedule = instance.group.schedule
+            representation['schedule_id'] = schedule.id
+            representation['schedule_day'] = schedule.day
+            representation['schedule_day_name'] = schedule.get_day_display()
+            representation['start_time'] = str(schedule.start_time)
+            representation['end_time'] = str(schedule.end_time)
+            representation['start_hour'] = schedule.start_time.hour
+            representation['end_hour'] = schedule.end_time.hour
+            representation['duration'] = (schedule.end_time.hour - schedule.start_time.hour)
         else:
             # Defaults si no hay schedule
             representation['schedule_id'] = None

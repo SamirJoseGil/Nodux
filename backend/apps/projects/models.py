@@ -32,15 +32,18 @@ class Group(models.Model):
 
 
 class Event(models.Model):
-    group = models.ForeignKey(to=Group, on_delete=models.CASCADE)
-    location = models.CharField(max_length=255)
-    event_date = models.DateField(default=date.today)
-    start_datetime = models.DateTimeField(default=datetime.now)
-    end_datetime = models.DateTimeField(default=datetime.now)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    event_date = models.DateField()  # ✅ Solo este campo es necesario
     is_cancelled = models.BooleanField(default=False)
-    cancellation_reason = models.TextField(blank=True, null=True)
-    attendance_generated = models.BooleanField(default=False)
-
-
+    cancellation_reason = models.TextField(null=True, blank=True)
+    
     class Meta:
-        ordering = ["id"]
+        ordering = ['event_date', 'group__schedule__start_time']
+        indexes = [
+            models.Index(fields=['event_date']),
+            models.Index(fields=['group', 'event_date']),
+        ]
+    
+    def __str__(self):
+        return f"Event for {self.group} on {self.event_date}"

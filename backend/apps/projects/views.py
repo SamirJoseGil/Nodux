@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from datetime import datetime, timedelta
+from django.conf import settings
 from apps.core.models import Schedule
 from .models import Project, Group, Event
 from .serializers import (
@@ -12,6 +13,8 @@ from .serializers import (
     EventSerializer,
     EventListSerializer,
 )
+
+DEBUG = getattr(settings, 'DEBUG', False)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -28,24 +31,16 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Crea un grupo y genera eventos automáticamente basados en:
-        - Día de la semana (schedule_day)
-        - Horario (start_time, end_time)
-        - Rango de fechas (start_date, end_date)
-        
-        Request body esperado:
-        {
-            "mentor": 1,
-            "location": "Sala A",
-            "mode": "presencial",
-            "start_date": "2024-01-15",
-            "end_date": "2024-06-15",
-            "schedule_day": 0,  // 0=Lunes, 1=Martes, etc.
-            "start_time": "08:00:00",
-            "end_time": "10:00:00"
-        }
+        Crea un grupo y genera eventos automáticamente.
         """
         project_id = self.kwargs.get("project_pk")
+        
+        # ✅ DEBUG: Ver qué datos llegan
+        import json
+        print("=" * 80)
+        print("📥 Request data recibida:")
+        print(json.dumps(request.data, indent=2, default=str))
+        print("=" * 80)
         
         try:
             # Validar que el proyecto existe
@@ -59,14 +54,37 @@ class GroupViewSet(viewsets.ModelViewSet):
             end_date_str = request.data.get('end_date')
             
             # Datos del horario
-            schedule_day = request.data.get('schedule_day')  # 0-6 (Lunes-Domingo)
-            start_time_str = request.data.get('start_time')  # "08:00:00"
-            end_time_str = request.data.get('end_time')      # "10:00:00"
+            schedule_day = request.data.get('schedule_day')
+            start_time_str = request.data.get('start_time')
+            end_time_str = request.data.get('end_time')
+            
+            # ✅ VALIDACIÓN: Imprimir valores recibidos
+            print("🔍 Valores extraídos:")
+            print(f"  mentor_id: {mentor_id} (type: {type(mentor_id)})")
+            print(f"  location: {location}")
+            print(f"  mode: {mode}")
+            print(f"  start_date_str: {start_date_str}")
+            print(f"  end_date_str: {end_date_str}")
+            print(f"  schedule_day: {schedule_day} (type: {type(schedule_day)})")
+            print(f"  start_time_str: {start_time_str}")
+            print(f"  end_time_str: {end_time_str}")
+            print("=" * 80)
             
             # Validar campos requeridos
             if not all([mentor_id, location, start_date_str, end_date_str]):
+                missing = []
+                if not mentor_id: missing.append('mentor')
+                if not location: missing.append('location')
+                if not start_date_str: missing.append('start_date')
+                if not end_date_str: missing.append('end_date')
+                
+                error_msg = f'Faltan campos requeridos: {", ".join(missing)}'
+                print(f"❌ ERROR: {error_msg}")
+                
                 return Response({
-                    'error': 'Faltan campos requeridos: mentor, location, start_date, end_date'
+                    'error': error_msg,
+                    'missing_fields': missing,
+                    'received_data': dict(request.data)
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             if schedule_day is None or not start_time_str or not end_time_str:
@@ -78,9 +96,10 @@ class GroupViewSet(viewsets.ModelViewSet):
             try:
                 start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
                 end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-            except ValueError:
+            except ValueError as e:
+                print(f"❌ ERROR de fecha: {e}")
                 return Response({
-                    'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
+                    'error': f'Formato de fecha inválido: {str(e)}'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             if end_date < start_date:
@@ -88,14 +107,28 @@ class GroupViewSet(viewsets.ModelViewSet):
                     'error': 'La fecha de fin debe ser posterior a la fecha de inicio'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
+            # Validar que el mentor existe
+            try:
+                from apps.mentors.models import Mentor
+                mentor = Mentor.objects.get(pk=mentor_id)
+                print(f"✅ Mentor encontrado: {mentor.pk}")
+            except Mentor.DoesNotExist:
+                print(f"❌ ERROR: Mentor {mentor_id} no encontrado")
+                return Response({
+                    'error': f'Mentor con ID {mentor_id} no encontrado'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
             # 1. Buscar o crear Schedule
+            print(f"🔍 Buscando/creando Schedule: day={schedule_day}, start={start_time_str}, end={end_time_str}")
             schedule, schedule_created = Schedule.objects.get_or_create(
                 day=int(schedule_day),
                 start_time=start_time_str,
                 end_time=end_time_str
             )
+            print(f"✅ Schedule {'creado' if schedule_created else 'encontrado'}: {schedule.pk}")
             
             # 2. Crear Grupo
+            print(f"🔍 Creando Group...")
             group = Group.objects.create(
                 project=project,
                 mentor_id=mentor_id,
@@ -105,8 +138,10 @@ class GroupViewSet(viewsets.ModelViewSet):
                 start_date=start_date,
                 end_date=end_date
             )
+            print(f"✅ Group creado: {group.pk}")
             
             # 3. 🔥 GENERAR EVENTOS AUTOMÁTICAMENTE
+            print(f"🔍 Generando eventos...")
             events_created = self._generate_events_for_group(
                 group=group,
                 schedule_day=int(schedule_day),
@@ -114,13 +149,14 @@ class GroupViewSet(viewsets.ModelViewSet):
                 end_date=end_date,
                 location=location
             )
+            print(f"✅ {events_created} eventos creados")
             
             # 4. Serializar y retornar respuesta
             serializer = self.get_serializer(group)
             return Response({
                 **serializer.data,
                 'schedule': {
-                    'id': schedule.id,
+                    'id': schedule.pk,
                     'day': schedule.day,
                     'start_time': str(schedule.start_time),
                     'end_time': str(schedule.end_time),
@@ -131,27 +167,23 @@ class GroupViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_201_CREATED)
             
         except Project.DoesNotExist:
+            print(f"❌ ERROR: Proyecto {project_id} no encontrado")
             return Response({
                 'error': f'Proyecto con ID {project_id} no encontrado'
             }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            import traceback
+            error_detail = traceback.format_exc()
+            print(f"❌ ERROR INESPERADO:")
+            print(error_detail)
             return Response({
-                'error': f'Error al crear grupo: {str(e)}'
+                'error': f'Error al crear grupo: {str(e)}',
+                'detail': error_detail if DEBUG else None
             }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def _generate_events_for_group(self, group, schedule_day, start_date, end_date, location):
         """
         Genera eventos automáticamente para un grupo basado en su horario.
-        
-        Args:
-            group: Instancia del Group creado
-            schedule_day: Día de la semana (0=Lunes, 6=Domingo)
-            start_date: Fecha de inicio del grupo
-            end_date: Fecha de fin del grupo
-            location: Ubicación del evento
-        
-        Returns:
-            int: Número de eventos creados
         """
         # Encontrar el primer día que coincida con schedule_day
         current_date = start_date
@@ -172,9 +204,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                 Event(
                     group=group,
                     location=location,
-                    event_date=current_date,  # ← Cambiar de date a event_date
-                    start_date=current_date,
-                    end_date=current_date
+                    event_date=current_date,  # ✅ Solo event_date
                 )
             )
             events_created += 1

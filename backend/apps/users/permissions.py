@@ -3,15 +3,10 @@ from rest_framework import permissions
 class RolePermission(permissions.BasePermission):
     """
     Permission class based on user roles.
-    
-    Usage in ViewSets:
-        class MyViewSet(viewsets.ModelViewSet):
-            permission_classes = [IsAuthenticated, RolePermission]
-            required_permission = 'academic.write'
     """
     
     ROLE_PERMISSIONS = {
-        'SuperAdmin': ['*'],  # Acceso total
+        'SuperAdmin': ['*'],
         'Admin': [
             'academic.*',
             'product.*',
@@ -23,16 +18,19 @@ class RolePermission(permissions.BasePermission):
             'projects.read',
             'projects.write',
             'attendance.read',
+            'attendance.write',
         ],
         'Mentor': [
             'academic.read',
             'academic.write_own',
+            'mentors.read',  # ✅ Pueden ver mentores
             'mentors.read_own',
             'attendance.write',
         ],
         'Estudiante': [
             'academic.read_own',
             'events.read',
+            'mentors.read',  # ✅ Pueden ver mentores
         ],
         'Trabajador': [
             'product.read',
@@ -40,6 +38,7 @@ class RolePermission(permissions.BasePermission):
         ],
         'Usuario base': [
             'basic.read',
+            'mentors.read',  # ✅ Pueden ver mentores
         ],
     }
     
@@ -47,42 +46,77 @@ class RolePermission(permissions.BasePermission):
         """
         Check if user has permission to access the view.
         """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Verificar autenticación
         if not request.user or not request.user.is_authenticated:
+            logger.warning("❌ User not authenticated")
             return False
         
+        # Obtener rol del usuario
         try:
             user_role = request.user.profile.role
-        except:
+            logger.info(f"✅ User {request.user.username} has role: {user_role}")
+        except Exception as e:
+            logger.error(f"❌ Error getting user role: {e}")
             return False
         
         # SuperAdmin tiene acceso a todo
         if user_role == 'SuperAdmin':
+            logger.info(f"✅ SuperAdmin access granted")
             return True
         
-        # Verificar permiso requerido por la vista
+        # Obtener permiso requerido
         required_permission = getattr(view, 'required_permission', None)
         
-        # Si la vista no requiere permiso específico, permitir acceso
+        # Si es callable, ejecutarlo
+        if callable(required_permission):
+            try:
+                required_permission = required_permission()
+            except Exception as e:
+                logger.error(f"❌ Error calling required_permission: {e}")
+                required_permission = None
+        
+        logger.info(f"🔍 Required permission: {required_permission}")
+        
+        # Si no requiere permiso específico, permitir
         if not required_permission:
+            logger.info("✅ No specific permission required, access granted")
             return True
         
-        # Obtener permisos del rol del usuario
+        # Obtener permisos del rol
         user_permissions = self.ROLE_PERMISSIONS.get(user_role, [])
+        logger.info(f"🔍 User permissions: {user_permissions}")
         
-        # Verificar si tiene el permiso específico o wildcard
+        # Verificar wildcard
         if '*' in user_permissions:
+            logger.info("✅ Wildcard permission, access granted")
             return True
         
         # Verificar permiso exacto
         if required_permission in user_permissions:
+            logger.info(f"✅ Exact permission match: {required_permission}")
             return True
         
-        # Verificar wildcards específicos (e.g., 'academic.*' matches 'academic.read')
+        # Verificar wildcards de módulo (e.g., 'academic.*' matches 'academic.read')
         for perm in user_permissions:
             if perm.endswith('.*'):
                 module = perm.replace('.*', '')
-                if required_permission.startswith(module + '.'):
+                if isinstance(required_permission, str) and required_permission.startswith(module + '.'):
+                    logger.info(f"✅ Module wildcard match: {perm} covers {required_permission}")
                     return True
+        
+        # Acceso denegado
+        logger.warning(
+            f"❌ PERMISSION DENIED\n"
+            f"   User: {request.user.username}\n"
+            f"   Role: {user_role}\n"
+            f"   Required: {required_permission}\n"
+            f"   Available: {user_permissions}\n"
+            f"   View: {view.__class__.__name__}\n"
+            f"   Action: {getattr(view, 'action', 'N/A')}"
+        )
         
         return False
     

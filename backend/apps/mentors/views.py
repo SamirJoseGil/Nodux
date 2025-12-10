@@ -13,15 +13,40 @@ class MentorViewSet(viewsets.ModelViewSet):
     ViewSet for managing mentors.
     
     Permissions:
-    - List/Read: Admin, Mentor
-    - Create/Update/Delete: Admin only
+    - List/Read: Todos los usuarios autenticados
+    - Create/Update/Delete: Admin, SuperAdmin
     """
     queryset = Mentor.objects.all()
     serializer_class = MentorSerializer
     permission_classes = [IsAuthenticated, RolePermission]
-    required_permission = 'mentors.write'
 
-    def destroy(self, request, *args, **kwargs):
+    def get_permissions(self):
+        """
+        Permisos dinámicos por acción.
+        """
+        if self.action in ['list', 'retrieve']:
+            # Solo autenticación para ver
+            return [IsAuthenticated()]
+        else:
+            # Autenticación + RolePermission para modificar
+            return [IsAuthenticated(), RolePermission()]
+    
+    def get_required_permission(self):
+        """
+        Retorna el permiso requerido basado en la acción.
+        """
+        if self.action in ['list', 'retrieve', 'hours']:
+            return 'mentors.read'
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return 'mentors.write'
+        return 'mentors.read'
+    
+    @property
+    def required_permission(self):
+        """Property para compatibilidad con RolePermission."""
+        return self.get_required_permission()
+
+    def destroy(self, request, *_args, **_kwargs):
         """
         Deletes a mentor along with all related resources.
         Only accessible by Admin and SuperAdmin roles.
@@ -48,6 +73,7 @@ class MentorViewSet(viewsets.ModelViewSet):
         GET: Anyone with mentors.read permission
         POST: Anyone with attendance.write permission
         """
+        _ = pk  # Mark pk as intentionally unused
         if request.method == "GET":
             # Get all registered attendances
             registeredAttendance = MentorAttendance.objects.all()

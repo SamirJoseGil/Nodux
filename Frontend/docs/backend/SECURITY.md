@@ -318,6 +318,58 @@ X-CSRFToken: <csrf_token>
 
 ## 👁️ Permisos de API
 
+### Sistema de Permisos por Roles
+
+El sistema utiliza permisos basados en roles con granularidad por acción:
+
+```python
+ROLE_PERMISSIONS = {
+    'SuperAdmin': ['*'],  # Acceso total
+    'Admin': [
+        'academic.*',      # Todas las acciones académicas
+        'mentors.read',    # Ver mentores
+        'mentors.write',   # Crear/editar mentores
+        'attendance.read', # Ver asistencia
+        'attendance.write' # Registrar asistencia
+    ],
+    'Mentor': [
+        'academic.read',   # Ver información académica
+        'mentors.read',    # Ver listado de mentores
+        'attendance.write' # Registrar horas
+    ],
+}
+```
+
+### Permisos Dinámicos por Acción
+
+Los ViewSets pueden implementar permisos diferentes según la acción HTTP:
+
+```python
+class MentorViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, RolePermission]
+    
+    def get_required_permission(self):
+        # GET (list/retrieve) requiere solo lectura
+        if self.action in ['list', 'retrieve']:
+            return 'mentors.read'
+        # POST/PUT/DELETE requieren escritura
+        return 'mentors.write'
+    
+    @property
+    def required_permission(self):
+        return self.get_required_permission()
+```
+
+### Matriz de Permisos
+
+| Rol | Mentores (Read) | Mentores (Write) | Proyectos (Read) | Proyectos (Write) | Admin Panel |
+|-----|-----------------|------------------|------------------|-------------------|-------------|
+| SuperAdmin | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Mentor | ✅ | ❌ | ✅ | ❌ | ❌ |
+| Estudiante | ❌ | ❌ | ✅ (limitado) | ❌ | ❌ |
+| Trabajador | ❌ | ❌ | ❌ | ❌ | ❌ |
+
 ### Configuración por Ambiente
 
 ```python

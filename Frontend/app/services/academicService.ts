@@ -419,10 +419,9 @@ export const GroupService = {
     startDate: string;
     endDate: string;
   }): Promise<Group> => {
-    // ✅ Asegurarnos de que el mentor sea un número entero
+    // ✅ Validaciones previas
     const mentorId = parseInt(groupData.mentorId);
     
-    // ✅ Validar que todos los campos requeridos estén presentes
     if (!mentorId || isNaN(mentorId)) {
       throw new Error('El ID del mentor es inválido');
     }
@@ -443,7 +442,7 @@ export const GroupService = {
       throw new Error('Las fechas de inicio y fin son requeridas');
     }
     
-    // ✅ Construir payload exactamente como el backend lo espera
+    // ✅ Construir payload con todos los campos requeridos
     const payload = {
       mentor: mentorId,
       location: groupData.location.trim(),
@@ -455,7 +454,10 @@ export const GroupService = {
       end_time: groupData.endTime
     };
     
-    console.log('📤 Payload de creación de grupo (validado):', JSON.stringify(payload, null, 2));
+    // ✅ DEBUG: Mostrar payload antes de enviar
+    console.log('📤 Payload a enviar al backend:');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('URL:', `/projects/${projectId}/groups/`);
     
     try {
       const response = await apiClient.post(`/projects/${projectId}/groups/`, payload);
@@ -515,27 +517,27 @@ export const GroupService = {
       };
     } catch (error: any) {
       console.error('❌ Error completo al crear grupo:', error);
+      console.error('📋 Status:', error.response?.status);
       console.error('📋 Response data:', JSON.stringify(error.response?.data, null, 2));
+      console.error('📋 Request config:', error.config);
       
       if (error.response?.data) {
         const errorData = error.response.data;
         
-        if (typeof errorData === 'string') {
-          throw new Error(errorData);
+        // ✅ Mostrar el detalle completo del error si está disponible
+        if (errorData.detail && typeof errorData.detail === 'string') {
+          throw new Error(errorData.detail);
         }
         
         if (errorData.error) {
           throw new Error(errorData.error);
         }
         
-        if (errorData.detail) {
-          throw new Error(errorData.detail);
-        }
-        
         if (typeof errorData === 'object') {
           const fieldErrors = [];
           
           for (const [field, messages] of Object.entries(errorData)) {
+            if (field === 'detail') continue; // Ya lo procesamos arriba
             const messageArray = Array.isArray(messages) ? messages : [messages];
             fieldErrors.push(`${field}: ${messageArray.join(', ')}`);
           }

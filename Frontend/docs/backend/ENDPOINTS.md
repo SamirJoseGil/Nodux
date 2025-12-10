@@ -623,6 +623,24 @@ knowledge_level: "avanzado"
 - `start_time` (time, required): Hora de inicio (HH:MM:SS)
 - `end_time` (time, required): Hora de fin (HH:MM:SS)
 
+**Validaciones:**
+- Todos los campos son requeridos
+- `mentor` debe ser un entero válido
+- `location` no puede estar vacío
+- `end_date` debe ser posterior a `start_date`
+- `schedule_day` debe estar entre 0 y 6
+- Las horas deben tener formato HH:MM:SS
+- El mentor debe existir en la base de datos
+
+**Errores comunes:**
+- `400 Bad Request`: 
+  - "Faltan campos requeridos: mentor, location, start_date, end_date"
+  - "El ID del mentor es inválido"
+  - "Formato de fecha inválido. Use YYYY-MM-DD"
+  - "La fecha de fin debe ser posterior a la fecha de inicio"
+- `404 Not Found`: Proyecto no encontrado
+- `500 Internal Server Error`: Error en el servidor al crear eventos
+
 **Response:** `201 Created`
 ```json
 {
@@ -652,16 +670,6 @@ knowledge_level: "avanzado"
 - Si el grupo dura 6 meses y es semanal, se crearán aproximadamente 24 eventos
 - Los eventos aparecen inmediatamente en el calendario
 - Todos los eventos heredan la ubicación del grupo
-
-**Validaciones:**
-- `end_date` debe ser posterior a `start_date`
-- `schedule_day` debe estar entre 0 y 6
-- Las horas deben tener formato HH:MM:SS
-- El mentor debe existir en la base de datos
-
-**Errores:**
-- `400 Bad Request`: Datos inválidos o campos faltantes
-- `404 Not Found`: Proyecto no encontrado
 
 ---
 
@@ -903,12 +911,12 @@ Authorization: Bearer <access_token>
 Ejemplo con curl:
 ```bash
 curl -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc..." \
-     http://localhost:8000/api/mentors/
+     http://localhost:8000/api/mentores/
 ```
 
 Ejemplo con JavaScript fetch:
 ```javascript
-fetch('http://localhost:8000/api/mentors/', {
+fetch('http://localhost:8000/api/mentores/', {
     headers: {
         'Authorization': 'Bearer ' + accessToken,
         'Content-Type': 'application/json'

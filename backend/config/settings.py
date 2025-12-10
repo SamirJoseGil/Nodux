@@ -164,6 +164,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
+        # ✅ CAMBIO: En desarrollo, permitir acceso por defecto
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_THROTTLE_CLASSES": [
@@ -178,11 +179,12 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
-if ENVIRONMENT == "development":
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ()
+# ✅ En desarrollo, sobrescribir para facilitar testing
+if DEBUG and ENVIRONMENT == "development":
     REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     )
+    # No cambiar a AllowAny, mantener IsAuthenticated
 
 # ==================================================
 # JWT

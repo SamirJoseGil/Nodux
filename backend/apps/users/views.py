@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from .models import Profile
 from .serializers import ChangePasswordSerializer, ProfileSerializer
 from apps.users.permissions import RolePermission
+from rest_framework.decorators import api_view, permission_classes
 import logging
 
 logger = logging.getLogger(__name__)
@@ -190,3 +191,62 @@ class UserManagementViewSet(viewsets.ModelViewSet):
             {"deleted": True, "username": instance.user.username},
             status=status.HTTP_200_OK
         )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def debug_permissions(request):
+    """
+    Endpoint temporal para debugging de permisos.
+    GET /api/users/debug-permissions/
+    """
+    try:
+        user = request.user
+        profile = user.profile
+        
+        from apps.users.permissions import RolePermission
+        user_permissions = RolePermission.ROLE_PERMISSIONS.get(profile.role, [])
+        
+        # Verificar permisos específicos
+        has_mentors_read = (
+            'mentors.read' in user_permissions or 
+            'mentors.*' in user_permissions or 
+            '*' in user_permissions
+        )
+        has_mentors_write = (
+            'mentors.write' in user_permissions or 
+            'mentors.*' in user_permissions or 
+            '*' in user_permissions
+        )
+        
+        return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_authenticated': user.is_authenticated,
+                'is_superuser': user.is_superuser,
+            },
+            'profile': {
+                'id': profile.id,
+                'role': profile.role,
+            },
+            'permissions': user_permissions,
+            'checks': {
+                'has_mentors_read': has_mentors_read,
+                'has_mentors_write': has_mentors_write,
+                'is_superadmin': profile.role == 'SuperAdmin',
+                'has_wildcard': '*' in user_permissions,
+            },
+            'debug_info': {
+                'request_path': request.path,
+                'request_method': request.method,
+                'auth_header': request.headers.get('Authorization', 'Not present')[:50] + '...' if request.headers.get('Authorization') else 'Not present',
+            }
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        import traceback
+        return Response({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

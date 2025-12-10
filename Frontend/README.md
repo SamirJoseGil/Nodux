@@ -73,8 +73,26 @@ frontend/
 ## 🔐 Autenticación
 
 * **Login:** JWT vía API Django (access + refresh)
-* **Tokens:** Access en memoria / Refresh en cookie HttpOnly
+* **Tokens:** Access en cookies HttpOnly / Refresh en cookies HttpOnly
 * **Protección:** CORS + CSRF desde backend
+* **Permisos:** Sistema basado en roles con granularidad por acción
+  - **SuperAdmin**: Acceso total (wildcard `*`)
+  - **Admin**: Gestión completa de módulos académicos y productos
+  - **Mentor**: Lectura de mentores, escritura en contenido propio
+  - **Estudiante**: Lectura de mentores y contenido académico
+  - **Trabajador**: Gestión de productos
+  - **Usuario base**: Lectura básica
+
+### Debugging de Permisos
+
+Para verificar permisos del usuario actual:
+
+```bash
+curl -H "Authorization: Bearer <access_token>" \
+     http://localhost:8000/api/users/debug-permissions/
+```
+
+Este endpoint retorna información detallada sobre el rol, permisos disponibles y checks específicos.
 
 ---
 
