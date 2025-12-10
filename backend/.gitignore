@@ -52,3 +52,6 @@ Thumbs.db
 # Static files (if collected)
 staticfiles/
 static_root/
+
+# Python version manager 
+.python-version
