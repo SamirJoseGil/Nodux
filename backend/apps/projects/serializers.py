@@ -52,8 +52,8 @@ class EventListSerializer(serializers.ModelSerializer):
                 "id": schedule.id,
                 "day": schedule.day,
                 "day_name": schedule.get_day_display(),
-                "start_time": schedule.start_time.strftime("%H:%M:%S"),
-                "end_time": schedule.end_time.strftime("%H:%M:%S"),
+                "start_time": obj.start_datetime.strftime("%H:%M:%S"),
+                "end_time": obj.end_datetime.strftime("%H:%M:%S"),
                 "start_hour": schedule.start_time.hour,
                 "end_hour": schedule.end_time.hour,
                 "duration": (schedule.end_time.hour - schedule.start_time.hour)
