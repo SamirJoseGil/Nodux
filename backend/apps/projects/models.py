@@ -34,7 +34,7 @@ class Group(models.Model):
 class Event(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     location = models.CharField(max_length=255, null=True, blank=True)
-    event_date = models.DateField()  # ✅ Solo este campo es necesario
+    event_date = models.DateField()
     is_cancelled = models.BooleanField(default=False)
     cancellation_reason = models.TextField(null=True, blank=True)
     

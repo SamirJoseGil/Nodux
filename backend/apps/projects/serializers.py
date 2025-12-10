@@ -23,22 +23,18 @@ class GroupSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id', 'group', 'location', 'event_date', 
-                  'is_cancelled', 'cancellation_reason']
-        read_only_fields = ['id']
-    
-    def validate(self, data):
-        """Asegurar que event_date esté presente"""
-        if 'event_date' not in data and 'start_date' in data:
-            # Si solo viene start_date, usar ese valor para event_date
-            data['event_date'] = data['start_date']
-        
-        if 'event_date' not in data:
-            raise serializers.ValidationError({
-                'event_date': 'Este campo es requerido'
-            })
-        
-        return data
+        fields = [
+            'id',
+            'group',
+            'location',
+            'event_date',
+            'is_cancelled',
+            'cancellation_reason',
+        ]
+        read_only_fields = [
+            'id',
+            'group',
+        ]
 
 
 # --- Event (global read-only endpoint with schedule info) ---

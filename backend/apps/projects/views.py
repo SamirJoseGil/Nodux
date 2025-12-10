@@ -204,7 +204,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                 Event(
                     group=group,
                     location=location,
-                    event_date=current_date,  # ✅ Solo event_date
+                    event_date=current_date,
                 )
             )
             events_created += 1
